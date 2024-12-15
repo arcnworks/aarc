@@ -2,7 +2,7 @@
  * Site-wide app configuration.
  *
  * This file pulls from the root "site.config.ts" as well as environment variables
- * for optional depenencies.
+ * for optional dependencies.
  */
 import { parsePageId } from 'notion-utils';
 import { PostHogConfig } from 'posthog-js';
@@ -52,6 +52,7 @@ export const youtube: string | null = getSiteConfig('youtube', null);
 export const linkedin: string | null = getSiteConfig('linkedin', null);
 export const newsletter: string | null = getSiteConfig('newsletter', null);
 export const zhihu: string | null = getSiteConfig('zhihu', null);
+export const instagram: string | null = getSiteConfig('instagram', null); // Instagram 추가
 
 // default notion values for site-wide consistency (optional; may be overridden on a per-page basis)
 export const defaultPageIcon: string | null = getSiteConfig('defaultPageIcon', null);

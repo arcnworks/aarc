@@ -1,3 +1,4 @@
+import { instagram } from './config';
 import * as types from './types';
 
 export interface SiteConfig {
@@ -15,6 +16,7 @@ export interface SiteConfig {
   linkedin?: string;
   newsletter?: string;
   youtube?: string;
+  instagram?: string;
   zhihu?: string;
 
   defaultPageIcon?: string | null;
