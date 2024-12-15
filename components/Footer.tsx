@@ -108,19 +108,17 @@ export const FooterImpl: React.FC = () => {
             <FaEnvelopeOpenText />
           </a>
         )}
-
         {config.instagram && (
           <a
             className={styles.instagram}
             href={`https://www.instagram.com/${config.instagram}`}
-            title={`Instagram ${config.instagram}`}
+            title={`Instagram @${config.instagram}`}
             target="_blank"
             rel="noopener noreferrer"
           >
             <FaInstagram />
           </a>
         )}
-        
         {config.youtube && (
           <a
             className={styles.youtube}
