@@ -4,7 +4,7 @@ import { FaZhihu } from '@react-icons/all-files/fa/FaZhihu';
 import { FaGithub } from '@react-icons/all-files/fa/FaGithub';
 import { FaLinkedin } from '@react-icons/all-files/fa/FaLinkedin';
 import { FaEnvelopeOpenText } from '@react-icons/all-files/fa/FaEnvelopeOpenText';
-import { FaInstagram } from '@react-icons/all-files/fa/FaInstagram'
+import { FaInstagram } from '@react-icons/all-files/fa/FaInstagram';
 import { FaYoutube } from '@react-icons/all-files/fa/FaYoutube';
 import { IoSunnyOutline } from '@react-icons/all-files/io5/IoSunnyOutline';
 import { IoMoonSharp } from '@react-icons/all-files/io5/IoMoonSharp';
@@ -33,9 +33,10 @@ export const FooterImpl: React.FC = () => {
   }, []);
 
   return (
-    <footer className={styles.footer}>  {/* 푸터 컨테이너 */}
+    <footer className={styles.footer}>
+      {' '}
+      {/* 푸터 컨테이너 */}
       <div className={styles.copyright}>Copyright 2022 @ {config.author}</div> {/* 저작권 정보 */}
-
       <div className={styles.settings}>
         {hasMounted && (
           <a
@@ -49,8 +50,9 @@ export const FooterImpl: React.FC = () => {
           </a>
         )}
       </div>
-
-      <div className={styles.social}> {/* 소셜 미디어 링크 */}
+      <div className={styles.social}>
+        {' '}
+        {/* 소셜 미디어 링크 */}
         {config.twitter && (
           <a
             className={styles.twitter}
@@ -62,7 +64,6 @@ export const FooterImpl: React.FC = () => {
             <FaTwitter />
           </a>
         )}
-
         {config.zhihu && (
           <a
             className={styles.zhihu}
@@ -74,7 +75,6 @@ export const FooterImpl: React.FC = () => {
             <FaZhihu />
           </a>
         )}
-
         {config.github && (
           <a
             className={styles.github}
@@ -86,7 +86,6 @@ export const FooterImpl: React.FC = () => {
             <FaGithub />
           </a>
         )}
-
         {config.linkedin && (
           <a
             className={styles.linkedin}
@@ -98,7 +97,6 @@ export const FooterImpl: React.FC = () => {
             <FaLinkedin />
           </a>
         )}
-
         {config.newsletter && (
           <a
             className={styles.newsletter}
@@ -110,19 +108,17 @@ export const FooterImpl: React.FC = () => {
             <FaEnvelopeOpenText />
           </a>
         )}
-
         {config.instagram && (
           <a
             className={styles.instagram}
             href={`https://www.instagram.com/${config.instagram}`}
-            title={`Instagram @${config.instagram}`}
+            title={`Instagram ${config.instagram}`}
             target="_blank"
             rel="noopener noreferrer"
           >
             <FaInstagram />
           </a>
         )}
-
         {config.youtube && (
           <a
             className={styles.youtube}
