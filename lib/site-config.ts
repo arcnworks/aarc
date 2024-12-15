@@ -1,6 +1,3 @@
-import config from './config';
-console.log(config.instagram); // "arcnworks" 등으로 출력되어야 합니다.
-
 import * as types from './types';
 
 export interface SiteConfig {

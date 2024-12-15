@@ -108,6 +108,7 @@ export const FooterImpl: React.FC = () => {
             <FaEnvelopeOpenText />
           </a>
         )}
+
         {config.instagram && (
           <a
             className={styles.instagram}
@@ -119,6 +120,7 @@ export const FooterImpl: React.FC = () => {
             <FaInstagram />
           </a>
         )}
+        
         {config.youtube && (
           <a
             className={styles.youtube}
