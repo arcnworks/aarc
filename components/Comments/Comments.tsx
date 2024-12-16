@@ -61,7 +61,7 @@ const Comments = ({ pageId, recordMap }: CommentsProps) => {
 
   return (
     <div className="notion-comments">
-      <h2 className="notion-h notion-h1">댓글</h2>
+      <h2 className="notion-h notion-h2">댓글</h2>
 
       <form className={cs('item', loading && 'loading')} onSubmit={formik.handleSubmit}>
         <img className="profileImage guest" src="/comment.png" alt="guest" />

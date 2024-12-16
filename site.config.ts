@@ -2,16 +2,16 @@ import { siteConfig } from './lib/site-config';
 
 export default siteConfig({
   // the site's root Notion page (required)
-  rootNotionPageId: '15c693fb941780bbaea5f327615a8ead',
+  rootNotionPageId: '15c693fb941780c19eb5f250d59f1367',
 
   // if you want to restrict pages to a single notion workspace (optional)
   // (this should be a Notion ID; see the docs for how to extract this)
   rootNotionSpaceId: 'null',
 
-// 사이트 기본 정보 (필수)
-  name: '느낌의 건축,아크앤워크스',  // 사이트 이름
-  domain: 'arcnworks.notion.site',  // 사이트 도메인
-  author: '@아크앤워크스(arcnworks) | 대표자: 이원호 | 등록번호: 249-54-00632',  // 작성자 이름
+  // 사이트 기본 정보 (필수)
+  name: '느낌의 건축,아크(AaRC)', // 사이트 이름
+  domain: 'arcnworks.notion.site', // 사이트 도메인
+  author: '@아크앤워크스(arcnworks) | 대표자: 이원호 | 등록번호: 249-54-00632', // 작성자 이름
 
   // 오픈 그래프 메타데이터 (선택사항)
   // 웹페이지 공유 시 보여질 간단한 설명
@@ -41,22 +41,21 @@ export default siteConfig({
   isRedisEnabled: false,
 
   pageUrlOverrides: {
-    '/home': '153693fb941780e4ae52dbb2da4b4725',
+    '/home': '15c693fb941780c19eb5f250d59f1367',
     '/report': '154693fb941780f3ad56c98248b17dda',
     '/works': '154693fb94178033a151d03b6cc466de',
-    '/blog': '154693fb94178002b5c7cd9d58f8c9bb',
-    '/contact': '154693fb9417807b9ae5db9b64489c9a'
+    '/blog': '15e693fb941780fcb754dc8d71a519ad',
+    '/contact': '154693fb9417807b9ae5db9b64489c9a',
   },
-
 
   // 네비게이션 스타일 설정 (기본 Notion 네비게이션 사용 여부)
   // 중요한 페이지로 연결되는 링크가 있는 커스텀 네비게이션을 사용할 수 있습니다.
   // `navigationLinks`를 사용하려면 `navigationStyle`을 'custom'으로 설정해야 합니다.
-  navigationStyle: 'custom',  // 네비게이션 스타일을 커스텀으로 설정
+  navigationStyle: 'custom', // 네비게이션 스타일을 커스텀으로 설정
   navigationLinks: [
     {
-      title: 'Home',  // 네비게이션에 표시될 이름
-      pageId: '153693fb941780e4ae52dbb2da4b4725',  // 연결될 Notion 페이지의 ID
+      title: 'Home', // 네비게이션에 표시될 이름
+      pageId: '15c693fb941780c19eb5f250d59f1367', // 연결될 Notion 페이지의 ID
     },
     {
       title: 'Report',
@@ -68,19 +67,17 @@ export default siteConfig({
     },
     {
       title: 'blog',
-      pageId: '154693fb94178002b5c7cd9d58f8c9bb',
-    
+      pageId: '15e693fb941780fcb754dc8d71a519ad',
     },
     {
       title: 'contact',
-      pageId: '154693fb9417807b9ae5db9b64489c9a', 
-      
+      pageId: '154693fb9417807b9ae5db9b64489c9a',
     },
     {
       title: '-',
       pageId: '155693fb94178076b2c5e73f7d3cd377',
       menuPage: true,
-    }
+    },
   ],
   // -------- custom configs (2skydev) -------------
 
@@ -88,13 +85,13 @@ export default siteConfig({
   dateformat: 'yyyy년 MM월 dd일',
 
   // post page - hidden properties
-  hiddenPostProperties: ['설명', '상태', '최하위 정렬'],
+  hiddenPostProperties: ['설명', '상태', '생성일' ],
 
   // contentPosition (table of contents) text align
   contentPositionTextAlign: 'left',
 
   // default theme color
-  defaultTheme: 'system',
+  defaultTheme: 'light',
 
   // enable comment
   enableComment: true,

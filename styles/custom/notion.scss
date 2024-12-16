@@ -55,6 +55,9 @@ body {
     position: fixed;
     transition-duration: 250ms;
     transition-property: background-color, color;
+    background-color: rgba(255, 255, 255, 0.1); /* 반투명 배경색 추가 */
+    backdrop-filter: blur(5px); /* 블러 효과 설정 */
+    -webkit-backdrop-filter: blur(5px); /* 사파리 브라우저 지원 */
 
     .notion-nav-header {
       max-width: var(--notion-max-width);
@@ -69,7 +72,7 @@ body {
   &:not(.dark-mode) {
     // 글 목록을 가지고 있는 페이지라면 배경 색 변경
     .hasCollectionView {
-      --bg-color: #f2f3f7;
+      --bg-color: #ffffff;
     }
   }
 }
@@ -102,7 +105,7 @@ body {
 
   // 페이지 메인 이미지 (커버 이미지) 없을 때
   .notion-page-no-cover {
-    margin-top: 130px !important;
+    margin-top: 100px !important;
   }
 
   // 페이지 아이콘
@@ -114,7 +117,7 @@ body {
   // 페이지 속성들
   .notion-collection-page-properties {
     .notion-collection-row {
-      margin-bottom: 5rem;
+      margin-bottom: 2rem;
       border-bottom: none;
       padding-bottom: 0;
       padding: 0;
@@ -329,9 +332,9 @@ body {
         display: block;
         height: 2px;
         width: 4rem;
-        background-color: var(--fg-color);
+        //background-color: var(--fg-color);  //제목 하단라인 삭제
         margin-top: 0.5rem;
-        border-radius: 5px;
+        border-radius: 0px;
       }
     }
 
@@ -533,127 +536,117 @@ body {
     }
   }
 
-  // 데이터베이스 - 갤러리뷰
+  // 데이터베이스 - 갤러리뷰 스타일 정의
   .postList {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 0.5rem;
+    display: flex; // 요소들을 플렉스 박스로 배치합니다.
+    flex-wrap: wrap; // 플렉스 박스가 여러 줄로 배치되도록 설정합니다.
+    margin-top: 0.5rem; // 위쪽 여백을 추가합니다.
 
     > a {
-      background-color: var(--notion-card-background-color);
-      box-shadow: 10px 20px 20px 0 rgb(92 95 112 / 8%);
-      width: calc(25% - 30px * 3 / 4);
-      margin-bottom: 30px;
-      transition: 250ms transform, 250ms background-color;
+      background-color: var(--notion-card-background-color); /* 카드 배경색 설정 */
+      box-shadow: 10px 20px 20px 0 rgb(92 95 112 / 8%); /* 그림자 효과 */
+      margin-bottom: 10px; /* 카드 아래 여백 */
+      transition: 250ms transform, 250ms background-color; /* 호버 시 전환 효과 */
 
       &:hover {
-        transform: translateY(-8px);
+        transform: translateY(-8px); /* 호버 시 위로 살짝 이동 */
       }
 
       @media (min-width: 1431px) {
-        &:not(:nth-child(4n)) {
-          margin-right: calc(30px);
-        }
+        width: calc(16.66% - 20px); /* 한 행에 6개 카드 배치 */
+        margin: 10px; /* 카드 간 여백 */
       }
 
       @media (max-width: 1430px) and (min-width: 1051px) {
-        width: calc(33.33% - (30px * 2) / 3);
-
-        &:not(:nth-child(3n)) {
-          margin-right: calc(30px);
-        }
+        width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
+        margin: 10px; /* 카드 간 여백 */
       }
 
       @media (max-width: 1050px) and (min-width: 761px) {
-        width: calc(50% - 30px / 2);
-
-        &:not(:nth-child(2n)) {
-          margin-right: calc(30px);
-        }
+        width: calc(33.33% - 20px); /* 한 행에 3개 카드 배치 */
+        margin: 10px; /* 카드 간 여백 */
       }
 
       @media (max-width: 760px) {
-        width: 100%;
+        width: calc(50% - 20px); /* 한 행에 2개 카드 배치 */
+        margin: 10px; /* 카드 간 여백 */
       }
 
       .notion-collection-card-cover {
-        border-radius: 0;
-        border-top-left-radius: 12px;
-        border-top-right-radius: 12px;
-        box-shadow: none;
+        border-radius: 0; // 카드 커버 모서리를 둥글게 하지 않습니다.
+        box-shadow: none; // 커버에 그림자 효과를 제거합니다.
 
         img {
-          border-radius: 0;
+          border-radius: 0; // 커버 이미지의 모서리를 둥글게 하지 않습니다.
         }
       }
 
       .notion-collection-card-property {
-        padding: 0;
+        padding: 0; // 카드 속성 영역의 패딩을 제거합니다.
       }
 
       .notion-property-select-item {
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.3rem; // 선택 속성의 아래쪽 여백 설정.
       }
 
       .notion-property-multi_select-item {
         &::before {
-          content: '#';
+          content: '#'; // 다중 선택 속성 앞에 '#'을 추가합니다.
         }
       }
 
       .notion-collection-card-body {
-        display: block;
-        padding: 1rem 1.3rem 1rem;
+        display: block; // 카드 본문을 블록 레벨 요소로 설정합니다.
+        padding: 1rem 1rem 1rem; // 내부 여백을 설정합니다.
 
         .notion-page-icon-image {
-          display: none;
+          display: none; // 페이지 아이콘 이미지를 숨깁니다.
         }
 
         .notion-page-title-text {
-          font-size: 1rem;
-          font-weight: 600;
-          margin-bottom: 0.5rem;
+          font-size: 1rem; // 제목 텍스트의 폰트 크기 설정.
+          font-weight: 600; // 제목 텍스트를 볼드체로 설정.
+          margin-bottom: 0.5rem; // 아래쪽 여백 추가.
         }
 
         .notion-property-title {
-          width: 100%;
-          display: block;
+          width: 100%; // 제목 속성의 너비를 100%로 설정.
+          display: block; // 제목 속성을 블록 레벨 요소로 설정.
         }
 
         .notion-property-select {
-          margin-right: 6px;
+          margin-right: 6px; // 선택 속성의 오른쪽 여백 추가.
         }
 
         .notion-collection-card-property:last-child {
-          overflow: initial;
+          overflow: initial; // 마지막 속성의 오버플로우 초기화.
 
           .notion-property-created_time {
-            display: block;
-            width: calc(100% + 1.3rem * 2);
-            margin-left: -1.3rem;
-            padding-left: 1.3rem;
-            padding-top: 1rem;
-            margin-top: 0.9rem;
-            border-top: 1px solid var(--line-color);
-            display: block;
-            opacity: 0.7;
-            line-height: 1;
+            display: block; // 생성 시간 속성을 블록 레벨 요소로 설정.
+            width: calc(100% + 1.3rem * 2); // 생성 시간의 너비를 카드 본문과 맞춥니다.
+            margin-left: -1.3rem; // 왼쪽으로 이동하여 본문과 정렬.
+            padding-left: 1.3rem; // 내부 여백 추가.
+            padding-top: 1rem; // 위쪽 패딩 추가.
+            margin-top: 0.9rem; // 위쪽 여백 추가.
+            border-top: 1px solid var(--line-color); // 위쪽에 선 추가.
+            opacity: 0.7; // 불투명도 설정.
+            line-height: 1; // 행 간격 설정.
           }
         }
 
         .notion-collection-card-property:nth-child(2) {
-          height: 85px;
+          height: 85px; // 두 번째 속성의 높이 설정.
 
           .notion-property-text {
-            width: 100%;
-            white-space: initial;
-            color: #7a7c85;
-            font-size: 13px;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            text-overflow: ellipsis;
+            width: 100%; // 텍스트 속성의 너비를 100%로 설정.
+            white-space: initial; // 텍스트 줄 바꿈 허용.
+            color: #7a7c85; // 텍스트 색상 설정.
+            font-size: 13px; // 텍스트 폰트 크기 설정.
+            overflow: hidden; // 넘치는 텍스트를 숨깁니다.
+            display: -webkit-box; // 텍스트를 Flexbox로 표시.
+            -webkit-line-clamp: 3; // 텍스트를 3줄로 제한.
+            -webkit-box-orient: vertical; // Flexbox 방향을 세로로 설정.
+            text-overflow: ellipsis; // 넘치는 텍스트를 줄임표로 표시.
           }
         }
       }
