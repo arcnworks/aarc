@@ -1256,22 +1256,24 @@ svg.notion-page-icon {
   border-right: 0 none;
 }
 
+/*노션 속정(properties)의 제목 표시하지 않음 */
 .notion-collection-column-title {
   display: flex;
   align-items: center;
   line-height: 120%;
   min-width: 0;
-  font-size: 14px;
+  font-size: 0px;
 }
 
+/*노션 속정(properties)의 아이콘 표시하지 않음 */
 .notion-collection-column-title-icon {
   display: inline-block;
-  width: 14px;
-  height: 14px;
-  min-width: 14px;
-  min-height: 14px;
+  width: 0px;
+  height: 0px;
+  min-width: 0px;
+  min-height: 0px;
   fill: var(--fg-color-2);
-  margin-right: 6px;
+  margin-right: 0px;
 }
 
 .notion-collection-column-title-body {
@@ -2050,7 +2052,7 @@ svg.notion-page-icon {
 
 .notion-collection-row-value {
   flex: 1;
-  padding: 6px 5px 6px; 
+  padding: 6px 5px 6px;
   font-size: 14px;
 }
 
