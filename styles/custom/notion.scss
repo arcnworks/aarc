@@ -545,7 +545,7 @@ body {
     > a {
       background-color: var(--notion-card-background-color); /* 카드 배경색 설정 */
       box-shadow: 10px 20px 20px 0 rgb(92 95 112 / 8%); /* 그림자 효과 */
-      margin-bottom: 10px; /* 카드 아래 여백 */
+      margin-bottom: 1px; /* 카드 아래 여백 */
       transition: 250ms transform, 250ms background-color; /* 호버 시 전환 효과 */
 
       &:hover {
@@ -597,7 +597,7 @@ body {
 
       .notion-collection-card-body {
         display: block; // 카드 본문을 블록 레벨 요소로 설정합니다.
-        padding: 1rem 1rem 1rem; // 내부 여백을 설정합니다.
+        padding: 0.5rem 0.5rem 0rem; // 내부 여백을 설정합니다. (갤러리 뷰의 제목과 작성자)
 
         .notion-page-icon-image {
           display: none; // 페이지 아이콘 이미지를 숨깁니다.
@@ -635,7 +635,7 @@ body {
         }
 
         .notion-collection-card-property:nth-child(2) {
-          height: 85px; // 두 번째 속성의 높이 설정.
+          height: 40px; // 두 번째 속성의 높이 설정. 갤러리 박스의 높이설정
 
           .notion-property-text {
             width: 100%; // 텍스트 속성의 너비를 100%로 설정.

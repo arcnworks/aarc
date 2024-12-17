@@ -1343,14 +1343,14 @@ svg.notion-page-icon {
 .notion-property-multi_select-item {
   display: flex;
   align-items: center;
-  padding: 0 6px;
+  padding: 0px 0px 5px;
   border-radius: 0px;
-  height: 18px;
+  height: 20px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 120%;
-}
+} /*갤러리 특성창의 자일드2 높이 및 여백 등 */
 
 .notion-property-file {
   display: flex;
@@ -1365,7 +1365,7 @@ svg.notion-page-icon {
 }
 
 .notion-collection-card-cover .notion-property-file {
-  height: 100%;
+  height: 500%;
 }
 
 .notion-collection-card-cover .notion-property-file img {

@@ -103,7 +103,7 @@
 }
 
 .notion-collection-card-body {
-  padding: 6px; /* 카드 본문에 내부 여백 추가 */
+  padding: 3px; /* 카드 본문에 내부 여백 추가 */
 }
 
 /* Safari 전용 트랜지션 비활성화 */
