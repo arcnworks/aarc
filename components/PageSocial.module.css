@@ -136,7 +136,7 @@
   border-color: #E4405F;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 700px) {
   .links {
     position: relative;
     left: 0.5em;

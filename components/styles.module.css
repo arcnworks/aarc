@@ -135,7 +135,7 @@
 }
 
 /* 모바일 화면에서 푸터 스타일 변경 */
-@media only screen and (max-width: 566px) {
+@media only screen and (max-width: 500px) {
   .footer {
     flex-direction: column;
   }
@@ -260,7 +260,7 @@
 }
 
 /* 반응형 디자인: 작은 화면에서 로고 크기 조정 */
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 700px) {
   .logo {
     height: 30px;
     margin-top: 5px; /* 작은 화면에서 상단 여백 조정 */

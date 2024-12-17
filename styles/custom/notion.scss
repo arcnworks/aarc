@@ -11,7 +11,7 @@
   }
 }
 
-@media only screen and (max-width: 720px) {
+@media only screen and (max-width: 700px) {
   :root {
     --base-font-size: 0.95rem;
   }
@@ -144,7 +144,7 @@ body {
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 700px) {
       .notion-collection-property-type-multi_select {
         width: 100%;
 

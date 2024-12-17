@@ -45,7 +45,7 @@
   display: none !important; /* 기본적으로 모바일 헤더를 숨김 */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .notion-nav-header-wide {
     display: none !important; /* 화면 너비가 작을 경우 와이드 헤더를 숨김 */
   }

@@ -113,9 +113,9 @@ export const NotionPageHeader: React.FC<{
                   >
                     <svg
                       strokeWidth="0"
-                      width="25px"
-                      height="25px"
-                      viewBox="0 0 24 24"
+                      width="20px"
+                      height="20px"
+                      viewBox="0 0 23 25"
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path d="M0 0h24v24H0z" fill="none" />
