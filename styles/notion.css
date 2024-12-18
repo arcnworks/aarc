@@ -32,7 +32,7 @@
 }
 
 .notion-header .notion-nav-header {
-  max-width: 1400px; /* 네비게이션 헤더의 최대 너비 제한 */
+  max-width: 1500px; /* 네비게이션 헤더의 최대 너비 제한 */
   margin: 0 auto; /* 중앙 정렬 */
 }
 
