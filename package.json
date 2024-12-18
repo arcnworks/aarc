@@ -48,6 +48,7 @@
     "got": "^12.1.0",
     "isomorphic-unfetch": "^3.1.0",
     "lqip-modern": "^2.0.0",
+    "mermaid": "^11.4.1",
     "next": "14.0.3",
     "next-api-og-image": "^2.2.1",
     "nextjs-google-analytics": "^2.1.0",

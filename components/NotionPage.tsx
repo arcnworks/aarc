@@ -31,6 +31,7 @@ import { Page404 } from './Page404'; // 404 페이지 컴포넌트를 가져옵�
 import { PageAside } from './PageAside'; // 페이지 사이드바 컴포넌트를 가져옵니다.
 import { PageHead } from './PageHead'; // 페이지의 메타 정보를 설정하는 컴포넌트입니다.
 import styles from './styles.module.css'; // 스타일 모듈을 가져옵니다.
+import mermaid from 'mermaid'; // Mermaid.js를 가져옵니다.
 
 // -----------------------------------------------------------------------------
 // dynamic imports for optional components
@@ -95,6 +96,15 @@ const Modal = dynamic(
     ssr: false, // 서버 사이드 렌더링 비활성화
   },
 );
+
+const RenderMermaid = ({ chartCode }: { chartCode: string }) => {
+  React.useEffect(() => {
+    mermaid.initialize({ startOnLoad: true });
+    mermaid.contentLoaded();
+  }, [chartCode]);
+
+  return <div className="mermaid">{chartCode}</div>;
+};
 
 const Tweet = ({ id }: { id: string }) => {
   return <TweetEmbed tweetId={id} />; // 트윗 ID를 기반으로 트윗을 임베드합니다.
