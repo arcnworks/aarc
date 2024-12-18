@@ -46,6 +46,7 @@ export default siteConfig({
     '/works': '154693fb94178033a151d03b6cc466de',
     '/blog': '15e693fb941780fcb754dc8d71a519ad',
     '/contact': '154693fb9417807b9ae5db9b64489c9a',
+    '/category': '155693fb94178076b2c5e73f7d3cd377',
   },
 
   // 네비게이션 스타일 설정 (기본 Notion 네비게이션 사용 여부)
@@ -74,7 +75,7 @@ export default siteConfig({
       pageId: '154693fb9417807b9ae5db9b64489c9a',
     },
     {
-      title: '-',
+      title: 'category',
       pageId: '155693fb94178076b2c5e73f7d3cd377',
       menuPage: true,
     },
