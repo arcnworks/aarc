@@ -62,14 +62,15 @@ const _Breadcrumbs: React.FC<{
             <componentMap.pageLink
               className={cs('breadcrumb', breadcrumb.active && 'active')}
               {...pageLinkProps}
-            >
+              
+            >{/*
               {breadcrumb.icon && <PageIcon className="icon" block={breadcrumb.block} />}
 
-              {breadcrumb.title && <span className="title">{breadcrumb.title}</span>}
-            </componentMap.pageLink>
+              {breadcrumb.title && <span className="title">{breadcrumb.title}</span>} // 페이지헤더에 글의 제목이 표시되는 것을 숨김*/}
+            </componentMap.pageLink> 
 
-            {index < breadcrumbs.length - 1 && <span className="spacer">/</span>}
-          </React.Fragment>
+            {index < breadcrumbs.length - 1 && <span className="spacer">/</span>} 
+          </React.Fragment> 
         );
       })}
     </div>

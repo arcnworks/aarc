@@ -103,9 +103,9 @@ body {
     max-height: calc(30vh + var(--notion-header-height)) !important;
   }
 
-  // 페이지 메인 이미지 (커버 이미지) 없을 때
+  // 페이지 메인 이미지 (커버 이미지) 없을 때 페이지 제목의 상단까지 간격
   .notion-page-no-cover {
-    margin-top: 10px !important;
+    margin-top: 80px !important;
   }
 
   // 페이지 아이콘
@@ -117,7 +117,7 @@ body {
   // 페이지 속성들
   .notion-collection-page-properties {
     .notion-collection-row {
-      margin-bottom: 2rem;
+      margin-bottom: none;
       border-bottom: none;
       padding-bottom: 0;
       padding: 0;
