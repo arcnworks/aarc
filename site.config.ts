@@ -44,7 +44,7 @@ export default siteConfig({
     '/home': '15c693fb941780c19eb5f250d59f1367',
     '/report': '154693fb941780f3ad56c98248b17dda',
     '/works': '154693fb94178033a151d03b6cc466de',
-    '/blog': '15e693fb941780fcb754dc8d71a519ad',
+    '/blog': '165693fb941780ccb04acf1fd4f6ebab',
     '/contact': '154693fb9417807b9ae5db9b64489c9a',
     '/category': '155693fb94178076b2c5e73f7d3cd377',
   },
@@ -68,7 +68,7 @@ export default siteConfig({
     },
     {
       title: 'blog',
-      pageId: '15e693fb941780fcb754dc8d71a519ad',
+      pageId: '165693fb941780ccb04acf1fd4f6ebab',
     },
     {
       title: 'contact',
@@ -86,7 +86,7 @@ export default siteConfig({
   dateformat: 'yyyy년 MM월 dd일',
 
   // post page - hidden properties
-  hiddenPostProperties: ['설명', '상태', '생성일' ],
+  hiddenPostProperties: ['설명', '상태', '선택', '' ],
 
   // contentPosition (table of contents) text align
   contentPositionTextAlign: 'left',
