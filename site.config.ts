@@ -43,8 +43,8 @@ export default siteConfig({
   pageUrlOverrides: {
     '/home': '15c693fb941780c19eb5f250d59f1367',
     '/report': '154693fb941780f3ad56c98248b17dda',
-    '/works': '154693fb94178033a151d03b6cc466de',
-    '/blog': '165693fb941780ccb04acf1fd4f6ebab',
+    '/works': '165693fb9417800c8baadf2ba5ea5139',
+    '/blog': '165693fb941780fab52fee6442e580bd',
     '/contact': '154693fb9417807b9ae5db9b64489c9a',
     '/category': '155693fb94178076b2c5e73f7d3cd377',
   },
@@ -64,11 +64,11 @@ export default siteConfig({
     },
     {
       title: 'Works',
-      pageId: '154693fb94178033a151d03b6cc466de',
+      pageId: '165693fb9417800c8baadf2ba5ea5139',
     },
     {
       title: 'blog',
-      pageId: '165693fb941780ccb04acf1fd4f6ebab',
+      pageId: '165693fb941780fab52fee6442e580bd',
     },
     {
       title: 'contact',
