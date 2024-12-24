@@ -171,7 +171,7 @@ function invertPageUrlOverrides(pageUrlOverrides: PageUrlOverridesMap): PageUrlO
   }, {});
 }
 
-// custom configs (2skydev)
+// custom configs 
 // ----------------------------------------------------------------------------
 
 export const dateformat: string = getSiteConfig('dateformat', 'yyyy.MM.dd');

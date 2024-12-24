@@ -73,12 +73,12 @@
   --notion-card-background-color: #ffffff;
 
   --notion-max-width: 1440px;
-  --notion-header-height: 54px;
+  --notion-header-height: 56px;
 
-  --notion-page-left-right-padding: calc(min(16px, 8vw));
+  --notion-page-left-right-padding: calc(min(56px, 8vw));
   --notion-page-fullwith-left-right-padding: calc(min(64px, 8vw));
 
-  --notion-aside-width: 300px;
+  --notion-aside-width: 360px; //사이드 폭 조정
   --notion-aside-space-width: 5rem;
 
   --notion-page-content-inner-width: calc(

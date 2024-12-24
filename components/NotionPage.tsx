@@ -144,7 +144,13 @@ export const NotionPage: React.FC<types.PageProps> = ({
 
   const components = React.useMemo(
     () => ({
-      nextImage: Image, // Next.js Image 컴포넌트를 사용합니다.
+      nextImage: (props) => (
+        <Image
+          {...props}
+          unoptimized // 최적화 비활성화
+          /* 추가 설명: 이미지 최적화를 비활성화하여 Vercel의 이미지 최적화 사용량 제한 문제를 해결 */
+        />
+      ),
       nextLink: Link, // Next.js Link 컴포넌트를 사용합니다.
       Code, // 코드 하이라이트 컴포넌트입니다.
       Collection, // Notion 컬렉션을 렌더링하는 컴포넌트입니다.
@@ -158,7 +164,6 @@ export const NotionPage: React.FC<types.PageProps> = ({
       propertyDateValue, // 날짜 속성 표시를 처리합니다.
       PageLink: ({ children, href, ...rest }) => (
         <Link href={href} {...rest}>
-          {' '}
           {children}
         </Link> // 링크 컴포넌트를 감쌉니다.
       ),

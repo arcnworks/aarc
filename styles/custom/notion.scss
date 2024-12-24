@@ -89,7 +89,7 @@ body {
   // 페이지 제목
   .notion-title {
     text-align: left;
-    font-size: 2em;
+    font-size: 1.8em;
   }
 
   // 페이지 메인 이미지 (커버 이미지)
@@ -237,7 +237,7 @@ body {
         .activeLine {
           position: absolute;
           background-color: var(--primary-color);
-          width: 1px;
+          width: 3px;
           height: 100%;
           top: 0;
           left: 0;
@@ -582,7 +582,7 @@ body {
       }
 
       .notion-collection-card-property {
-        padding: 0; // 카드 속성 영역의 패딩을 제거합니다.
+        padding: 0.1rem; // 카드 속성 영역의 패딩을 설정
       }
 
       .notion-property-select-item {
@@ -597,7 +597,7 @@ body {
 
       .notion-collection-card-body {
         display: block; // 카드 본문을 블록 레벨 요소로 설정합니다.
-        padding: 0.5rem 0.5rem 0rem; // 내부 여백을 설정합니다. (갤러리 뷰의 제목과 작성자)
+        padding: 0.3rem 0.2rem 0.2rem; // 내부 여백을 설정합니다. (갤러리 뷰의 제목과 작성자)
 
         .notion-page-icon-image {
           display: none; // 페이지 아이콘 이미지를 숨깁니다.
