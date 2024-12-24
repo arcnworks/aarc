@@ -1,0 +1,29 @@
+import { getServerSideSitemap } from 'next-sitemap';
+import { GetServerSideProps } from 'next';
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const fields = [
+    {
+      loc: 'https://aarc.vercel.app', // URL
+      lastmod: new Date().toISOString(), // 최근 수정일
+    },
+    {
+      loc: 'https://aarc.vercel.app/report', // 동적 페이지 URL
+      lastmod: new Date().toISOString(),
+    },
+    {
+      loc: 'https://aarc.vercel.app/works', // 동적 페이지 URL
+      lastmod: new Date().toISOString(),
+    },
+    {
+      loc: 'https://aarc.vercel.app/blog', // 동적 페이지 URL
+      lastmod: new Date().toISOString(),
+    },
+    
+  ];
+
+  return getServerSideSitemap(ctx, fields);
+};
+
+// 기본 내보내기 (필수)
+export default () => {};
