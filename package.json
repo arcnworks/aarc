@@ -38,6 +38,7 @@
     "@notionhq/client": "^2.2.0",
     "@react-icons/all-files": "^4.1.0",
     "@vercel/og": "^0.0.20",
+    "@vercel/speed-insights": "^1.1.0",
     "axios": "^1.6.0",
     "classnames": "^2.3.1",
     "date-fns": "^2.28.0",

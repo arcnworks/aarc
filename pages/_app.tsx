@@ -17,6 +17,8 @@ import { bootstrap } from '~/lib/bootstrap-client';
 import { posthogConfig, posthogId } from '~/lib/config';
 import '~/styles/custom/index.scss';
 
+import { SpeedInsights } from '@vercel/speed-insights/next';
+
 const Bootstrap = () => {
   const [preferences, setPreferences] = useRecoilState(preferencesStore);
 
@@ -86,6 +88,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
           transition={{ duration: 0.3 }}
         >
           <Component {...pageProps} />
+          <SpeedInsights />
         </motion.div>
       </SWRConfig>
     </RecoilRoot>
