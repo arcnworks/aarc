@@ -2,7 +2,7 @@
 :root {
   --notion-font: 'SpoqaHanSansNeo', 'Tossface';
 
-  --base-font-size: 1.125rem;
+  --base-font-size: 1.0rem;
 
   --primary-color: #004FFF; //목차, 링크 강조색 등
   --primary-gradient-end-color: #8763ff;
@@ -78,8 +78,8 @@
   --notion-page-left-right-padding: calc(min(56px, 8vw));
   --notion-page-fullwith-left-right-padding: calc(min(64px, 8vw));
 
-  --notion-aside-width: 360px; //사이드 폭 조정
-  --notion-aside-space-width: 5rem;
+  --notion-aside-width: 320px; //목차 사이드 폭 조정
+  --notion-aside-space-width: 4rem;
 
   --notion-page-content-inner-width: calc(
     var(--notion-max-width) - var(--notion-aside-width) - var(--notion-aside-space-width)
@@ -118,7 +118,7 @@
 
   --notion-red_background: rgb(89, 65, 65);
   --notion-pink_background: rgb(83, 59, 76);
-  --notion-blue_background: rgb(54, 73, 84);
+  --notion-blue_background: rgb(0, 79, 255);
   --notion-purple_background: rgb(68, 63, 87);
   --notion-teal_background: rgb(53, 76, 75);
   --notion-yellow_background: rgb(89, 86, 59);

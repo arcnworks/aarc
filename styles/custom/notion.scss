@@ -89,7 +89,7 @@ body {
   // 페이지 제목
   .notion-title {
     text-align: left;
-    font-size: 1.8em;
+    font-size: 1.6em;
   }
 
   // 페이지 메인 이미지 (커버 이미지)
@@ -136,10 +136,10 @@ body {
         &::before {
           content: '';
           width: 1px;
-          height: 10px;
+          height: 12px;
           background-color: var(--fg-color);
-          opacity: 0.35;
-          margin: 0 0.5rem;
+          opacity: 0.6;
+          margin: 0 0.3rem;
         }
       }
     }
@@ -190,11 +190,11 @@ body {
       .item {
         display: block;
         position: relative;
-        padding: 0.1rem 1.3rem 0.1rem 1rem;
+        padding: 0.1rem 1rem 0.1rem 1rem;
 
         .text {
           opacity: 0.5;
-          font-size: 0.9rem;
+          font-size: 0.8rem;
           transition: 250ms opacity;
           white-space: nowrap;
           overflow: hidden;
@@ -205,7 +205,7 @@ body {
           padding-left: calc(1.3rem + 1rem);
 
           .text {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
           }
         }
 
@@ -213,7 +213,7 @@ body {
           padding-left: calc(1.3rem + 2rem);
 
           .text {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
           }
         }
 
@@ -350,7 +350,7 @@ body {
 
   // 일반 본문
   .notion-text {
-    padding: 0.2em 2px;
+    padding: 0.2em px;
   }
 
   // 리스트
