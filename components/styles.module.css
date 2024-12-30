@@ -248,7 +248,7 @@
   cursor: pointer;
   margin-top: 10px; /* 상단 여백 */
   margin-bottom: 0px; /* 하단 여백 */
-  margin-left: 0px; /* 좌측 여백 */
+  margin-left: 10px; /* 좌측 여백 */
   margin-right: 0px; /* 우측 여백 */
   transition: opacity 250ms ease-out, transform 250ms ease-out;
 }

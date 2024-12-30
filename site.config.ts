@@ -80,7 +80,7 @@ export default siteConfig({
       menuPage: true,
     },
   ],
-  // -------- custom configs (2skydev) -------------
+  // -------- custom configs  -------------
 
   // date-fns format string
   dateformat: 'yyyy년 MM월 dd일',
