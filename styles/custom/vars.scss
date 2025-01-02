@@ -75,8 +75,8 @@
   --notion-max-width: 1800px;
   --notion-header-height: 56px;
 
-  --notion-page-left-right-padding: calc(min(56px, 8vw));
-  --notion-page-fullwith-left-right-padding: calc(min(64px, 8vw));
+  --notion-page-left-right-padding: calc(min(96px, 8vw));//포스팅 본문 폭 조정
+  --notion-page-fullwith-left-right-padding: calc(min(64px, 8vw)); //풀페이지 폭 조정
 
   --notion-aside-width: 320px; //목차 사이드 폭 조정
   --notion-aside-space-width: 4rem;
