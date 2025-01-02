@@ -395,7 +395,7 @@ body {
 
   // 콜아웃
   .notion-callout {
-    border-radius: 8px;
+    border-radius: 0px;
 
     .notion-page-icon-inline {
       margin-right: 1rem;
@@ -420,8 +420,8 @@ body {
     }
 
     &.info {
-      background-color: var(--notion-teal_background);
-      border-color: var(--notion-teal);
+      background-color: var(--notion-blue_background);
+      border-color: var(--notion-blue);
     }
   }
 
