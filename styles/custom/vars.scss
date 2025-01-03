@@ -2,7 +2,7 @@
 :root {
   --notion-font: 'SpoqaHanSansNeo', 'Tossface';
 
-  --base-font-size: 1.0rem;
+  --base-font-size: 1.025rem;
 
   --primary-color: #004FFF; //목차, 링크 강조색 등
   --primary-gradient-end-color: #8763ff;
@@ -76,7 +76,7 @@
   --notion-header-height: 56px;
 
   --notion-page-left-right-padding: calc(min(200px, 16vw));//포스팅 본문 폭 조정
-  --notion-page-fullwith-left-right-padding: calc(min(64px, 16vw)); //풀페이지 폭 조정
+  --notion-page-fullwith-left-right-padding: calc(min(112px, 16vw)); //풀페이지 폭 조정
 
   --notion-aside-width: 300px; //목차 사이드 폭 조정
   --notion-aside-space-width: 8rem;
