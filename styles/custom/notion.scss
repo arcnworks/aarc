@@ -108,7 +108,9 @@ body {
   // 페이지 메인 이미지 (커버 이미지) 없을 때 페이지 제목의 상단까지 간격
   .notion-page-no-cover {
     margin-top: 40px !important;
+    -webkit-margin-before: 40px !important; /* WebKit 전용 상단 간격 */
   }
+  
 
   // 페이지 아이콘
   .notion-page-icon-hero {
