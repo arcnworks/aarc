@@ -87,10 +87,12 @@ body {
   }
 
   // 페이지 제목
-  .notion-title {
-    text-align: left;
-    font-size: 1.8em;
-  }
+.notion-title {
+  text-align: left;
+  font-size: 1.6em;
+  padding-left: 4px; /* 원하는 좌측 패딩 값 */
+  padding-right: 0px; /* 원하는 우측 패딩 값 */
+}
 
   // 페이지 메인 이미지 (커버 이미지)
   .notion-page-cover-wrapper,
@@ -105,7 +107,7 @@ body {
 
   // 페이지 메인 이미지 (커버 이미지) 없을 때 페이지 제목의 상단까지 간격
   .notion-page-no-cover {
-    margin-top: 80px !important;
+    margin-top: 40px !important;
   }
 
   // 페이지 아이콘
@@ -120,7 +122,8 @@ body {
       margin-bottom: none;
       border-bottom: none;
       padding-bottom: 0;
-      padding: 0;
+      padding-left: 4px
+      ;
     }
 
     .notion-collection-row-body {
