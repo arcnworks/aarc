@@ -8,7 +8,6 @@
   :root {
     --notion-page-left-right-padding: 4vw;
     --notion-page-fullwith-left-right-padding: 4vw;
-    --notion-page-fullwith-top-padding: 0vw;
   }
 }
 
@@ -108,8 +107,8 @@ body {
 
   // 페이지 메인 이미지 (커버 이미지) 없을 때 페이지 제목의 상단까지 간격
   .notion-page-no-cover {
-    margin-top: 80px !important;
-    -webkit-margin-before: 80px !important; /* WebKit 전용 상단 간격 */
+    margin-top: 48px !important;
+    -webkit-margin-before: 48px !important; /* WebKit 전용 상단 간격 */
   }
   
 
