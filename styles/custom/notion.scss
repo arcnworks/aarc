@@ -542,10 +542,18 @@ body {
   }
 
   // 데이터베이스 - 갤러리뷰 스타일 정의
+  /* 인덱스 페이지에서만 중앙 정렬 */
+  .index-page .postList {
+    justify-content: center; /* 중앙 정렬 */
+  }
+
   .postList {
     display: flex; // 요소들을 플렉스 박스로 배치합니다.
     flex-wrap: wrap; // 플렉스 박스가 여러 줄로 배치되도록 설정합니다.
     margin-top: 0.5rem; // 위쪽 여백을 추가합니다.
+    justify-content: flex-start;
+
+
 
     > a {
       background-color: var(--notion-card-background-color); /* 카드 배경색 설정 */
@@ -557,20 +565,21 @@ body {
         transform: translateY(-8px); /* 호버 시 위로 살짝 이동 */
       }
 
-      @media (min-width: 1431px) {
+      @media (min-width: 1201px) {
         width: calc(16.66% - 20px); /* 한 행에 6개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
 
-      @media (max-width: 1430px) and (min-width: 1051px) {
+      @media (max-width: 1200px) and (min-width: 761px) {
         width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
 
-      @media (max-width: 1050px) and (min-width: 761px) {
-        width: calc(33.33% - 20px); /* 한 행에 3개 카드 배치 */
-        margin: 10px; /* 카드 간 여백 */
-      }
+      
+      // @media (max-width: 1050px) and (min-width: 761px) {
+      //  width: calc(33.33% - 20px); /* 한 행에 3개 카드 배치 */
+      //  margin: 10px; /* 카드 간 여백 */
+      //
 
       @media (max-width: 760px) {
         width: calc(50% - 20px); /* 한 행에 2개 카드 배치 */
