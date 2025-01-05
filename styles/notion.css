@@ -23,7 +23,7 @@
 
 .notion-asset-wrapper {
   margin-top: 1em; /* 위쪽 여백 설정 */
-  margin-bottom: 1em; /* 아래쪽 여백 설정 */
+  margin-bottom: 0em; /* 아래쪽 여백 설정 */
 }
 
 .notion-asset-wrapper-video > div,
