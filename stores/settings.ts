@@ -18,7 +18,7 @@ const initialValues: PreferencesStoreValues = {
 
 const localStorageSyncEffect: AtomEffect<PreferencesStoreValues> = ({ onSet }) => {
   onSet(newValue => {
-    localStorage.setItem('preferences', JSON.stringify(newValue));
+    localStorage.setItem('Preferences', JSON.stringify(newValue));
   });
 };
 

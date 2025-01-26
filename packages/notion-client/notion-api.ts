@@ -19,7 +19,7 @@ export class NotionAPI {
     apiBaseUrl = 'https://www.notion.so/api/v3',
     authToken,
     activeUser,
-    userTimeZone = 'Asia/Seoul',
+    userTimeZone = 'America/New_York',
   }: {
     apiBaseUrl?: string;
     authToken?: string;
@@ -546,6 +546,7 @@ export class NotionAPI {
       excludedBlockIds: [],
     };
 
+    console.log("Fetch Request Body:", body);
     return this.fetch<notion.SearchResults>({
       endpoint: 'search',
       body,

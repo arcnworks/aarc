@@ -144,89 +144,83 @@ export const NotionPage: React.FC<types.PageProps> = ({
 
   const components = React.useMemo(
     () => ({
-      nextImage: (props) => (
-        <Image
-          {...props}
-          unoptimized // 최적화 비활성화
-          /* 추가 설명: 이미지 최적화를 비활성화하여 Vercel의 이미지 최적화 사용량 제한 문제를 해결 */
-        />
-      ),
-      nextLink: Link, // Next.js Link 컴포넌트를 사용합니다.
-      Code, // 코드 하이라이트 컴포넌트입니다.
-      Collection, // Notion 컬렉션을 렌더링하는 컴포넌트입니다.
-      Equation, // 수식을 렌더링하는 컴포넌트입니다.
-      Pdf, // PDF 파일을 렌더링하는 컴포넌트입니다.
-      Modal, // 모달 컴포넌트입니다.
-      Tweet, // 트윗을 임베드하는 컴포넌트입니다.
-      Header: NotionPageHeader, // 페이지 헤더 컴포넌트입니다.
-      propertyLastEditedTimeValue, // 마지막 수정 시간 표시를 처리합니다.
-      propertyTextValue, // 텍스트 속성 표시를 처리합니다.
-      propertyDateValue, // 날짜 속성 표시를 처리합니다.
+      nextImage: Image,
+      nextLink: Link,
+      Code,
+      Collection,
+      Equation,
+      Pdf,
+      Modal,
+      Tweet,
+      Header: NotionPageHeader,
+      propertyLastEditedTimeValue,
+      propertyTextValue,
+      propertyDateValue,
       PageLink: ({ children, href, ...rest }) => (
         <Link href={href} {...rest}>
           {children}
-        </Link> // 링크 컴포넌트를 감쌉니다.
+        </Link>
       ),
     }),
     [],
   );
 
   // lite mode is for oembed
-  const isLiteMode = lite === 'true'; // 'lite' 모드가 활성화되었는지 확인합니다.
+  const isLiteMode = lite === 'true';
 
-  const { isDarkMode } = useDarkMode(); // 다크모드 상태를 가져옵니다.
+  const { isDarkMode } = useDarkMode();
 
   const siteMapPageUrl = React.useMemo(() => {
     const params: any = {};
-    if (lite) params.lite = lite; // 'lite' 매개변수를 추가합니다.
+    if (lite) params.lite = lite;
 
     const searchParams = new URLSearchParams(params);
-    return mapPageUrl(site, recordMap, searchParams, draftView); // 페이지 URL을 생성합니다.
+    return mapPageUrl(site, recordMap, searchParams, draftView);
   }, [site, recordMap, lite, draftView]);
 
-  const keys = Object.keys(recordMap?.block || {}); // Notion 블록의 키를 가져옵니다.
-  const block = recordMap?.block?.[keys[0]]?.value; // 첫 번째 블록의 값을 가져옵니다.
+  const keys = Object.keys(recordMap?.block || {});
+  const block = recordMap?.block?.[keys[0]]?.value;
 
   // const isRootPage =
   //   parsePageId(block?.id) === parsePageId(site?.rootNotionPageId)
-  const isBlogPost = block?.type === 'page' && block?.parent_table === 'collection'; // 블록이 블로그 포스트인지 확인합니다.
+  const isBlogPost = block?.type === 'page' && block?.parent_table === 'collection';
 
-  const showTableOfContents = !!isBlogPost; // 블로그 포스트인 경우 목차를 표시합니다.
-  const minTableOfContentsItems = 1; // 최소 목차 항목 수를 설정합니다.
+  const showTableOfContents = !!isBlogPost;
+  const minTableOfContentsItems = 1;
 
   const pageAside = React.useMemo(
-    () => <PageAside block={block} recordMap={recordMap} isBlogPost={isBlogPost} />, // 페이지 사이드바 컴포넌트를 렌더링합니다.
+    () => <PageAside block={block} recordMap={recordMap} isBlogPost={isBlogPost} />,
     [block, recordMap, isBlogPost],
   );
 
   // const footer = React.useMemo(() => <Footer />, []);
 
   if (router.isFallback) {
-    return null; // 라우팅이 대기 상태일 때 아무것도 렌더링하지 않습니다.
+    return null;
   }
 
   if (error || !site || !block) {
-    return <Page404 site={site} pageId={pageId} error={error} />; // 오류가 발생하거나 데이터가 없으면 404 페이지를 렌더링합니다.
+    return <Page404 site={site} pageId={pageId} error={error} />;
   }
 
-  const title = getBlockTitle(block, recordMap) || site.name; // 블록 제목 또는 사이트 이름을 가져옵니다.
+  const title = getBlockTitle(block, recordMap) || site.name;
 
   if (!config.isServer) {
     // add important objects to the window global for easy debugging
     const g = window as any;
-    g.pageId = pageId; // 디버깅을 위해 pageId를 전역 객체에 추가합니다.
-    g.recordMap = recordMap; // recordMap 데이터를 전역 객체에 추가합니다.
-    g.block = block; // 블록 데이터를 전역 객체에 추가합니다.
+    g.pageId = pageId;
+    g.recordMap = recordMap;
+    g.block = block;
   }
 
-  const canonicalPageUrl = !config.isDev && getCanonicalPageUrl(site, recordMap)(pageId); // 페이지의 정규 URL을 생성합니다.
+  const canonicalPageUrl = !config.isDev && getCanonicalPageUrl(site, recordMap)(pageId);
 
   const socialImage = mapImageUrl(
     getPageProperty<string>('Social Image', block, recordMap) ||
       (block as PageBlock).format?.page_cover ||
       config.defaultPageCover,
     block,
-  ); // 소셜 미디어에 사용할 이미지를 생성합니다.
+  );
 
   const socialDescription = getPageProperty<string>('설명', block, recordMap) || config.description; // 소셜 미디어에 사용할 설명을 생성합니다.
 
