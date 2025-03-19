@@ -78,20 +78,20 @@ export class NotionAPI {
       [authorId]: author,
     };
 
-    // ensure that all top-level maps exist
+    // ensure that all top-level maps exist 모든 최상위 지도(map)가 존재하도록 보장하세요.
     recordMap.collection = recordMap.collection ?? {};
     recordMap.collection_view = recordMap.collection_view ?? {};
     recordMap.notion_user = recordMap.notion_user ?? {};
 
-    // additional mappings added for convenience
-    // note: these are not native notion objects
+    // additional mappings added for convenience 추가적인 매핑이 편의를 위해 추가되었습니다.
+    // note: these are not native notion objects 참고: 이것들은 기본 Notion 객체가 아닙니다.
     recordMap.collection_query = {};
     recordMap.signed_urls = {};
 
     if (fetchMissingBlocks) {
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        // fetch any missing content blocks
+        // fetch any missing content blocks 누락된 콘텐츠 블록을 가져오세요.
         const pendingBlockIds = getPageContentBlockIds(recordMap).filter(
           id => !recordMap.block[id],
         );
@@ -110,10 +110,10 @@ export class NotionAPI {
 
     const contentBlockIds = getPageContentBlockIds(recordMap);
 
-    // Optionally fetch all data for embedded collections and their associated views.
-    // NOTE: We're eagerly fetching *all* data for each collection and all of its views.
-    // This is really convenient in order to ensure that all data needed for a given
-    // Notion page is readily available for use cases involving server-side rendering
+    // Optionally fetch all data for embedded collections and their associated views. 선택적으로 포함된 컬렉션과 해당 관련된 뷰의 모든 데이터를 가져옵니다.
+    // NOTE: We're eagerly fetching *all* data for each collection and all of its views.참고: 각 컬렉션과 모든 뷰의 *모든* 데이터를 미리 가져오고 있습니다.
+    // This is really convenient in order to ensure that all data needed for a given 이는 특정 Notion 페이지에 필요한 모든 데이터를 서버 사이드 렌더링과
+    // Notion page is readily available for use cases involving server-side rendering 엣지 캐싱과 같은 사용 사례에서 즉시 활용할 수 있도록 보장하는 데 매우 유용합니다.
     // and edge caching.
     if (fetchCollections) {
       const allCollectionInstances: Array<{
@@ -524,7 +524,7 @@ export class NotionAPI {
       filters: {
         isDeletedOnly: false,
         excludeTemplates: false,
-        navigableBlockContentOnly: false,
+        navigableBlockContentOnly: true,
         requireEditPermissions: false,
         includePublicPagesWithoutExplicitAccess: false,
         ancestors: [],

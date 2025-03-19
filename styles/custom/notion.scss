@@ -565,19 +565,24 @@ body {
         transform: translateY(-8px); /* 호버 시 위로 살짝 이동 */
       }
 
+      //@media (min-width: 1201px) {
+       // width: calc(16.66% - 20px); /* 한 행에 6개 카드 배치 */
+        //margin: 10px; /* 카드 간 여백 */
+      //}
+
       @media (min-width: 1201px) {
-        width: calc(16.66% - 20px); /* 한 행에 6개 카드 배치 */
+        width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
 
       @media (max-width: 1200px) and (min-width: 761px) {
-        width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
+        width: calc(33.33% - 20px); /* 한 행에 3개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
 
       
       // @media (max-width: 1050px) and (min-width: 761px) {
-      //  width: calc(33.33% - 20px); /* 한 행에 3개 카드 배치 */
+      //  width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
       //  margin: 10px; /* 카드 간 여백 */
       //
 
@@ -600,7 +605,7 @@ body {
       }
 
       .notion-property-select-item {
-        margin-bottom: 0.3rem; // 선택 속성의 아래쪽 여백 설정.
+        margin-bottom: 0.2rem; // 선택 속성의 아래쪽 여백 설정.
       }
 
       .notion-property-multi_select-item {
@@ -611,14 +616,14 @@ body {
 
       .notion-collection-card-body {
         display: block; // 카드 본문을 블록 레벨 요소로 설정합니다.
-        padding: 0.4rem 0.2rem 0.4rem; // 내부 여백을 설정합니다. (갤러리 뷰의 제목과 작성자)
+        padding: 0.4rem 0.4rem 0.4rem; // 내부 여백을 설정합니다. (갤러리 뷰의 제목과 작성자)
 
         .notion-page-icon-image {
           display: none; // 페이지 아이콘 이미지를 숨깁니다.
         }
 
         .notion-page-title-text {
-          font-size: 1rem; // 기본 폰트 크기 설정.
+          font-size: 1.1rem; // 기본 폰트 크기 설정.
           font-weight: 600; // 볼드체로 설정.
           margin-bottom: 0.8rem; // 아래쪽 여백 추가.
           display: -webkit-box; // 플렉스 기반의 레이아웃 상자.
