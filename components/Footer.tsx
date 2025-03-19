@@ -37,7 +37,7 @@ export const FooterImpl: React.FC = () => {
     <footer className={styles.footer}>
       {/* 푸터 컨테이너 */}
       <div className={styles.copyright}>
-        Copyright 2022 @ {config.author} {/* 저작권 정보 */}
+        Copyright 2022 {config.author} {/* 저작권 정보 */}
       </div>
       {/*<div className={styles.settings}>
         {hasMounted && (

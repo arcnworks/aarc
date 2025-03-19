@@ -11,7 +11,7 @@ export default siteConfig({
   // 사이트 기본 정보 (필수)
   name: '느낌의 건축,아크(AaRC)', // 사이트 이름
   domain: 'arcnworks.notion.site', // 사이트 도메인
-  author: '@아크앤워크스(arcnworks) | 대표자: 이원호 | 등록번호: 249-54-00632', // 작성자 이름
+  author: '@아크앤워크스(arcnworks) | 대표자: 이원호 ', // 작성자 이름
 
   // 오픈 그래프 메타데이터 (선택사항)
   // 웹페이지 공유 시 보여질 간단한 설명
