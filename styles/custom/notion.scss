@@ -550,7 +550,7 @@ body {
   .postList {
     display: flex; // 요소들을 플렉스 박스로 배치합니다.
     flex-wrap: wrap; // 플렉스 박스가 여러 줄로 배치되도록 설정합니다.
-    margin-top: 0.5rem; // 위쪽 여백을 추가합니다.
+    margin-top: 0.8rem; // 위쪽 여백을 추가합니다.
     justify-content: flex-start;
 
 
@@ -594,6 +594,7 @@ body {
       .notion-collection-card-cover {
         border-radius: 0; // 카드 커버 모서리를 둥글게 하지 않습니다.
         box-shadow: none; // 커버에 그림자 효과를 제거합니다.
+        height: 100%;
 
         img {
           border-radius: 0; // 커버 이미지의 모서리를 둥글게 하지 않습니다.
@@ -617,6 +618,7 @@ body {
       .notion-collection-card-body {
         display: block; // 카드 본문을 블록 레벨 요소로 설정합니다.
         padding: 0.4rem 0.4rem 0.4rem; // 내부 여백을 설정합니다. (갤러리 뷰의 제목과 작성자)
+        
 
         .notion-page-icon-image {
           display: none; // 페이지 아이콘 이미지를 숨깁니다.
@@ -668,7 +670,7 @@ body {
         }
 
         .notion-collection-card-property:nth-child(2) {
-          height: 30px; // 두 번째 속성의 높이 설정. 갤러리 박스의 높이설정
+          height: 24px; // 두 번째 속성의 높이 설정. 갤러리 박스의 높이설정
 
           .notion-property-text {
             width: 100%; // 텍스트 속성의 너비를 100%로 설정.

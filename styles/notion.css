@@ -96,6 +96,7 @@
   border-top-left-radius: 0px; /* 카드 커버의 좌측 상단 모서리를 둥글게 하지 않음 */
   border-top-right-radius: 0px; /* 카드 커버의 우측 상단 모서리를 둥글게 하지 않음 */
   box-shadow: 2px 2px 8px 4px rgba(15, 15, 15, 0.1); /* 카드 커버에 그림자 추가 */
+  
 }
 
 .notion-collection-card:hover .notion-collection-card-cover {
