@@ -403,7 +403,9 @@
   width: 100%;
   font-size: 2.5em;
   font-weight: 600;
-  margin-bottom: 10px;
+
+  margin-top: 80px;
+  margin-bottom: 8px;
   line-height: 1;
 }
 
@@ -1137,8 +1139,8 @@ svg.notion-page-icon {
 .notion-collection-header {
   display: flex;
   align-items: center;
-  height: 16px; /*노션 데이터베이스 갤러리 헤더 높이*/
-  padding: 4px 2px;
+  height: 24px; /*노션 데이터베이스 갤러리 헤더 높이*/
+  padding: 4px 8px;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -1146,7 +1148,8 @@ svg.notion-page-icon {
 .notion-collection-header-title {
   display: inline-flex;
   align-items: center;
-  font-size: 1.25em;
+
+  font-size: 1.2em;
   line-height: 1.2;
   font-weight: 600;
   white-space: pre-wrap;

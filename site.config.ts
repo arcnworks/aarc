@@ -11,8 +11,7 @@ export default siteConfig({
   // 사이트 기본 정보 (필수)
   name: '느낌의 건축,아크(AaRC)', // 사이트 이름
   domain: 'arcnworks.notion.site', // 사이트 도메인
-  author: '@아크앤워크스(arcnworks) | 대표자: 이원호 ', // 작성자 이름
-
+  author: '©AaRC(Architecture and Research in Culture). All rights reserved.',// 작성자 이름
   // 오픈 그래프 메타데이터 (선택사항)
   // 웹페이지 공유 시 보여질 간단한 설명
   description: 'AaRC(아크)의 공식블로그',
@@ -42,7 +41,7 @@ export default siteConfig({
 
   pageUrlOverrides: {
     '/home': '15c693fb941780c19eb5f250d59f1367',
-    '/report': '154693fb941780f3ad56c98248b17dda',
+    '/about': '154693fb941780f3ad56c98248b17dda',
     '/works': '165693fb9417800c8baadf2ba5ea5139',
     '/blog': '165693fb941780fab52fee6442e580bd',
     '/contact': '154693fb9417807b9ae5db9b64489c9a',
@@ -59,7 +58,8 @@ export default siteConfig({
       pageId: '15c693fb941780c19eb5f250d59f1367', // 연결될 Notion 페이지의 ID
     },
     {
-      title: 'Report',
+
+      title: 'about',
       pageId: '154693fb941780f3ad56c98248b17dda',
     },
     {
