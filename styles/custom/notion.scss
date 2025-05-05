@@ -557,12 +557,12 @@ body {
 
     > a {
       background-color: var(--notion-card-background-color); /* 카드 배경색 설정 */
-      box-shadow: 10px 20px 20px 0 rgb(92 95 112 / 8%); /* 그림자 효과 */
-      margin-bottom: 1px; /* 카드 아래 여백 */
+      //box-shadow: 10px 20px 20px 0 rgb(92 95 112 / 8%); /* 그림자 효과 */
+      //margin-bottom: 1px; /* 카드 아래 여백 */
       transition: 250ms transform, 250ms background-color; /* 호버 시 전환 효과 */
 
-      &:hover {
-        transform: translateY(-8px); /* 호버 시 위로 살짝 이동 */
+       &:hover {
+        //transform: translateY(-8px); /* 호버 시 위로 살짝 이동 */
       }
 
       //@media (min-width: 1201px) {
