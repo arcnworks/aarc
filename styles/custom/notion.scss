@@ -594,7 +594,8 @@ body {
       .notion-collection-card-cover {
         border-radius: 0; // 카드 커버 모서리를 둥글게 하지 않습니다.
         box-shadow: none; // 커버에 그림자 효과를 제거합니다.
-        height: 100%;
+        aspect-ratio: 5 / 3;
+        width: 100%;
 
         img {
           border-radius: 0; // 커버 이미지의 모서리를 둥글게 하지 않습니다.

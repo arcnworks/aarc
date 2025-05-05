@@ -1473,21 +1473,21 @@ svg.notion-page-icon {
 .notion-collection-card-cover {
   position: relative;
   width: 100%;
-  height: 160px;
+  /*height: 0;*/
   border-bottom: 1px solid var(--fg-color-0);
   overflow: hidden;
 }
 
 .notion-collection-card-cover img {
   width: 100%;
-  height: 100%;
+  /*height: 0;*/
   border-radius: 0 0 0 0;
   object-fit: cover;
 }
 
 .notion-collection-card-cover .notion-collection-card-cover-empty {
   width: 100%;
-  height: 100%;
+  /*height: 0;*/
   pointer-events: none;
   overflow: hidden;
   background: var(--fg-color-5);
@@ -1496,7 +1496,8 @@ svg.notion-page-icon {
 }
 
 .notion-collection-card-size-small .notion-collection-card-cover {
-  height: 124px;
+  width: 100%;
+  
 }
 
 .notion-collection-card-body {
