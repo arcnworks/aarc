@@ -59,7 +59,7 @@ export default siteConfig({
     },
     {
 
-      title: 'about',
+      title: 'About',
       pageId: '154693fb941780f3ad56c98248b17dda',
     },
     {
@@ -67,15 +67,15 @@ export default siteConfig({
       pageId: '165693fb9417800c8baadf2ba5ea5139',
     },
     {
-      title: 'blog',
+      title: 'Blog',
       pageId: '165693fb941780fab52fee6442e580bd',
     },
     {
-      title: 'contact',
+      title: 'Contact',
       pageId: '154693fb9417807b9ae5db9b64489c9a',
     },
     {
-      title: 'category',
+      title: 'Category',
       pageId: '155693fb94178076b2c5e73f7d3cd377',
       menuPage: true,
     },
