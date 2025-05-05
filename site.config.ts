@@ -86,7 +86,7 @@ export default siteConfig({
   dateformat: 'yyyy년 MM월 dd일',
 
   // post page - hidden properties
-  hiddenPostProperties: ['상태', '생성일', '설명' ],
+  hiddenPostProperties: ['상태', '생성일', '' ],
 
   // contentPosition (table of contents) text align
   contentPositionTextAlign: 'left',
