@@ -21,10 +21,16 @@ export async function getPreviewImageMap(recordMap: ExtendedRecordMap): Promise<
       urls,
       async url => {
         const cacheKey = normalizeUrl(url);
+
+        // ✅ 썸네일 생성을 완전히 생략하고 싶은 URL 조건 예시 (GIF, Notion 내부 프록시 등)
+        if (url.endsWith('.gif') || url.includes('notion.so/image/')) {
+          return [cacheKey, null];
+        }
+
         return [cacheKey, await getPreviewImage(url, { cacheKey })];
       },
       {
-        concurrency: 8,
+        concurrency: 5, // 병렬 수 줄여서 서버 과부하 방지
       },
     ),
   );
@@ -37,17 +43,16 @@ async function createPreviewImage(
   { cacheKey }: { cacheKey: string },
 ): Promise<PreviewImage | null> {
   try {
-    try {
-      const cachedPreviewImage = await db.get(cacheKey);
-      if (cachedPreviewImage) {
-        return cachedPreviewImage;
-      }
-    } catch (err) {
-      // ignore redis errors
-      console.warn(`redis error get "${cacheKey}"`, err.message);
+    const cachedPreviewImage = await db.get(cacheKey);
+    if (cachedPreviewImage) {
+      return cachedPreviewImage;
     }
+  } catch (err) {
+    console.warn(`redis error get "${cacheKey}"`, err.message);
+  }
 
-    const { body } = await got(url, { responseType: 'buffer' });
+  try {
+    const { body } = await got(url, { responseType: 'buffer', timeout: 8000 });
     const result = await lqip(body);
 
     const previewImage = {
@@ -59,15 +64,19 @@ async function createPreviewImage(
     try {
       await db.set(cacheKey, previewImage);
     } catch (err) {
-      // ignore redis errors
       console.warn(`redis error set "${cacheKey}"`, err.message);
     }
 
     return previewImage;
   } catch (err) {
-    if (!err.message.includes('unsupported image format')) {
+    // ✅ 불필요한 로그 제거: 흔한 실패는 무시
+    const ignoredErrors = ['Response code 400', 'Response code 401', '404 Not Found'];
+    const isSafeToIgnore = ignoredErrors.some(msg => err.message.includes(msg));
+
+    if (!isSafeToIgnore && !err.message.includes('unsupported image format')) {
       console.warn('failed to create preview image', url, err.message);
     }
+
     return null;
   }
 }
