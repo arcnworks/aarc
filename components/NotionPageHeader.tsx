@@ -10,6 +10,9 @@ import { navigationStyle, navigationLinks, isSearchEnabled } from 'lib/config';
 
 import styles from './styles.module.css';
 
+import Link from 'next/link';
+import Image from 'next/image';
+
 export const ToggleThemeButton = () => {
   const [hasMounted, setHasMounted] = React.useState(false);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -47,13 +50,18 @@ export const NotionPageHeader: React.FC<{
       <div className="notion-nav-header">
         {/* 로고 추가 */}
         <div className={styles['logo-container']}>
-          <a href="/">
-            <img
-              src={isDarkMode ? '/logo-w.png' : '/logo-b.png'}
-              alt="Logo"
-              className={styles.logo}
-            />
-          </a>
+          <Link href="/" legacyBehavior>
+            <a>
+              <Image
+                src={isDarkMode ? '/logo-w.png' : '/logo-b.png'}
+                alt="AaRC 로고"
+                width={90}
+                height={0}
+                style={{ height: 'auto' }}
+                className={styles.logo}
+              />
+            </a>
+          </Link>
         </div>
 
         <Breadcrumbs block={block} />

@@ -52,14 +52,19 @@ async function createPreviewImage(
   }
 
   try {
-    const { body } = await got(url, { responseType: 'buffer', timeout: 8000 });
+    const response = await got(url, {
+      responseType: 'buffer' as const,
+      timeout: { request: 8000 },
+    });
+    const body = response.body;
     const result = await lqip(body);
-
+  
     const previewImage = {
       originalWidth: result.metadata.originalWidth,
       originalHeight: result.metadata.originalHeight,
       dataURIBase64: result.metadata.dataURIBase64,
     };
+  
 
     try {
       await db.set(cacheKey, previewImage);
