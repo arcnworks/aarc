@@ -236,7 +236,6 @@ export const NotionPage: React.FC<types.PageProps> = ({
         title={title}
         description={socialDescription}
         image={socialImage}
-        url={canonicalPageUrl}
       />
 
       {isLiteMode && <BodyClassName className="notion-lite" />}

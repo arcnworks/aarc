@@ -66,7 +66,7 @@ export default function NotionDomainDynamicPage(props) {
         title={meta.title}
         description={meta.description}
         image={meta.image}
-        url={meta.url}
+        
       />
       <NotionPage {...props} />
     </>

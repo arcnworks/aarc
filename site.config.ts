@@ -10,7 +10,7 @@ export default siteConfig({
 
   // 사이트 기본 정보 (필수)
   name: '느낌의 건축,아크(AaRC)', // 사이트 이름
-  domain: 'arcnworks.notion.site', // 사이트 도메인
+  domain: 'aarc.kr', // 사이트 도메인
   author: '©AaRC(Architecture and Research in Culture). All rights reserved.',// 작성자 이름
   // 오픈 그래프 메타데이터 (선택사항)
   // 웹페이지 공유 시 보여질 간단한 설명
@@ -86,7 +86,7 @@ export default siteConfig({
   dateformat: 'yyyy년 MM월 dd일',
 
   // post page - hidden properties
-  hiddenPostProperties: ['상태', '생성일', '' ],
+  hiddenPostProperties: ['상태', '생성일', '날짜', '사람', '전화번호', '수식', '관계형' ],
 
   // contentPosition (table of contents) text align
   contentPositionTextAlign: 'left',
