@@ -1182,12 +1182,19 @@ svg.notion-page-icon {
   font-size: 14px;
 }
 
+/* 드롭다운 콜렉션뷰 아이콘 변경 */
 .notion-collection-view-type-icon {
   display: inline-block;
-  width: 14px;
-  height: 14px;
-  /* fill: var(--fg-color); */
-  fill: rgba(55, 53, 47);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #004FFF;
+
+  /* 기존 아이콘 숨기기 */
+  mask: none;
+  -webkit-mask: none;
+  fill: transparent;
+
   margin-right: 6px;
 }
 
@@ -1349,14 +1356,14 @@ svg.notion-page-icon {
 .notion-property-multi_select-item {
   display: flex;
   align-items: center;
-  padding: 0px 0px 5px;
-  border-radius: 0px;
+  padding: 2px 4px; /* 상하 2px, 좌우 6px 여백 추가 */
+  border-radius: 0px; /* 둥근 모서리도 추가하면 더 자연스럽습니다 */
   height: 20px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 120%;
-} /*갤러리 특성창의 자일드2 높이 및 여백 등 */
+}
 
 .notion-property-file {
   display: flex;

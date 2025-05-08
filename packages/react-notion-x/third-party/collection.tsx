@@ -4,6 +4,7 @@ import { getBlockCollectionId, getBlockParentPage, getTextContent } from 'notion
 import { useLocalStorage, useWindowSize } from 'react-use';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
+
 import { CollectionRow } from './collection-row';
 import { CollectionViewIcon } from '../icons/collection-view-icon';
 import CheckIcon from '../icons/check';
