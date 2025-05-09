@@ -18,10 +18,10 @@ import { posthogConfig, posthogId } from '~/lib/config';
 import '~/styles/custom/index.scss';
 
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/react'; // 추가된 부분
 
 const Bootstrap = () => {
   const [preferences, setPreferences] = useRecoilState(preferencesStore);
-
   const router = useRouter();
 
   // posthog
@@ -89,6 +89,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
         >
           <Component {...pageProps} />
           <SpeedInsights />
+          <Analytics /> {/* ← Vercel Web Analytics 삽입 위치 */}
         </motion.div>
       </SWRConfig>
     </RecoilRoot>
