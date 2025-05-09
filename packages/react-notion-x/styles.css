@@ -1185,8 +1185,8 @@ svg.notion-page-icon {
 /* 드롭다운 콜렉션뷰 아이콘 변경 */
 .notion-collection-view-type-icon {
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background-color: #004FFF;
 
