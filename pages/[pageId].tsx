@@ -51,8 +51,8 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
       }
 
       // 블록 아이콘 치환
-      if (block.icon && typeof block.icon === 'string') {
-        block.icon = mapImageUrl(block.icon, block)!;
+      if ((block as any).icon && typeof (block as any).icon === 'string') {
+        (block as any).icon = mapImageUrl((block as any).icon, block)!;
       }
     });
   });
