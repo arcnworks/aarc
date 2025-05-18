@@ -1,3 +1,5 @@
+// next.config.js
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
@@ -5,6 +7,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 module.exports = withBundleAnalyzer({
   staticPageGenerationTimeout: 300,
+
   images: {
     remotePatterns: [
       {
@@ -14,6 +17,14 @@ module.exports = withBundleAnalyzer({
       {
         protocol: 'https',
         hostname: 'notion.so',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.notionusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'file.notion.so',
       },
       {
         protocol: 'https',
@@ -31,7 +42,6 @@ module.exports = withBundleAnalyzer({
     formats: ['image/avif', 'image/webp'],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    unoptimized: true, // ✅ 이미지 최적화 전역 비활성화
+    unoptimized: true // Notion signed URL 등 직접 최적화된 이미지가 아닌 경우 유지
   },
-  
 });
