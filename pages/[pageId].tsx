@@ -113,7 +113,7 @@ function generateMeta(page: any) {
   const image =
     page?.cover?.external?.url ||
     page?.cover?.file?.url ||
-    'https://aarc.kr/og-image.jpg';
+    'https://aarc.kr/og-image.png';
 
   const url = `https://aarc.kr/${page?.id?.replace(/-/g, '')}`;
 
