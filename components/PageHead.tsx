@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 
 import * as types from 'lib/types';
 import * as config from 'lib/config';
-import { getSocialImageUrl } from 'lib/get-social-image-url';
 
 export const PageHead: React.FC<
   types.PageProps & {
@@ -12,14 +11,13 @@ export const PageHead: React.FC<
     description?: string;
     image?: string;
   }
-> = ({ site, title, description, pageId, image }) => {
+> = ({ site, title, description }) => {
   const router = useRouter();
   const canonicalUrl = `${config.host}${router.asPath.split('?')[0]}`;
 
   const pageTitle = title ?? site?.name ?? config.name;
   const pageDescription = description ?? site?.description ?? config.description;
-  const socialImageUrl = getSocialImageUrl(pageId) || image || `${config.host}/og-image.jpg`;
-
+  const socialImageUrl = `${config.host}/og-image.png`;
   const rssFeedUrl = `${config.host}/feed`;
 
   return (
@@ -52,6 +50,7 @@ export const PageHead: React.FC<
       {/* 사이트 정보 */}
       <meta property="og:site_name" content={site?.name ?? config.name} />
       <meta property="twitter:domain" content={site?.domain ?? config.domain} />
+      {config.twitter && <meta name="twitter:site" content={`@${config.twitter}`} />}
       {config.twitter && <meta name="twitter:creator" content={`@${config.twitter}`} />}
 
       {/* RSS */}
@@ -66,7 +65,7 @@ export const PageHead: React.FC<
           "name": "AaRC",
           "alternateName": "Architecture and Research in Culture",
           "url": "https://aarc.kr",
-          "logo": "https://aarc.kr/og-image.jpg",
+          "logo": "https://aarc.kr/og-image.png",
           "description": "과학적 통찰과 인문적 감수성으로 느낌의 경험을 설계하는 공간 디자인 스튜디오 AaRC의 공식 블로그 입니다.",
           "sameAs": [
             "https://www.instagram.com/arcnworks",

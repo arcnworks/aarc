@@ -12,7 +12,7 @@ interface MetaProps {
 export const Meta = ({
   title,
   description,
-  image = 'https://aarc.kr/og-image.jpg',
+  image = 'https://aarc.kr/og-image.png',
 }: MetaProps) => {
   const router = useRouter();
   const currentUrl = `https://aarc.kr${router.asPath}`;
