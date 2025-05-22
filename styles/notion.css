@@ -14,7 +14,7 @@
 }
 
 .notion-text {
-  padding: 0.5em 2px; /* 텍스트 요소에 내부 여백 추가 */
+  padding: 0.4em 2px; /* 텍스트 요소에 내부 여백 추가 */
 }
 
 .notion-asset-caption {
@@ -22,7 +22,7 @@
 }
 
 .notion-asset-wrapper {
-  margin-top: 1em; /* 위쪽 여백 설정 */
+  margin-top: 0.2em; /* 위쪽 여백 설정 */
   margin-bottom: 0em; /* 아래쪽 여백 설정 */
 }
 
