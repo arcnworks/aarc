@@ -71,7 +71,7 @@ export default siteConfig({
       pageId: '165693fb941780fab52fee6442e580bd',
     },
     {
-      title: 'Contact',
+      title: '문의하기',
       pageId: '154693fb9417807b9ae5db9b64489c9a',
     },
     {
