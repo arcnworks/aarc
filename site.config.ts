@@ -42,9 +42,10 @@ export default siteConfig({
   pageUrlOverrides: {
     '/home': '15c693fb941780c19eb5f250d59f1367',
     '/about': '154693fb941780f3ad56c98248b17dda',
-    '/works': '165693fb9417800c8baadf2ba5ea5139',
+    '/report': '165693fb9417800c8baadf2ba5ea5139',
     '/blog': '165693fb941780fab52fee6442e580bd',
     '/contact': '154693fb9417807b9ae5db9b64489c9a',
+    '/qna': '20b693fb941780a2bc6df90ce460a026',
     '/category': '155693fb94178076b2c5e73f7d3cd377',
   },
 
@@ -63,7 +64,7 @@ export default siteConfig({
       pageId: '154693fb941780f3ad56c98248b17dda',
     },
     {
-      title: 'Works',
+      title: 'Report',
       pageId: '165693fb9417800c8baadf2ba5ea5139',
     },
     {
@@ -73,6 +74,10 @@ export default siteConfig({
     {
       title: '문의하기',
       pageId: '154693fb9417807b9ae5db9b64489c9a',
+    },
+    {
+      title: '질문하기',
+      pageId: '20b693fb941780a2bc6df90ce460a026',
     },
     {
       title: 'Category',
