@@ -42,6 +42,6 @@ module.exports = withBundleAnalyzer({
     formats: ['image/avif', 'image/webp'],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    unoptimized: true // Notion signed URL 등 직접 최적화된 이미지가 아닌 경우 유지
+    unoptimized: false // Notion signed URL 등 직접 최적화된 이미지가 아닌 경우 유지
   },
 });

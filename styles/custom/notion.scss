@@ -544,7 +544,7 @@ body {
   // 데이터베이스 - 갤러리뷰 스타일 정의
   /* 인덱스 페이지에서만 중앙 정렬 */
   .index-page .postList {
-    justify-content: center; /* 중앙 정렬 */
+    justify-content: left; /* 메인 페이지 중앙 정렬 */
   }
 
   .postList {
