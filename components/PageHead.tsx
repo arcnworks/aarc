@@ -66,9 +66,9 @@ export const PageHead: React.FC<
           "alternateName": "Architecture and Research in Culture",
           "url": "https://aarc.kr",
           "logo": "https://aarc.kr/og-image.png",
-          "description": "과학적 통찰과 인문적 감수성으로 느낌의 경험을 설계하는 공간 디자인 스튜디오 AaRC의 공식 블로그 입니다.",
+          "description": "감정적인 건축가,아크(AaRC)의 공식 블로그 입니다.",
           "sameAs": [
-            "https://www.instagram.com/arcnworks",
+            "https://www.instagram.com/aarc.kr",
             "https://www.youtube.com/@arcnworks",
             "mailto:a@aarc.kr"
           ],

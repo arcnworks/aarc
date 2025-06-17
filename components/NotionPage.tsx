@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic'; // Next.js의 동적 로딩 기능을 사용하여 컴포넌트를 가져옵니다.
-import Image from 'next/image'; // 이미지 최적화 및 렌더링을 위한 컴포넌트입니다.
+
 import Link from 'next/link'; // Next.js의 링크 컴포넌트로, 클라이언트 측 경로 전환을 처리합니다.
 import { useRouter } from 'next/router'; // 라우팅 정보를 가져오는 Next.js 훅입니다.
 import * as React from 'react'; // React 라이브러리를 가져옵니다.
@@ -144,7 +144,7 @@ export const NotionPage: React.FC<types.PageProps> = ({
 
   const components = React.useMemo(
     () => ({
-      nextImage: Image,
+      // nextImage: Image, ← 제거
       nextLink: Link,
       Code,
       Collection,

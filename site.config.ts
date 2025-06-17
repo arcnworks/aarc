@@ -17,7 +17,7 @@ export default siteConfig({
   description: 'AaRC(아크)의 공식블로그',
 
   // social usernames (optional)
-  instagram: 'arcnworks',
+  instagram: 'aarc.kr',
   // twitter: '#',
   //github: '#',
   // linkedin: '#',

@@ -18,19 +18,23 @@ import { mapImageUrl } from 'lib/map-image-url';
  * 이렇게 하면 빌드된 HTML에도 expired signed URL이 포함되지 않습니다.
  */
 function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
+  recordMap.signed_urls = recordMap.signed_urls || {};
+
   getPageImageUrls(recordMap, { mapImageUrl }).forEach(() => {
     Object.entries(recordMap.block).forEach(([blockId, { value: block }]) => {
       if (!block) return;
 
       // 이미지 블록: signed_urls + properties.source 치환
       if (block.type === 'image') {
-        if (recordMap.signed_urls?.[blockId]) {
-          recordMap.signed_urls[blockId] = mapImageUrl(
-            recordMap.signed_urls[blockId],
-            block
-          )!;
-        }
+        const signedUrl = recordMap.signed_urls?.[blockId];
         const src = block.properties?.source?.[0]?.[0];
+
+        if (signedUrl) {
+          recordMap.signed_urls[blockId] = mapImageUrl(signedUrl, block)!;
+        } else if (src) {
+          recordMap.signed_urls[blockId] = mapImageUrl(src, block)!;
+        }
+
         if (src) {
           block.properties.source[0][0] = mapImageUrl(src, block)!;
         }
@@ -74,7 +78,7 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (
 
     return {
       props,
-      revalidate: 5, // ISR 주기
+      revalidate: 5 // ISR 주기
     };
   } catch (err) {
     console.error('page error', domain, rawPageId, err);
@@ -86,7 +90,7 @@ export async function getStaticPaths() {
   if (isDev) {
     return {
       paths: [],
-      fallback: true,
+      fallback: true
     };
   }
 
@@ -94,17 +98,16 @@ export async function getStaticPaths() {
 
   return {
     paths: Object.keys(siteMap.canonicalPageMap).map((pageId) => ({
-      params: { pageId },
+      params: { pageId }
     })),
-    fallback: true,
+    fallback: true
   };
 }
 
 // 메타 정보 자동 생성 함수
 function generateMeta(page: any) {
   const title =
-    page?.properties?.title?.[0]?.[0] ||
-    'AaRC | 느낌과 공간을 연결하는 건축 스튜디오';
+    page?.properties?.title?.[0]?.[0] || '감정적인 건축가,아크(AaRC)';
 
   const description =
     page?.properties?.['ZbRi']?.[0]?.[0] ||
@@ -120,7 +123,7 @@ function generateMeta(page: any) {
   return { title, description, image, url };
 }
 
-// Default export: props 타입을 any로 설정하여 page 프로퍼티 접근 오류 방지
+// Default export
 export default function NotionDomainDynamicPage(props: any) {
   const { page } = props;
   const meta = generateMeta(page);

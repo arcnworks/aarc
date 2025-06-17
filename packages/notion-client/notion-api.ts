@@ -217,14 +217,14 @@ export class NotionAPI {
     gotOptions?: OptionsOfJSONResponseBody;
   }) {
     recordMap.signed_urls = {};
-
+  
     if (!contentBlockIds) {
       contentBlockIds = getPageContentBlockIds(recordMap);
     }
-
+  
     const allFileInstances = contentBlockIds.flatMap(blockId => {
-      const block = recordMap.block[blockId].value;
-
+      const block = recordMap.block[blockId]?.value;
+  
       if (
         block &&
         (block.type === 'pdf' ||
@@ -236,16 +236,16 @@ export class NotionAPI {
       ) {
         const source =
           block.type === 'page' ? block.format?.page_cover : block.properties?.source?.[0]?.[0];
-
+  
         if (source) {
           if (
-            source.indexOf('youtube') >= 0 ||
-            source.indexOf('vimeo') >= 0 ||
+            source.includes('youtube') ||
+            source.includes('vimeo') ||
             source.includes('splash')
           ) {
             return [];
           }
-
+  
           return {
             permissionRecord: {
               table: 'block',
@@ -255,27 +255,53 @@ export class NotionAPI {
           };
         }
       }
-
+  
       return [];
     });
-
+  
     if (allFileInstances.length > 0) {
-      try {
-        const { signedUrls } = await this.getSignedFileUrls(allFileInstances, gotOptions);
-
-        if (signedUrls.length === allFileInstances.length) {
-          for (let i = 0; i < allFileInstances.length; ++i) {
-            const file = allFileInstances[i];
-            const signedUrl = signedUrls[i];
-
+      const tryGetSignedUrls = async (attempt = 1): Promise<types.SignedUrlResponse | null> => {
+        try {
+          return await this.getSignedFileUrls(allFileInstances, gotOptions);
+        } catch (err) {
+          console.warn(`NotionAPI getSignedFileUrls attempt ${attempt} failed`, err);
+          if (attempt < 2) {
+            await new Promise(res => setTimeout(res, 300)); // wait 300ms
+            return tryGetSignedUrls(attempt + 1);
+          }
+          return null;
+        }
+      };
+  
+      const result = await tryGetSignedUrls();
+  
+      if (result?.signedUrls?.length > 0) {
+        const signedUrls = result.signedUrls;
+  
+        for (let i = 0; i < signedUrls.length; ++i) {
+          const file = allFileInstances[i];
+          const signedUrl = signedUrls[i];
+  
+          if (file && signedUrl) {
             recordMap.signed_urls[file.permissionRecord.id] = signedUrl;
+          } else {
+            console.warn(
+              `⚠️ Signed URL 누락됨: blockId=${file?.permissionRecord.id}, index=${i}`
+            );
           }
         }
-      } catch (err) {
-        console.warn('NotionAPI getSignedfileUrls error', err);
+  
+        if (signedUrls.length < allFileInstances.length) {
+          console.warn(
+            `⚠️ 일부 signed URL 누락: ${signedUrls.length} / ${allFileInstances.length}`
+          );
+        }
+      } else {
+        console.error('❌ 모든 signed URL 요청 실패 또는 응답 없음');
       }
     }
   }
+  
 
   public async getPageRaw(
     pageId: string,

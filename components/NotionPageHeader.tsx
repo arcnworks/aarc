@@ -11,7 +11,7 @@ import { navigationStyle, navigationLinks, isSearchEnabled } from 'lib/config';
 import styles from './styles.module.css';
 
 import Link from 'next/link';
-import Image from 'next/image';
+
 
 export const ToggleThemeButton = () => {
   const [hasMounted, setHasMounted] = React.useState(false);
@@ -52,14 +52,12 @@ export const NotionPageHeader: React.FC<{
         <div className={styles['logo-container']}>
           <Link href="/" legacyBehavior>
             <a>
-              <Image
-                src={isDarkMode ? '/logo-w.png' : '/logo-b.png'}
-                alt="AaRC 로고"
-                width={90}
-                height={0}
-                style={{ height: 'auto' }}
-                className={styles.logo}
-              />
+            <img
+  src={isDarkMode ? '/logo-w.png' : '/logo-b.png'}
+  alt="AaRC 로고"
+  style={{ width: '90px', height: 'auto' }}
+  className={styles.logo}
+/>
             </a>
           </Link>
         </div>
