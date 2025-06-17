@@ -570,12 +570,12 @@ body {
         //margin: 10px; /* 카드 간 여백 */
       //}
 
-      @media (min-width: 741px)  {
+      @media (min-width: 771px)  {
         width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
 
-      @media (max-width: 740px) and (min-width: 641px) {
+      @media (max-width: 770px) and (min-width: 641px) {
         width: calc(33.33% - 20px); /* 한 행에 3개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
