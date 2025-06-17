@@ -570,12 +570,12 @@ body {
         //margin: 10px; /* 카드 간 여백 */
       //}
 
-      @media (min-width: 1201px) {
+      @media (min-width: 741px)  {
         width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
 
-      @media (max-width: 1200px) and (min-width: 761px) {
+      @media (max-width: 740px) and (min-width: 641px) {
         width: calc(33.33% - 20px); /* 한 행에 3개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
@@ -586,7 +586,7 @@ body {
       //  margin: 10px; /* 카드 간 여백 */
       //
 
-      @media (max-width: 760px) {
+      @media (max-width: 640px) {
         width: calc(50% - 20px); /* 한 행에 2개 카드 배치 */
         margin: 10px; /* 카드 간 여백 */
       }
