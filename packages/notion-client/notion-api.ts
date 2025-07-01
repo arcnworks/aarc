@@ -552,7 +552,8 @@ export class NotionAPI {
         excludeTemplates: false,
         navigableBlockContentOnly: true,
         requireEditPermissions: false,
-        includePublicPagesWithoutExplicitAccess: false,
+        // CUSTOM: 웹사이트 방문자처럼 명시적인 접근 권한이 없는 사용자도 모든 공개 페이지를 검색할 수 있도록 허용합니다.
+        includePublicPagesWithoutExplicitAccess: true, 
         ancestors: [],
         createdBy: [],
         editedBy: [],
@@ -565,7 +566,8 @@ export class NotionAPI {
         field: 'relevance',
       },
       limit: params.limit || 20,
-      source: 'quick_find_input_change',
+      // CUSTOM: Notion 앱 내부 검색이 아닌, 공개된 웹사이트에서 검색을 요청하는 것으로 설정합니다.
+      source: 'quick_find_public', 
       searchExperimentOverrides: {},
       searchSessionId: params.searchSessionId,
       searchSessionFlowNumber: 1,
