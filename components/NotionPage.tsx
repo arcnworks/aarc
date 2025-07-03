@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic'; // Next.js의 동적 로딩 기능을 사용하여 컴포넌트를 가져옵니다.
+import Image from 'next/image'; // next/image 컴포넌트를 가져옵니다.
 
 import Link from 'next/link'; // Next.js의 링크 컴포넌트로, 클라이언트 측 경로 전환을 처리합니다.
 import { useRouter } from 'next/router'; // 라우팅 정보를 가져오는 Next.js 훅입니다.
@@ -44,33 +45,33 @@ const Code = dynamic(() =>
       () => import('prismjs/components/prism-markup-templating.js'), // HTML 템플릿 구문 강조
       () => import('prismjs/components/prism-markup.js'), // HTML 마크업 구문 강조
       () => import('prismjs/components/prism-bash.js'), // Bash 스크립트 구문 강조
-      () => import('prismjs/components/prism-c.js'), // C 언어 구문 강조
-      () => import('prismjs/components/prism-cpp.js'), // C++ 언어 구문 강조
-      () => import('prismjs/components/prism-csharp.js'), // C# 언어 구문 강조
-      () => import('prismjs/components/prism-docker.js'), // Dockerfile 구문 강조
-      () => import('prismjs/components/prism-java.js'), // Java 언어 구문 강조
-      () => import('prismjs/components/prism-js-templates.js'), // JavaScript 템플릿 구문 강조
-      () => import('prismjs/components/prism-coffeescript.js'), // CoffeeScript 구문 강조
-      () => import('prismjs/components/prism-diff.js'), // Diff 파일 구문 강조
-      () => import('prismjs/components/prism-git.js'), // Git 구문 강조
-      () => import('prismjs/components/prism-go.js'), // Go 언어 구문 강조
+      //() => import('prismjs/components/prism-c.js'), // C 언어 구문 강조
+      //() => import('prismjs/components/prism-cpp.js'), // C++ 언어 구문 강조
+      //() => import('prismjs/components/prism-csharp.js'), // C# 언어 구문 강조
+      //() => import('prismjs/components/prism-docker.js'), // Dockerfile 구문 강조
+      //() => import('prismjs/components/prism-java.js'), // Java 언어 구문 강조
+      //() => import('prismjs/components/prism-js-templates.js'), // JavaScript 템플릿 구문 강조
+      //() => import('prismjs/components/prism-coffeescript.js'), // CoffeeScript 구문 강조
+      //() => import('prismjs/components/prism-diff.js'), // Diff 파일 구문 강조
+      //() => import('prismjs/components/prism-git.js'), // Git 구문 강조
+      //() => import('prismjs/components/prism-go.js'), // Go 언어 구문 강조
       () => import('prismjs/components/prism-graphql.js'), // GraphQL 구문 강조
-      () => import('prismjs/components/prism-handlebars.js'), // Handlebars 템플릿 구문 강조
-      () => import('prismjs/components/prism-less.js'), // LESS CSS 구문 강조
-      () => import('prismjs/components/prism-makefile.js'), // Makefile 구문 강조
+      //() => import('prismjs/components/prism-handlebars.js'), // Handlebars 템플릿 구문 강조
+      //() => import('prismjs/components/prism-less.js'), // LESS CSS 구문 강조
+      //() => import('prismjs/components/prism-makefile.js'), // Makefile 구문 강조
       () => import('prismjs/components/prism-markdown.js'), // Markdown 구문 강조
-      () => import('prismjs/components/prism-objectivec.js'), // Objective-C 구문 강조
-      () => import('prismjs/components/prism-ocaml.js'), // OCaml 언어 구문 강조
+      //() => import('prismjs/components/prism-objectivec.js'), // Objective-C 구문 강조
+      //() => import('prismjs/components/prism-ocaml.js'), // OCaml 언어 구문 강조
       () => import('prismjs/components/prism-python.js'), // Python 언어 구문 강조
       () => import('prismjs/components/prism-reason.js'), // Reason 언어 구문 강조
-      () => import('prismjs/components/prism-rust.js'), // Rust 언어 구문 강조
-      () => import('prismjs/components/prism-sass.js'), // SASS 구문 강조
+      //() => import('prismjs/components/prism-rust.js'), // Rust 언어 구문 강조
+      //() => import('prismjs/components/prism-sass.js'), // SASS 구문 강조
       () => import('prismjs/components/prism-scss.js'), // SCSS 구문 강조
-      () => import('prismjs/components/prism-solidity.js'), // Solidity 언어 구문 강조
+      //() => import('prismjs/components/prism-solidity.js'), // Solidity 언어 구문 강조
       () => import('prismjs/components/prism-sql.js'), // SQL 구문 강조
-      () => import('prismjs/components/prism-stylus.js'), // Stylus 구문 강조
-      () => import('prismjs/components/prism-swift.js'), // Swift 언어 구문 강조
-      () => import('prismjs/components/prism-wasm.js'), // WebAssembly 구문 강조
+      //() => import('prismjs/components/prism-stylus.js'), // Stylus 구문 강조
+      //() => import('prismjs/components/prism-swift.js'), // Swift 언어 구문 강조
+      //() => import('prismjs/components/prism-wasm.js'), // WebAssembly 구문 강조
       () => import('prismjs/components/prism-yaml.js'), // YAML 구문 강조
     ]);
 
@@ -144,7 +145,7 @@ export const NotionPage: React.FC<types.PageProps> = ({
 
   const components = React.useMemo(
     () => ({
-      // nextImage: Image, ← 제거
+      nextImage: Image,
       nextLink: Link,
       Code,
       Collection,
@@ -205,7 +206,7 @@ export const NotionPage: React.FC<types.PageProps> = ({
 
   const title = getBlockTitle(block, recordMap) || site.name;
 
-  if (!config.isServer) {
+  if (!config.isServer && process.env.NODE_ENV === 'development') {
     // add important objects to the window global for easy debugging
     const g = window as any;
     g.pageId = pageId;
@@ -258,14 +259,8 @@ export const NotionPage: React.FC<types.PageProps> = ({
         mapPageUrl={siteMapPageUrl} // 페이지 URL 매핑을 설정합니다.
         mapImageUrl={mapImageUrl} // 이미지 URL 매핑을 설정합니다.
         searchNotion={config.isSearchEnabled ? searchNotion :undefined} // 검색 기능을 설정합니다.
-        pageAside={pageAside} // 사이드바 컴포넌트를 설정합니다.
-        pageFooter={
-          config.enableComment ? (
-            !isBlogPost ? null : (
-              <Comments pageId={pageId} recordMap={recordMap} /> // 댓글 컴포넌트를 렌더링합니다.
-            )
-          ) : null
-        }
+        pageAside={pageAside}
+        pageFooter={config.enableComment && isBlogPost && <Comments pageId={pageId} recordMap={recordMap} />}
         footer={<Footer />} // footer={null} 푸터를 비활성화합니다.
       />
     </>

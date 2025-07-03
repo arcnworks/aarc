@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 
 import type { AppProps } from 'next/app';
+import { Noto_Sans_KR } from 'next/font/google';
 import { useRouter } from 'next/router';
 import { GoogleAnalytics } from 'nextjs-google-analytics';
 
@@ -19,6 +20,13 @@ import '~/styles/custom/index.scss';
 
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react'; // 추가된 부분
+
+const notoSansKr = Noto_Sans_KR({
+  subsets: ['latin'], // 필요한 언어 서브셋을 지정합니다.
+  weight: ['400', '700'], // 사용할 폰트 두께를 지정합니다.
+  display: 'swap', // 폰트 로딩 전략을 설정합니다. (CLS 방지)
+  variable: '--font-noto-sans-kr' // CSS 변수로 폰트를 사용합니다.
+});
 
 const Bootstrap = () => {
   const [preferences, setPreferences] = useRecoilState(preferencesStore);
@@ -76,22 +84,24 @@ const swrConfig: SWRConfiguration = {
 export default function App({ Component, pageProps, router }: AppProps) {
   return (
     <RecoilRoot>
-      <SWRConfig value={swrConfig}>
-        <Bootstrap />
-        <GoogleAnalytics trackPageViews />
-        <PageLoading />
+      <main className={notoSansKr.variable}>
+        <SWRConfig value={swrConfig}>
+          <Bootstrap />
+          <GoogleAnalytics trackPageViews />
+          <PageLoading />
 
-        <motion.div
-          key={router.pathname + router.query?.pageId || ''}
-          initial={{ x: 10, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Component {...pageProps} />
-          <SpeedInsights />
-          <Analytics /> {/* ← Vercel Web Analytics 삽입 위치 */}
-        </motion.div>
-      </SWRConfig>
+          <motion.div
+            key={router.pathname + router.query?.pageId || ''}
+            initial={{ x: 10, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Component {...pageProps} />
+            <SpeedInsights />
+            <Analytics /> {/* ← Vercel Web Analytics 삽입 위치 */}
+          </motion.div>
+        </SWRConfig>
+      </main>
     </RecoilRoot>
   );
 }

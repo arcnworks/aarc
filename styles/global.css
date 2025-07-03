@@ -14,7 +14,8 @@ html {
 }
 
 body {
-  font-family: var(--notion-font);
+  /* next/font로 정의한 Noto Sans KR을 기본 폰트로 사용하고, notion-font를 폴백으로 지정합니다. */
+  font-family: var(--font-noto-sans-kr), var(--notion-font), sans-serif;
   overflow-x: hidden;
 }
 
