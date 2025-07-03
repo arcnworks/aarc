@@ -257,7 +257,7 @@ export const NotionPage: React.FC<types.PageProps> = ({
         //defaultPageCoverPosition={config.defaultPageCoverPosition} // 기본 페이지 커버 위치를 설정합니다.
         mapPageUrl={siteMapPageUrl} // 페이지 URL 매핑을 설정합니다.
         mapImageUrl={mapImageUrl} // 이미지 URL 매핑을 설정합니다.
-        searchNotion={config.isSearchEnabled ? searchNotion :true} // 검색 기능을 설정합니다.
+        searchNotion={config.isSearchEnabled ? searchNotion :undefined} // 검색 기능을 설정합니다.
         pageAside={pageAside} // 사이드바 컴포넌트를 설정합니다.
         pageFooter={
           config.enableComment ? (
