@@ -548,11 +548,17 @@ export class NotionAPI {
       query: params.query,
       ancestorId: parsePageId(params.ancestorId),
       filters: {
+        // true로 설정하면 삭제된 페이지만 검색 결과에 포함시킵니다.
         isDeletedOnly: false,
-        excludeTemplates: false,
-        navigableBlockContentOnly: true,
+        // true로 설정하면 템플릿으로 지정된 페이지를 검색 결과에서 제외합니다.
+        excludeTemplates: true,
+        // true로 설정하면 페이지 제목과 본문 등 주요 콘텐츠만 검색합니다.
+        // false로 설정하면 태그, 카테고리와 같은 데이터베이스 속성도 검색 대상에 포함됩니다.
+        navigableBlockContentOnly: false,
+        // true로 설정하면 편집 권한이 있는 페이지만 검색 결과에 포함시킵니다.
         requireEditPermissions: false,
         // CUSTOM: 웹사이트 방문자처럼 명시적인 접근 권한이 없는 사용자도 모든 공개 페이지를 검색할 수 있도록 허용합니다.
+        // 공개 블로그의 경우 반드시 true로 설정해야 합니다.
         includePublicPagesWithoutExplicitAccess: true, 
         ancestors: [],
         createdBy: [],

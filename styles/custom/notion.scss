@@ -89,7 +89,7 @@ body {
   // 페이지 제목
 .notion-title {
   text-align: left;
-  font-size: 1.6em;
+  font-size: 2.0em;
   padding-left: 4px; /* 원하는 좌측 패딩 값 */
   padding-right: 0px; /* 원하는 우측 패딩 값 */
 }
@@ -330,7 +330,7 @@ body {
   // 제목1 ~ 제목3
   .notion {
     &-h1 {
-      font-size: 2rem;
+      font-size: 1.8rem;
 
       &::after {
         content: '';
@@ -344,12 +344,12 @@ body {
     }
 
     &-h2 {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       margin-top: 2rem;
     }
 
     &-h3 {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
     }
   }
 
