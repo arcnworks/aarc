@@ -2,11 +2,12 @@
 User-agent: *
 Allow: /
 
+# *
+User-agent: *
+Disallow: /qna/
+
 # Host
-Host: https://aarc.vercel.app/
+Host: https://aarc.kr
 
 # Sitemaps
-Sitemap: https://aarc.vercel.app/sitemap.xml
-Sitemap: https://aarc.vercel.app/report
-Sitemap: https://aarc.vercel.app/works
-Sitemap: https://aarc.vercel.app/blog
+Sitemap: https://aarc.kr/sitemap.xml
