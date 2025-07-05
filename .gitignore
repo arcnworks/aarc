@@ -12,6 +12,11 @@ node_modules
 /.next/
 /out/
 
+# sitemap and robots
+/public/sitemap.xml
+/public/sitemap-*.xml
+/public/robots.txt
+
 # production
 /build
 

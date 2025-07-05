@@ -11,7 +11,6 @@ module.exports = {
   exclude: [
     '/home', // 홈페이지는 '/'가 대표 URL이므로 중복되는 '/home'을 제외합니다.
     '/draftview', // 임시/미리보기 페이지 (기존)
-    '/server-sitemap.xml', // sitemap index 파일에서 제외
     '/404', // 404 에러 페이지
     '/500', // 500 에러 페이지
   ],
