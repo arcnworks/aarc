@@ -1,8 +1,10 @@
 import * as React from 'react';
+import Head from 'next/head';
 
 import { NotionPage } from 'components';
-import { domain } from 'lib/config';
+import { domain, host } from 'lib/config';
 import { resolveNotionPage } from 'lib/resolve-notion-page';
+import Meta from '../components/Meta';
 
 export const getStaticProps = async a => {
   try {
@@ -20,5 +22,18 @@ export const getStaticProps = async a => {
 
 export default function NotionDomainPage(props) {
   // console.log(props);
-  return <NotionPage {...props} />;
+  const title = `감정적인 건축가, 아크(AaRC) | 과학과 감성으로 공간을 디자인합니다`;
+  const description =
+    'AaRC(아크)는 과학적 통찰과 인문적 감수성으로 느낌의 경험을 담는 특별한 공간을 디자인하는 감정적인 건축가 그룹입니다.';
+
+  return (
+    <>
+      <Meta
+        title={title}
+        description={description}
+        url={host} // 홈페이지의 대표 URL을 명시적으로 전달합니다.
+      />
+      <NotionPage {...props} />
+    </>
+  );
 }

@@ -30,7 +30,6 @@ import { Footer } from './Footer'; //푸터를 없앨 시 //로 비활성화 합
 import { NotionPageHeader, ToggleThemeButton } from './NotionPageHeader'; // 페이지 헤더와 테마 전환 버튼 컴포넌트를 가져옵니다.
 import { Page404 } from './Page404'; // 404 페이지 컴포넌트를 가져옵니다.
 import { PageAside } from './PageAside'; // 페이지 사이드바 컴포넌트를 가져옵니다.
-import { PageHead } from './PageHead'; // 페이지의 메타 정보를 설정하는 컴포넌트입니다.
 import styles from './styles.module.css'; // 스타일 모듈을 가져옵니다.
 
 // -----------------------------------------------------------------------------
@@ -231,14 +230,6 @@ export const NotionPage: React.FC<types.PageProps> = ({
 
   return (
     <>
-      <PageHead
-        pageId={pageId}
-        site={site}
-        title={title}
-        description={socialDescription}
-        image={socialImage}
-      />
-
       {isLiteMode && <BodyClassName className="notion-lite" />}
       <NotionRenderer
         className={cs(isIndexPage ? 'indexPage' : 'childPage', { hasCollectionView })} // 페이지의 클래스 이름을 설정합니다.

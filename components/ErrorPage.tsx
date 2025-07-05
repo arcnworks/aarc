@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { PageHead } from './PageHead'
+import Meta from './Meta'
 
 import styles from './styles.module.css'
 
@@ -8,7 +8,7 @@ export const ErrorPage: React.FC<{ statusCode: number }> = ({ statusCode }) => {
 
   return (
     <>
-      <PageHead title={title} />
+      <Meta title={`Error - ${statusCode}`} description='페이지를 불러오는 중 오류가 발생했습니다.' />
 
       <div className={styles.container}>
         <main className={styles.main}>

@@ -14,7 +14,8 @@ export default siteConfig({
   author: '©AaRC(Architecture and Research in Culture). All rights reserved.',// 작성자 이름
   // 오픈 그래프 메타데이터 (선택사항)
   // 웹페이지 공유 시 보여질 간단한 설명
-  description: 'AaRC(아크)의 공식블로그',
+  description:
+    'AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 감정의 공간을 이야기 합니다.',
 
   // social usernames (optional)
   instagram: 'aarc.kr',
