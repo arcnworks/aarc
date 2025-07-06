@@ -15,7 +15,7 @@ export default siteConfig({
   // 오픈 그래프 메타데이터 (선택사항)
   // 웹페이지 공유 시 보여질 간단한 설명
   description:
-    'AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 감정의 공간을 이야기 합니다.',
+    '감정적인 건축가, AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 느낌의 공간을 이야기 합니다.',
 
   // social usernames (optional)
   instagram: 'aarc.kr',
@@ -42,11 +42,10 @@ export default siteConfig({
 
   pageUrlOverrides: {
     '/home': '15c693fb941780c19eb5f250d59f1367',
-    '/about': '154693fb941780f3ad56c98248b17dda',
     '/report': '165693fb9417800c8baadf2ba5ea5139',
     '/blog': '165693fb941780fab52fee6442e580bd',
     '/contact': '154693fb9417807b9ae5db9b64489c9a',
-    '/qna': '20b693fb941780a2bc6df90ce460a026',
+    //'/qna': '20b693fb941780a2bc6df90ce460a026',//
     '/category': '155693fb94178076b2c5e73f7d3cd377',
   },
 
@@ -58,11 +57,6 @@ export default siteConfig({
     {
       title: 'Home', // 네비게이션에 표시될 이름
       pageId: '15c693fb941780c19eb5f250d59f1367', // 연결될 Notion 페이지의 ID
-    },
-    {
-
-      title: 'About',
-      pageId: '154693fb941780f3ad56c98248b17dda',
     },
     {
       title: 'Report',

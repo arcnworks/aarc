@@ -22,9 +22,9 @@ export const getStaticProps = async a => {
 
 export default function NotionDomainPage(props) {
   // console.log(props);
-  const title = `감정적인 건축가, 아크(AaRC) | 과학과 감성으로 공간을 디자인합니다`;
+  const title = `감정적인 건축가, 아크(AaRC)`;
   const description =
-    'AaRC(아크)는 과학적 통찰과 인문적 감수성으로 느낌의 경험을 담는 특별한 공간을 디자인하는 감정적인 건축가 그룹입니다.';
+    '감정적인 건축가, AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 느낌의 공간을 이야기 합니다.';
 
   return (
     <>

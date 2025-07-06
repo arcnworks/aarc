@@ -123,7 +123,7 @@ function generateMeta(page: any, pageId: string) {
 
   const description =
     page?.properties?.['ZbRi']?.[0]?.[0] ||
-    'AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 감정의 공간을 이야기 합니다.';
+    '감정적인 건축가, AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 느낌의 공간을 이야기 합니다.';
 
   // OG 이미지는 페이지 커버 > 기본 OG 이미지 순으로 사용합니다.
   const image =

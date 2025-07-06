@@ -26,7 +26,7 @@ module.exports = {
       priority = 1.0;
     }
     // 주요 페이지(blog, about 등)의 우선순위를 약간 높게 설정할 수 있습니다.
-    else if (path === '/blog' || path === '/about' || path === '/category') {
+    else if (path === '/blog' || path === '/report') {
       priority = 0.9;
     }
 
@@ -51,6 +51,7 @@ module.exports = {
           '/api/search-notion',
           '/draftview',
           '/qna/', // /qna/ 경로 및 그 하위 모든 경로 크롤링 금지
+          '/category/', // /카테고리/ 경로 및 그 하위 모든 경로 크롤링 금지
         ],
       },
     ],

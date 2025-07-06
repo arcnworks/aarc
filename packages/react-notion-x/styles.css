@@ -526,7 +526,7 @@
 
 .notion-page-no-cover {
   margin-top: 48px !important;
-  padding-top: 96px;
+  padding-top: 48px; /*노션 페이지 커버 없을 때, 헤더와의 간격 기본:96px*/
 }
 
 .notion-page-no-cover.notion-page-no-icon {
@@ -542,7 +542,7 @@
 }
 
 .notion-page-has-cover {
-  padding-top: 96px;
+  padding-top: 48px;
 }
 
 .notion-page-has-cover.notion-page-has-icon.notion-page-has-text-icon {
@@ -553,7 +553,7 @@
   position: absolute;
   top: 0;
   left: 50%;
-  display: flex;
+  display: none; /*노션 페이지 커버에서 아이콘 표시여부 flex, none*/
   flex-direction: row;
   justify-content: center;
 }

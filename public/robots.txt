@@ -5,6 +5,7 @@ Disallow: /api/get-tweet-ast/*
 Disallow: /api/search-notion
 Disallow: /draftview
 Disallow: /qna/
+Disallow: /category/
 
 # Host
 Host: https://aarc.kr
