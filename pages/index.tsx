@@ -2,7 +2,7 @@ import * as React from 'react';
 import Head from 'next/head';
 
 import { NotionPage } from 'components';
-import { domain, host } from 'lib/config';
+import { domain, host, description as siteDescription } from 'lib/config';
 import { resolveNotionPage } from 'lib/resolve-notion-page';
 import Meta from '../components/Meta';
 
@@ -23,14 +23,12 @@ export const getStaticProps = async a => {
 export default function NotionDomainPage(props) {
   // console.log(props);
   const title = `감정적인 건축가, 아크(AaRC)`;
-  const description =
-    '감정적인 건축가, AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 느낌의 공간을 이야기 합니다.';
 
   return (
     <>
       <Meta
         title={title}
-        description={description}
+        description={siteDescription}
         url={host} // 홈페이지의 대표 URL을 명시적으로 전달합니다.
       />
       <NotionPage {...props} />

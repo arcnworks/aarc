@@ -7,9 +7,13 @@ import { getSiteMap } from 'lib/get-site-map';
 import { resolveNotionPage } from 'lib/resolve-notion-page';
 import { PageProps as BasePageProps, Params } from 'lib/types';
 import { NotionPage } from 'components';
-import Meta from '../components/Meta';
-import { pageUrlOverrides } from 'lib/config';
-import { ExtendedRecordMap } from 'notion-types';
+import Meta from '~/components/Meta'; // '~'는 루트 디렉토리를 가리키는 별칭입니다.
+import {
+  pageUrlHomepageCanonical,
+  notionPropIds,
+  description as siteDescription,
+} from 'lib/config';
+import { ExtendedRecordMap, PageBlock } from 'notion-types';
 import { getPageImageUrls } from 'notion-utils';
 import { mapImageUrl } from 'lib/map-image-url';
 
@@ -17,7 +21,13 @@ import { mapImageUrl } from 'lib/map-image-url';
  * Notion 페이지 데이터와 페이지 slug를 포함하는 페이지 컴포넌트의 props 타입입니다.
  */
 type PageProps = BasePageProps & {
-  page?: any; // Notion 페이지 객체. 유연성을 위해 'any' 타입 사용.
+  /**
+   * Notion 페이지 객체.
+   * PageBlock 타입으로 지정하여 타입 안정성을 높입니다.
+   * Notion API의 복잡성으로 인해 모든 속성을 완벽히 타이핑하기는 어려우나,
+   * 주요 속성에 대한 자동 완성과 타입 체크가 가능해집니다.
+   */
+  page?: PageBlock;
   pageId: string;
 };
 /**
@@ -115,21 +125,19 @@ export async function getStaticPaths() {
 }
 
 // 메타 정보 자동 생성 함수
-function generateMeta(page: any, pageId: string) {
+function generateMeta(page: PageBlock | undefined, pageId: string) {
   // Notion 페이지의 속성에서 제목과 설명을 가져옵니다.
-  // 'ZbRi'는 Notion에서 '설명' 속성의 내부 ID일 가능성이 높습니다.
-  const title =
-    page?.properties?.title?.[0]?.[0] || '감정적인 건축가,아크(AaRC)';
+  const title = page?.properties?.title?.[0]?.[0] ?? '감정적인 건축가,아크(AaRC)';
 
+  // 'site.config.ts'에서 설정한 설명(description) 속성 ID를 사용합니다.
+  // 이렇게 하면 ID가 변경되어도 설정 파일만 수정하면 되므로 유지보수가 용이합니다.
+  const descriptionPropId = notionPropIds?.description;
   const description =
-    page?.properties?.['ZbRi']?.[0]?.[0] ||
-    '감정적인 건축가, AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 느낌의 공간을 이야기 합니다.';
+    (descriptionPropId && page?.properties?.[descriptionPropId]?.[0]?.[0]) ?? siteDescription;
 
   // OG 이미지는 페이지 커버 > 기본 OG 이미지 순으로 사용합니다.
   const image =
-    page?.cover?.external?.url ||
-    page?.cover?.file?.url ||
-    'https://aarc.kr/og-image.png';
+    page?.format?.page_cover ?? 'https://aarc.kr/og-image.png';
 
   // Canonical URL(대표 URL)을 생성합니다.
   // 기본적으로 현재 페이지의 slug를 사용합니다. (예: https://aarc.kr/blog)
@@ -142,9 +150,9 @@ function generateMeta(page: any, pageId: string) {
   // 검색 순위 통합에 도움을 줍니다.
   const currentPageNotionId = page?.id?.replace(/-/g, '');
 
-  // site.config.ts에 정의된 /blog 페이지의 Notion ID를 가져옵니다.
-  // 이렇게 하면 ID가 변경되어도 설정 파일만 수정하면 되므로 유지보수가 용이합니다.
-  if (currentPageNotionId === pageUrlOverrides.blog) {
+  // site.config.ts에 명시적으로 설정된 페이지의 경우, Canonical URL을 홈페이지로 지정합니다.
+  // 이는 SEO 점수를 홈페이지로 통합하기 위한 전략입니다.
+  if (pageUrlHomepageCanonical && currentPageNotionId === pageUrlHomepageCanonical) {
     url = 'https://aarc.kr';
   }
 

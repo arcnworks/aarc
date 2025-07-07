@@ -1,4 +1,4 @@
-import { Client } from '@notionhq/client';
+import { Client, isNotionClientError } from '@notionhq/client';
 
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -9,23 +9,41 @@ const responseJSON = (res: NextApiResponse, status: number, json: any) => {
   res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8').send(json);
 };
 
+/**
+ * URL 슬러그에서 Notion ID를 추출하고 UUID 형식으로 변환합니다.
+ * @param slug - '페이지-제목-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' 형식의 문자열
+ * @returns 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' 형식의 UUID
+ */
+const getPageIdFromSlug = (slug: string | string[]): string => {
+  const idString = Array.isArray(slug) ? slug[0] : slug;
+  const id = idString.split('-').pop();
+
+  if (id?.length !== 32) {
+    throw new Error('Invalid Notion ID found in slug.');
+  }
+
+  return `${id.substr(0, 8)}-${id.substr(8, 4)}-${id.substr(12, 4)}-${id.substr(16, 4)}-${id.substr(20, 12)}`;
+};
+
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id, cursor } = req.query;
+  const { id: slug, cursor } = req.query;
 
   if (req.method === 'POST') {
-    if (!req.body.content) {
+    const { content } = req.body;
+    if (!content) {
       return responseJSON(res, 400, { message: 'content is required' });
     }
 
     try {
+      const pageId = getPageIdFromSlug(slug);
       const result = await notion.comments.create({
         parent: {
-          page_id: id as string,
+          page_id: pageId,
         },
         rich_text: [
           {
             text: {
-              content: req.body.content,
+              content: content,
             },
           },
         ],
@@ -33,18 +51,33 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       return responseJSON(res, 200, result);
     } catch (error) {
-      return responseJSON(res, error.status, error.body);
+      // isAPIResponseError 헬퍼가 특정 버전/환경에서 문제를 일으킬 수 있으므로,
+      // 'status' 속성의 존재 여부를 직접 확인하는 것이 더 안정적입니다.
+      if (isNotionClientError(error) && 'status' in error) {
+        return responseJSON(res, error.status, { code: error.code, message: error.message });
+      }
+      console.error('Failed to create comment:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+      return responseJSON(res, 500, { message: errorMessage });
     }
   } else if (req.method === 'GET') {
     try {
+      const blockId = getPageIdFromSlug(slug);
       const result = await notion.comments.list({
-        block_id: id as string,
+        block_id: blockId,
         ...(cursor && { start_cursor: cursor as string }),
       });
 
       return responseJSON(res, 200, result);
     } catch (error) {
-      return responseJSON(res, error.status, error.body);
+      // isAPIResponseError 헬퍼가 특정 버전/환경에서 문제를 일으킬 수 있으므로,
+      // 'status' 속성의 존재 여부를 직접 확인하는 것이 더 안정적입니다.
+      if (isNotionClientError(error) && 'status' in error) {
+        return responseJSON(res, error.status, { code: error.code, message: error.message });
+      }
+      console.error('Failed to list comments:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+      return responseJSON(res, 500, { message: errorMessage });
     }
   }
 

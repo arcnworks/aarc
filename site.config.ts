@@ -15,7 +15,7 @@ export default siteConfig({
   // 오픈 그래프 메타데이터 (선택사항)
   // 웹페이지 공유 시 보여질 간단한 설명
   description:
-    '감정적인 건축가, AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 느낌의 공간을 이야기 합니다.',
+    '감정적인 건축가, AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 느낌의 공간을 이야기 합니다. 감정의 건축이 궁금하시다면 감정적인 건축가 아크를 찾아주세요. 느낌의 건축에 대한 이야기를 들려드릴게요. ',
 
   // social usernames (optional)
   instagram: 'aarc.kr',
@@ -92,4 +92,13 @@ export default siteConfig({
 
   // enable comment
   enableComment: true,
+
+  // Canonical URL을 홈페이지로 지정할 페이지의 Notion ID를 명시적으로 설정합니다. (루트페이지)
+  pageUrlHomepageCanonical: '15c693fb941780c19eb5f250d59f1367',
+
+  // Notion 데이터베이스 속성의 ID를 중앙에서 관리합니다.
+  // Notion 페이지에서 속성 ID가 변경될 경우 여기만 수정하면 됩니다.
+  notionPropIds: {
+    description: 'ZbRi',
+  },
 });

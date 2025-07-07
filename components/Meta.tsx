@@ -7,6 +7,7 @@ export interface MetaProps {
   description?: string;
   image?: string;
   url?: string;
+  keywords?: string;
 }
 
 const Meta = ({
@@ -14,11 +15,13 @@ const Meta = ({
   description = siteDescription,
   image = `${host}/og-image.png`,
   url = host,
+  keywords = '감정적인 건축가, 감정적인건축가, 감정의 건축, 감정의건축, 느낌의 공간, 느낌의공간, 느낌의 건축, 느낌의건축, 감정적인 건축가 아크, 감정적인건축가아크, 아크, 아쿠, 아아크, AaRC, aarc',
 }: MetaProps) => {
   return (
     <Head>
       <title>{title}</title>
       <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
       <link rel="canonical" href={url} />
 
       <meta property="og:site_name" content={name} />

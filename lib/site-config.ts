@@ -40,6 +40,12 @@ export interface SiteConfig {
   defaultTheme: 'light' | 'dark' | 'system';
   enableComment: boolean;
   contentPositionTextAlign: 'left' | 'right';
+
+  // Canonical URL을 홈페이지로 지정할 페이지의 Notion ID
+  pageUrlHomepageCanonical?: string | null;
+
+  // Notion 데이터베이스 속성 ID
+  notionPropIds?: { [key: string]: string };
 }
 
 export interface NavigationLink {

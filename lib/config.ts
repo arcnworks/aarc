@@ -182,3 +182,10 @@ export const contentPositionTextAlign: SiteConfig['contentPositionTextAlign'] = 
   'left',
 );
 export const enableComment: boolean = getSiteConfig('enableComment', false);
+
+
+// Canonical URL을 홈페이지로 지정할 페이지의 Notion ID를 명시적으로 설정합니다.
+export const pageUrlHomepageCanonical: string | null = getSiteConfig('pageUrlHomepageCanonical', null);
+
+// Notion 속성 ID
+export const notionPropIds: { [key: string]: string } = getSiteConfig('notionPropIds', {});
