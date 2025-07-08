@@ -15,13 +15,15 @@ const responseJSON = (res: NextApiResponse, status: number, json: any) => {
  * @returns 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' 형식의 UUID
  */
 const getPageIdFromSlug = (slug: string | string[]): string => {
-  const idString = Array.isArray(slug) ? slug[0] : slug;
-  const id = idString.split('-').pop();
+  const slugString = Array.isArray(slug) ? slug[0] : slug;
+  const match = slugString.match(/[a-f0-9]{32}$/);
 
-  if (id?.length !== 32) {
-    throw new Error('Invalid Notion ID found in slug.');
+  if (!match) {
+    console.error(`Could not find a valid Notion ID in slug: ${slugString}`);
+    throw new Error('Invalid Notion ID not found in slug.');
   }
 
+  const id = match[0];
   return `${id.substr(0, 8)}-${id.substr(8, 4)}-${id.substr(12, 4)}-${id.substr(16, 4)}-${id.substr(20, 12)}`;
 };
 
