@@ -9,38 +9,12 @@ const responseJSON = (res: NextApiResponse, status: number, json: any) => {
   res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8').send(json);
 };
 
-/**
- * URL 슬러그에서 Notion ID를 추출하고 UUID 형식으로 변환합니다.
- * @param slug - '페이지-제목-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' 형식의 문자열
- * @returns 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' 형식의 UUID
- */
-const getPageIdFromSlug = (slug: string | string[]): string => {
-  const slugString = Array.isArray(slug) ? slug[0] : slug;
-  const match = slugString.match(/[a-f0-9]{32}$/);
-
-  if (!match) {
-    console.error(`Could not find a valid Notion ID in slug: ${slugString}`);
-    throw new Error('Invalid Notion ID not found in slug.');
-  }
-
-  const id = match[0];
-  return `${id.substr(0, 8)}-${id.substr(8, 4)}-${id.substr(12, 4)}-${id.substr(16, 4)}-${id.substr(20, 12)}`;
-};
-
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id: slug, cursor } = req.query;
+  const { id, cursor } = req.query;
+  const pageId = Array.isArray(id) ? id[0] : id;
 
-  if (!slug) {
-    return responseJSON(res, 400, { message: 'A slug is required.' });
-  }
-
-  let pageId: string;
-  try {
-    pageId = getPageIdFromSlug(slug);
-  } catch (error) {
-    console.error('Failed to parse page ID from slug:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred while parsing slug.';
-    return responseJSON(res, 400, { message: errorMessage });
+  if (!pageId) {
+    return responseJSON(res, 400, { message: 'A page ID is required.' });
   }
 
   if (req.method === 'POST') {

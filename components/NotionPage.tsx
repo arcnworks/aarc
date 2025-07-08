@@ -251,7 +251,9 @@ export const NotionPage: React.FC<types.PageProps> = ({
         mapImageUrl={mapImageUrl} // 이미지 URL 매핑을 설정합니다.
         searchNotion={config.isSearchEnabled ? searchNotion :undefined} // 검색 기능을 설정합니다.
         pageAside={pageAside}
-        pageFooter={config.enableComment && isBlogPost && <Comments pageId={pageId} recordMap={recordMap} />}
+        pageFooter={
+          config.enableComment && isBlogPost && <Comments pageId={block.id} recordMap={recordMap} />
+        }
         footer={<Footer />} // footer={null} 푸터를 비활성화합니다.
       />
     </>
