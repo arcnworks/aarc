@@ -79,6 +79,19 @@ const Bootstrap = () => {
     });
   }, []);
 
+  // 마우스 오른쪽 클릭 방지
+  useEffect(() => {
+    const handleContextmenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    document.addEventListener('contextmenu', handleContextmenu);
+
+    // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
+    return () => {
+      document.removeEventListener('contextmenu', handleContextmenu);
+    };
+  }, []);
+
   return null;
 };
 

@@ -51,9 +51,9 @@ body {
   }
 
   // 루트 페이지가 아닌 경우 네비게이션 메뉴를 숨김
-  /* &:not(.is-root-page) .notion-nav-header > .breadcrumbs:nth-child(2) {
+  &:not(.is-root-page) .notion-nav-header > .breadcrumbs:nth-child(2) {
     display: none;
-  } */
+  } 
 
   // 루트 페이지일 경우
   &.is-root-page {

@@ -17,7 +17,7 @@ interface CommentsProps {
 
 const Comments = ({ pageId, recordMap }: CommentsProps) => {
   const [loading, setLoading] = useState(false);
-  const { data, mutate } = useSWR(`/api/comments/${pageId}`);
+  const { data, mutate } = useSWR(pageId ? `/api/comments/${pageId}` : null);
 
   const formik = useFormik({
     initialValues: {

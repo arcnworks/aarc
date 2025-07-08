@@ -37,7 +37,7 @@ export const AssetWrapper: React.FC<{
         blockId
       )}
     >
-      <Asset block={value} zoomable={!isURL}>
+      <Asset block={value} zoomable={false}> {/* zoomable={!isURL} 이미지 확대 */}
         {value?.properties?.caption && !isURL && (
           <figcaption className='notion-asset-caption'>
             <Text value={value.properties.caption} block={block} />

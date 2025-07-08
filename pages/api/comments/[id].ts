@@ -28,6 +28,19 @@ const getPageIdFromSlug = (slug: string | string[]): string => {
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { id: slug, cursor } = req.query;
 
+  if (!slug) {
+    return responseJSON(res, 400, { message: 'A slug is required.' });
+  }
+
+  let pageId: string;
+  try {
+    pageId = getPageIdFromSlug(slug);
+  } catch (error) {
+    console.error('Failed to parse page ID from slug:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred while parsing slug.';
+    return responseJSON(res, 400, { message: errorMessage });
+  }
+
   if (req.method === 'POST') {
     const { content } = req.body;
     if (!content) {
@@ -35,7 +48,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     try {
-      const pageId = getPageIdFromSlug(slug);
       const result = await notion.comments.create({
         parent: {
           page_id: pageId,
@@ -62,9 +74,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else if (req.method === 'GET') {
     try {
-      const blockId = getPageIdFromSlug(slug);
       const result = await notion.comments.list({
-        block_id: blockId,
+        block_id: pageId,
         ...(cursor && { start_cursor: cursor as string }),
       });
 
