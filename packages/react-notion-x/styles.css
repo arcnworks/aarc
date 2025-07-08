@@ -403,8 +403,7 @@
   width: 100%;
   font-size: 2.5em;
   font-weight: 600;
-
-  margin-top: 20px;
+  margin-top: 0px;
   margin-bottom: 8px;
   line-height: 1.2;
 }
@@ -530,7 +529,7 @@
 }
 
 .notion-page-no-cover.notion-page-no-icon {
-  padding-top: 0;
+  padding-top: 48; /*노션 아이콘 없을 때, 헤더와의 간격 기본:96px*/
 }
 
 .notion-page-no-cover.notion-page-has-image-icon {
@@ -2291,6 +2290,7 @@ svg.notion-page-icon {
   height: 100%;
   flex-grow: 0;
   min-width: 0;
+  
 }
 
 .notion-header .breadcrumbs:first-child {

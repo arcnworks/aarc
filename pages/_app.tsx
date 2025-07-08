@@ -32,6 +32,15 @@ const Bootstrap = () => {
   const [preferences, setPreferences] = useRecoilState(preferencesStore);
   const router = useRouter();
 
+  useEffect(() => {
+    // 루트 경로('/')일 때 body에 is-root-page 클래스를 추가합니다.
+    if (router.pathname === '/') {
+      document.body.classList.add('is-root-page');
+    } else {
+      document.body.classList.remove('is-root-page');
+    }
+  }, [router.pathname]);
+
   // posthog
   useEffect(() => {
     function onRouteChangeComplete() {

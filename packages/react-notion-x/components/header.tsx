@@ -64,18 +64,10 @@ const _Breadcrumbs: React.FC<{
             <componentMap.pageLink
               className={cs('breadcrumb', breadcrumb.active && 'active')}
               {...pageLinkProps}
-             
-              
-              
-            >{/* //이 코드를 비활성화하면 네비게이션 헤더의 경로와 제목(타이틀)을 숨길 수 있음//  
+            >
               {breadcrumb.icon && <PageIcon className="icon" block={breadcrumb.block} />}
-
-              {breadcrumb.title && <span className="title">{breadcrumb.title}</span>}  */}
-            
-            </componentMap.pageLink> 
-
-            {/*
-            {index < breadcrumbs.length - 1 && <span className="spacer">/</span>} */}
+              {breadcrumb.title && <span className="title">{breadcrumb.title}</span>}
+            </componentMap.pageLink>
           </React.Fragment> 
           
         );
