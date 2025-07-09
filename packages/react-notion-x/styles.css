@@ -524,16 +524,16 @@
 }
 
 .notion-page-no-cover {
-  margin-top: 48px !important;
-  padding-top: 48px; /*노션 페이지 커버 없을 때, 헤더와의 간격 기본:96px*/
+  
+  padding-top: 8px; /*노션 페이지 커버 없을 때, 헤더와의 간격 기본:96px*/
 }
 
 .notion-page-no-cover.notion-page-no-icon {
-  padding-top: 48; /*노션 아이콘 없을 때, 헤더와의 간격 기본:96px*/
+  padding-top: 8px; /*노션 아이콘 없을 때, 헤더와의 간격 기본:96px*/
 }
 
 .notion-page-no-cover.notion-page-has-image-icon {
-  padding-top: 148px;
+  padding-top: 8px;
 }
 
 .notion-page-has-cover.notion-page-no-icon {
@@ -541,11 +541,11 @@
 }
 
 .notion-page-has-cover {
-  padding-top: 48px;
+  padding-top: 8px;
 }
 
 .notion-page-has-cover.notion-page-has-icon.notion-page-has-text-icon {
-  padding-top: 64px;
+  padding-top: 8px;
 }
 
 .notion-page-icon-hero {
