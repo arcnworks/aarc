@@ -2,7 +2,8 @@ import * as React from 'react';
 import { useEffect } from 'react';
 
 import type { AppProps } from 'next/app';
-import { Noto_Sans_KR } from 'next/font/google';
+import { Noto_Sans_KR } from 'next/font/google'; // next/font에서 google과 local을 모두 import 합니다.
+import localFont from 'next/font/local';
 import { useRouter } from 'next/router';
 import { GoogleAnalytics } from 'nextjs-google-analytics';
 
@@ -28,18 +29,25 @@ const notoSansKr = Noto_Sans_KR({
   variable: '--font-noto-sans-kr' // CSS 변수로 폰트를 사용합니다.
 });
 
+// 로컬 Pretendard 폰트를 설정합니다.
+const pretendard = localFont({
+  src: [
+    {
+      path: '../public/fonts/pretendard/Pretendard-Regular.woff2',
+      weight: '400'
+    },
+    {
+      path: '../public/fonts/pretendard/Pretendard-Bold.woff2',
+      weight: '700'
+    }
+  ],
+  variable: '--font-pretendard', // CSS 변수로 폰트를 사용합니다.
+  display: 'swap' // font-display: swap을 자동으로 적용하여 FOIT를 방지합니다.
+});
+
 const Bootstrap = () => {
   const [preferences, setPreferences] = useRecoilState(preferencesStore);
   const router = useRouter();
-
-  useEffect(() => {
-    // 루트 경로('/')일 때 body에 is-root-page 클래스를 추가합니다.
-    if (router.pathname === '/') {
-      document.body.classList.add('is-root-page');
-    } else {
-      document.body.classList.remove('is-root-page');
-    }
-  }, [router.pathname]);
 
   // posthog
   useEffect(() => {
@@ -49,16 +57,25 @@ const Bootstrap = () => {
       }
     }
 
+    // PostHog 초기화
     if (posthogId) {
       posthog.init(posthogId, posthogConfig);
     }
 
+    // 라우터 이벤트 리스너 등록
     router.events.on('routeChangeComplete', onRouteChangeComplete);
+
+    // is-root-page 클래스 관리
+    if (router.pathname === '/') {
+      document.body.classList.add('is-root-page');
+    } else {
+      document.body.classList.remove('is-root-page');
+    }
 
     return () => {
       router.events.off('routeChangeComplete', onRouteChangeComplete);
     };
-  }, [router.events]);
+  }, [router.events, router.pathname]);
 
   useEffect(() => {
     if (preferences.isDarkMode) {
@@ -71,26 +88,32 @@ const Bootstrap = () => {
   }, [preferences.isDarkMode]);
 
   useEffect(() => {
+    // 클라이언트 측 초기 설정 실행
     bootstrap();
 
-    // 기기의 다크모드 연동
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-      setPreferences({ ...preferences, isDarkMode: event.matches });
-    });
-  }, []);
-
-  // 마우스 오른쪽 클릭 방지
-  useEffect(() => {
-    const handleContextmenu = (e: MouseEvent) => {
-      e.preventDefault();
-    };
+    // 마우스 오른쪽 클릭 방지 이벤트 리스너
+    const handleContextmenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContextmenu);
 
-    // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
+    // OS 다크모드 변경 감지 리스너
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setPreferences({ ...preferences, isDarkMode: event.matches });
+    };
+    mediaQuery.addEventListener('change', handleChange);
+
+    // 접근성 개선: react-notion-x의 검색 버튼에 aria-label 추가
+    // Lighthouse "button, link, and menuitem elements do not have an accessible name" 문제 해결
+    const searchButton = document.querySelector('.notion-search-button');
+    if (searchButton && !searchButton.getAttribute('aria-label')) {
+      searchButton.setAttribute('aria-label', '검색');
+    }
+
     return () => {
       document.removeEventListener('contextmenu', handleContextmenu);
+      mediaQuery.removeEventListener('change', handleChange);
     };
-  }, []);
+  }, [preferences, setPreferences]); // setPreferences와 preferences를 의존성 배열에 추가
 
   return null;
 };
@@ -106,7 +129,8 @@ const swrConfig: SWRConfiguration = {
 export default function App({ Component, pageProps, router }: AppProps) {
   return (
     <RecoilRoot>
-      <main className={notoSansKr.variable}>
+      {/* Pretendard와 Noto_Sans_KR 폰트의 CSS 변수를 모두 main 태그에 적용합니다. */}
+      <main className={`${pretendard.variable} ${notoSansKr.variable}`}>
         <SWRConfig value={swrConfig}>
           <Bootstrap />
           <GoogleAnalytics trackPageViews />

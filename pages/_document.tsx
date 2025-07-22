@@ -14,15 +14,15 @@ export default class MyDocument extends Document {
 
           <link rel="manifest" href="/manifest.json" />
 
-          <link href="/fonts/SpoqaHanSansNeo/index.css" rel="stylesheet" />
-
-          <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-          <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
-          <link
-            href="https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css"
-            rel="stylesheet"
-            type="text/css"
-          />
+          {/* TossFace 폰트 로딩 비활성화 (성능 저하의 주 원인) */}
+          {/*
+            <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+            <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
+            <link
+              href="https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css"
+              rel="stylesheet"
+              type="text/css"
+            /> */}
         </Head>
 
         <body>

@@ -14,9 +14,14 @@ html {
 }
 
 body {
-  /* next/font로 정의한 Noto Sans KR을 기본 폰트로 사용하고, notion-font를 폴백으로 지정합니다. */
-  font-family: var(--font-noto-sans-kr), var(--notion-font), sans-serif;
+  /* next/font로 정의한 Pretendard를 기본 폰트로, Noto Sans KR을 대체(fallback) 폰트로 설정합니다. */
+  font-family: var(--font-pretendard), var(--font-noto-sans-kr), -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI',
+    'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   overflow-x: hidden;
+  /* 글자 자간을 미세하게 줄여 가독성을 높입니다. */
+  letter-spacing: -0.01em;
 }
 
 .static-tweet blockquote {
