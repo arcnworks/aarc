@@ -1,6 +1,6 @@
 // vars
 :root {
-  --notion-font: 'SpoqaHanSansNeo', 'Tossface';
+  --notion-font: var(--font-pretendard), var(--font-noto-sans-kr), sans-serif;
 
   --base-font-size: 1.025rem;
 

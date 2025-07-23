@@ -33,11 +33,11 @@ const notoSansKr = Noto_Sans_KR({
 const pretendard = localFont({
   src: [
     {
-      path: '../public/fonts/pretendard/Pretendard-Regular.woff2',
+      path: '../public/fonts/pretendard/Pretendard-Regular.subset.woff2',
       weight: '400'
     },
     {
-      path: '../public/fonts/pretendard/Pretendard-Bold.woff2',
+      path: '../public/fonts/pretendard/Pretendard-Bold.subset.woff2',
       weight: '700'
     }
   ],

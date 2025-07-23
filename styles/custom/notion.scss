@@ -6,40 +6,42 @@
 // 반응형 처리
 @media only screen and (max-width: 1440px) {
   :root {
-    --notion-page-left-right-padding: 4vw;
-    --notion-page-fullwith-left-right-padding: 4vw;
+    --notion-page-left-right-padding: 2vw;
+    --notion-page-fullwith-left-right-padding: 2vw;
   }
 }
 
 @media only screen and (max-width: 700px) {
   :root {
-    --base-font-size: 0.95rem;
+    --base-font-size: 0.9rem;
   }
 }
 
 /**
  * ================ 전체적인 레이아웃 구성 관련 ================
  */
-body {
+main {
+  font-family: var(--font-pretendard), var(--font-noto-sans-kr), sans-serif;
   font-size: 16px;
   transition-duration: 250ms;
   transition-property: background-color, color;
   -webkit-font-smoothing: antialiased;
+}
 
-  .notion {
-    font-size: var(--base-font-size);
-    transition-duration: 250ms;
-    transition-property: background-color, color;
-  }
+.notion {
+  font-size: var(--base-font-size);
+  transition-duration: 250ms;
+  transition-property: background-color, color;
+}
 
-  .notion-page {
-    padding-left: var(--notion-page-left-right-padding);
-    padding-right: var(--notion-page-left-right-padding);
-  }
+.notion-page {
+  padding-left: var(--notion-page-left-right-padding);
+  padding-right: var(--notion-page-left-right-padding);
+}
 
-  .notion-full-width {
-    padding-left: var(--notion-page-fullwith-left-right-padding);
-    padding-right: var(--notion-page-fullwith-left-right-padding);
+.notion-full-width {
+  padding-left: var(--notion-page-fullwith-left-right-padding);
+  padding-right: var(--notion-page-fullwith-left-right-padding);
 
     .notion-title {
       text-align: left;
@@ -49,24 +51,24 @@ body {
       left: var(--notion-fullwith-page-left-right-padding);
     }
   }
-
-  // 루트 페이지가 아닌 경우 네비게이션 메뉴를 숨김
-  &:not(.is-root-page) .notion-nav-header > .breadcrumbs:nth-child(2) {
+  
+// 루트 페이지가 아닌 경우 네비게이션 메뉴를 숨김
+body:not(.is-root-page) .notion-nav-header > .breadcrumbs:nth-child(2) {
     display: none;
   } 
 
-  // 루트 페이지일 경우
-  &.is-root-page {
-    // 타이틀 제목을 표시하지 않음
-    .notion-title {
-      display: none;
-    }
-
-    // 네비게이션 메뉴를 숨김
-    .notion-nav-header > .breadcrumbs:nth-child(2) {
-      display: none;
-    }
+// 루트 페이지일 경우
+body.is-root-page {
+  // 타이틀 제목을 표시하지 않음
+  .notion-title {
+    display: none;
   }
+
+  // 네비게이션 메뉴를 숨김
+  .notion-nav-header > .breadcrumbs:nth-child(2) {
+    display: none;
+  }
+}
 
   // 헤더
   .notion-header {
@@ -88,12 +90,11 @@ body {
     }
   }
 
-  // 다크모드 아닐때
-  &:not(.dark-mode) {
-    // 글 목록을 가지고 있는 페이지라면 배경 색 변경
-    .hasCollectionView {
-      --bg-color: #ffffff;
-    }
+// 다크모드 아닐때
+body:not(.dark-mode) {
+  // 글 목록을 가지고 있는 페이지라면 배경 색 변경
+  .hasCollectionView {
+    --bg-color: #ffffff;
   }
 }
 
@@ -352,7 +353,7 @@ body {
   // 제목1 ~ 제목3
   .notion {
     &-h1 {
-      font-size: 1.8rem;
+      font-size: 2.0rem;
 
       &::after {
         content: '';
@@ -360,18 +361,18 @@ body {
         height: 2px;
         width: 4rem;
         //background-color: var(--fg-color);  //제목 하단라인 삭제
-        margin-top: 0.5rem;
+        margin-top: 0.0rem;
         border-radius: 0px;
       }
     }
 
     &-h2 {
-      font-size: 1.5rem;
-      margin-top: 2rem;
+      font-size: 1.7rem;
+      
     }
 
     &-h3 {
-      font-size: 1.25rem;
+      font-size: 1.4rem;
     }
   }
 
@@ -527,11 +528,6 @@ body {
     .notion-bookmark-link-text {
       max-width: 30rem;
     }
-  }
-
-  // 아이콘 (페이지 아이콘, 콜아웃 아이콘)
-  .notion-page-icon {
-    font-family: 'Tossface';
   }
 
   // 테이블

@@ -21,7 +21,7 @@ body {
     'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   overflow-x: hidden;
   /* 글자 자간을 미세하게 줄여 가독성을 높입니다. */
-  letter-spacing: -0.01em;
+  letter-spacing: -0.0375em;
 }
 
 .static-tweet blockquote {

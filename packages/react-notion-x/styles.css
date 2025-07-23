@@ -424,8 +424,8 @@
 }
 
 .notion-h1 {
-  font-size: 1.8em;
-  margin-top: 1.08em;
+  font-size: 2.0em;
+  
 }
 
 .notion-header-anchor {
@@ -447,12 +447,12 @@
   margin-top: 2px;
 } */
 .notion-h2 {
-  font-size: 1.5em;
-  margin-top: 1.1em;
+  font-size: 1.7em;
+  
 }
 .notion-h3 {
-  font-size: 1.25em;
-  margin-top: 1em;
+  font-size: 1.4em;
+ 
 }
 
 .notion-h:hover .notion-hash-link {

@@ -13,16 +13,6 @@ export default class MyDocument extends Document {
           <link rel="icon" type="image/png" sizes="128x128" href="favicon.png" />
 
           <link rel="manifest" href="/manifest.json" />
-
-          {/* TossFace 폰트 로딩 비활성화 (성능 저하의 주 원인) */}
-          {/*
-            <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-            <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
-            <link
-              href="https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css"
-              rel="stylesheet"
-              type="text/css"
-            /> */}
         </Head>
 
         <body>
