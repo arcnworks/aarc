@@ -75,8 +75,10 @@
   --notion-max-width: 1800px;
   --notion-header-height: 56px;
 
-  --notion-page-left-right-padding: calc(min(200px, 16vw));//포스팅 본문 폭 조정
-  --notion-page-fullwith-left-right-padding: calc(min(112px, 16vw)); //풀페이지 폭 조정
+  // --- 페이지 좌우 여백 (웹, > 1440px) ---
+  // 1440px일 때의 2vw(28.8px)와 거의 같은 값으로 설정하여 화면 전환 시 덜컹거림을 방지합니다.
+  --notion-page-left-right-padding: 16vw;
+  --notion-page-fullwith-left-right-padding: 4vw;
 
   --notion-aside-width: 300px; //목차 사이드 폭 조정
   --notion-aside-space-width: 8rem;

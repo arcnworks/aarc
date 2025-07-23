@@ -2,15 +2,15 @@
 ::-webkit-scrollbar {
   display: none;
 }
-
-// 반응형 처리
+ 
+// --- 페이지 좌우 여백 (반응형, <= 1440px) ---
 @media only screen and (max-width: 1440px) {
   :root {
     --notion-page-left-right-padding: 2vw;
     --notion-page-fullwith-left-right-padding: 2vw;
   }
 }
-
+ 
 @media only screen and (max-width: 700px) {
   :root {
     --base-font-size: 0.9rem;
@@ -20,6 +20,11 @@
 /**
  * ================ 전체적인 레이아웃 구성 관련 ================
  */
+
+html {
+  scrollbar-gutter: stable;
+}
+
 main {
   font-family: var(--font-pretendard), var(--font-noto-sans-kr), sans-serif;
   font-size: 16px;
@@ -35,13 +40,13 @@ main {
 }
 
 .notion-page {
-  padding-left: var(--notion-page-left-right-padding);
-  padding-right: var(--notion-page-left-right-padding);
+  padding-left: var(--notion-page-left-right-padding) !important;
+  padding-right: var(--notion-page-left-right-padding) !important;
 }
 
 .notion-full-width {
-  padding-left: var(--notion-page-fullwith-left-right-padding);
-  padding-right: var(--notion-page-fullwith-left-right-padding);
+  padding-left: var(--notion-page-fullwith-left-right-padding) !important;
+  padding-right: var(--notion-page-fullwith-left-right-padding) !important;
 
     .notion-title {
       text-align: left;
@@ -566,13 +571,20 @@ body:not(.dark-mode) {
   }
 
   .postList {
-    display: flex; // 요소들을 플렉스 박스로 배치합니다.
-    flex-wrap: wrap; // 플렉스 박스가 여러 줄로 배치되도록 설정합니다.
+    display: grid;
     margin-top: 0.8rem; // 위쪽 여백을 추가합니다.
-    justify-content: flex-start;
+    gap: 20px; // 카드 사이의 간격을 20px로 설정합니다.
 
+    // 기본 2열, 화면이 커짐에 따라 3, 4열로 변경됩니다.
+    grid-template-columns: repeat(2, 1fr);
 
+    @media (min-width: 641px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
 
+    @media (min-width: 771px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
     > a {
       background-color: var(--notion-card-background-color); /* 카드 배경색 설정 */
       //box-shadow: 10px 20px 20px 0 rgb(92 95 112 / 8%); /* 그림자 효과 */
@@ -582,33 +594,6 @@ body:not(.dark-mode) {
        &:hover {
         //transform: translateY(-8px); /* 호버 시 위로 살짝 이동 */
       }
-
-      //@media (min-width: 1201px) {
-       // width: calc(16.66% - 20px); /* 한 행에 6개 카드 배치 */
-        //margin: 10px; /* 카드 간 여백 */
-      //}
-
-      @media (min-width: 771px)  {
-        width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
-        margin: 10px; /* 카드 간 여백 */
-      }
-
-      @media (max-width: 770px) and (min-width: 641px) {
-        width: calc(33.33% - 20px); /* 한 행에 3개 카드 배치 */
-        margin: 10px; /* 카드 간 여백 */
-      }
-
-      
-      // @media (max-width: 1050px) and (min-width: 761px) {
-      //  width: calc(25% - 20px); /* 한 행에 4개 카드 배치 */
-      //  margin: 10px; /* 카드 간 여백 */
-      //
-
-      @media (max-width: 640px) {
-        width: calc(50% - 20px); /* 한 행에 2개 카드 배치 */
-        margin: 10px; /* 카드 간 여백 */
-      }
-
       .notion-collection-card-cover {
         border-radius: 0;
         box-shadow: none;

@@ -55,7 +55,7 @@ export const NotionPageHeader: React.FC<{
             <img
   src={isDarkMode ? '/logo-w.png' : '/logo-b.png'}
   alt="AaRC 로고"
-  style={{ width: '90px', height: 'auto' }}
+  style={{ width: '96px', height: 'auto' }}
   className={styles.logo}
 />
             </a>
@@ -119,9 +119,9 @@ export const NotionPageHeader: React.FC<{
                   >
                     <svg
                       strokeWidth="0"
-                      width="20px"
+                      width="40px"
                       height="20px"
-                      viewBox="0 0 23 25"
+                      viewBox="0 0 25 25"
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path d="M0 0h24v24H0z" fill="none" />
