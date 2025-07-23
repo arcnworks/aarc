@@ -77,7 +77,11 @@ body.is-root-page {
 
   // 헤더
   .notion-header {
-    position: fixed;
+    position: fixed; /* 'sticky'에서 'fixed'로 변경하여 블러 효과가 전체 너비에 적용되도록 함 */
+    top: 0; /* iOS Safari에서 상단 주소창과의 틈을 없애기 위해 명시적으로 설정 */
+    left: 0;
+    width: 100%;
+    transform: translateZ(0); /* iOS Safari 렌더링 버그 수정을 위한 3D 변환 힌트 */
     transition-duration: 250ms;
     transition-property: background-color, color;
     background-color: rgba(255, 255, 255, 0.1); /* 반투명 배경색 추가 */
