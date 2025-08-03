@@ -2275,7 +2275,7 @@ svg.notion-page-icon {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 14px;
   text-size-adjust: 100%;
   line-height: 1.5;
   line-height: 1.2;
@@ -2366,7 +2366,7 @@ svg.notion-page-icon {
 }
 
 .notion-header .button {
-  padding: 14px;
+  padding: 10px;
 }
 
 .notion-search-overlay {
