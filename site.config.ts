@@ -42,7 +42,7 @@ export default siteConfig({
 
   pageUrlOverrides: {
     '/home': '15c693fb941780c19eb5f250d59f1367',
-    '/report': '165693fb9417800c8baadf2ba5ea5139',
+    '/work': '165693fb9417800c8baadf2ba5ea5139',
     '/blog': '165693fb941780fab52fee6442e580bd',
     '/contact': '154693fb9417807b9ae5db9b64489c9a',
     //'/qna': '20b693fb941780a2bc6df90ce460a026',//
@@ -59,7 +59,7 @@ export default siteConfig({
       pageId: '15c693fb941780c19eb5f250d59f1367', // 연결될 Notion 페이지의 ID
     },
     {
-      title: 'Report',
+      title: 'Work',
       pageId: '165693fb9417800c8baadf2ba5ea5139',
     },
     {
@@ -91,7 +91,7 @@ export default siteConfig({
   defaultTheme: 'light',
 
   // enable comment
-  enableComment: true,
+  enableComment: false,
 
   // Canonical URL을 홈페이지로 지정할 페이지의 Notion ID를 명시적으로 설정합니다. (루트페이지)
   pageUrlHomepageCanonical: '15c693fb941780c19eb5f250d59f1367',
