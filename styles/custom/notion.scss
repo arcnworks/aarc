@@ -401,15 +401,33 @@ body:not(.dark-mode) {
   }
 
   // 인용
-  .notion-quote {
-    font-style: normal;
-    font-size: var(--base-font-size);
-    border-color: var(--primary-color);
-    padding: 1rem 1rem 1rem 2rem;
-    position: relative;
-    background-color: var(--fg-color-lighten);
-    transition: 250ms background-color;
-  }
+  // 인용
+.notion-quote {
+  /* 1. 줄 높이 (Line Height) - 글자 자체의 수직 높이 */
+  // 본문(1.5)보다 약간 여유 있는 1.7~1.8 배율이 인용구의 우아함을 살려줍니다.
+  line-height: 1.5 !important; 
+
+  /* 2. 상하 여백 (Vertical Padding) - 글자 상하단의 빈 공간 */
+  // 이 수치를 높이면 인용구 박스 전체의 '높이감'이 커집니다.
+  padding-top: 1.2rem !important;
+  padding-bottom: 1.2rem !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+
+  /* 3. 최소 높이 (Min-Height) - 선택 사항 */
+  // 짧은 한 줄짜리 인용구라도 일정한 볼륨감을 유지하고 싶을 때 사용합니다.
+  min-height: 0px; 
+
+  /* --- 아래는 기존 유지 및 추천 스타일 --- */
+  font-family: 'Noto Serif KR', serif !important; // 명조체 추천
+  font-weight: 600 !important;
+  font-style: normal;
+  font-size: 0.8rem !important; // 본문보다 살짝 크게
+  border-left: 4px solid var(--primary-color) !important; // 왼쪽 강조선
+  position: relative;
+  background-color: var(--fg-color-lighten);
+  transition: 250ms background-color;
+}
 
   // 체크박스 (할일)
   .notion-property-checkbox {
@@ -670,11 +688,11 @@ body:not(.dark-mode) {
         
         /* [수정 포인트] 목차를 아래로 내리는 설정 */
         /* 숫자를 키울수록 목차가 더 아래에서 시작합니다. (예: 100px, 150px 등) */
-        margin-top: 540px !important; 
+        margin-top: 520px !important; 
         
         /* 스크롤 시 목차가 멈추는 상단 위치 (원하는 경우 함께 조절) */
         position: sticky;
-        top:540px; 
+        top:520px; 
       }
     }
   
@@ -688,8 +706,11 @@ body:not(.dark-mode) {
         padding-left: 20px !important;
         padding-right: 20px !important;
       }
+      
     }
   }
+
+
 
   
 
@@ -725,7 +746,7 @@ body:not(.dark-mode) {
     .notion-collection-row-body {
       display: flex !important;
       flex-direction: column !important;
-      gap: 8px !important;
+      gap: 1px !important;
     }
 
     .notion-collection-row-property {
@@ -752,19 +773,32 @@ body:not(.dark-mode) {
       line-height: 1.4;
     }
 
-    // 태그 및 선택 아이템 스타일 (색상 통일 추가)
-    .notion-property-select-item,
-    .notion-property-multi_select-item {
-      background-color: transparent !important; // 배경 투명화
-      color: var(--fg-color) !important;       // 노션 색상 무시하고 본문 색상으로 통일
-      padding: 0 !important;
-      opacity: 0.8;
-      
-      &::before { content: '#'; }
-      
-      // 노션 라이브러리가 강제로 입히는 개별 색상 클래스들을 모두 무력화
-      span { color: inherit !important; } 
-    }
+    /* 1. 공통 스타일: 태그와 카테고리 모두 투명 배경 및 색상 통일 */
+.notion-property-select-item,
+.notion-property-multi_select-item {
+  background-color: transparent !important;
+  color: var(--fg-color) !important;
+  padding: 0 !important;
+  opacity: 0.8;
+  
+  /* 노션 라이브러리의 개별 색상 무력화 */
+  span { color: inherit !important; } 
+}
+
+/* 2. 태그(Multi-select) 전용: '#' 접두사 추가 */
+.notion-property-multi_select-item {
+  &::before { 
+    content: '#' !important; 
+    margin-right: 1px;
+  }
+}
+
+/* 3. 카테고리(Select) 전용: '#' 접두사 제거 */
+.notion-property-select-item {
+  &::before { 
+    content: none !important; /* 또는 "" */
+  }
+}
   }
   
   /* =========================================================
@@ -838,93 +872,92 @@ body:not(.dark-mode) {
   }
 }
 
-/* 1. 사이드바 목차 레이아웃 정렬 (건축적 정렬을 위해 왼쪽으로 밀착) */
-.notion-aside-table-of-contents {
-  align-items: flex-start !important;
-}
-
-/* 2. 기존 'TABLE OF CONTENTS' 텍스트 투명하게 숨기기 */
-.notion-aside-table-of-contents-header {
-  color: transparent !important; /* 영문 텍스트 투명화 */
-  font-size: 0.75rem !important; /* '최신글 읽어보기'와 동일한 폰트 크기 */
-  position: relative !important;
-  margin-bottom: 1.5rem !important;
-  user-select: none;
-  width: 100%;
-}
-
-/* 3. 투명해진 자리 위에 '목차' 현판 올리기 */
-.notion-aside-table-of-contents-header::before {
-  content: '목차' !important; /* 한글 변경 */
-  color: var(--fg-color-3) !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 0 !important;
-  
-  /* [최신글 읽어보기와 100% 스타일 동기화] */
-  font-weight: 700 !important;
-  letter-spacing: 0.15em !important;
-  text-transform: uppercase !important;
-  visibility: visible !important;
-}
-
-/* 4. 목차 리스트 폰트 및 간격 정밀 조정 */
-.notion-aside-table-of-contents .notion-table-of-contents-item {
-  line-height: 1.6 !important;
-  padding: 0.2rem 0 !important;
-}
-
-.notion-aside-table-of-contents .notion-table-of-contents-item-body {
-  font-size: 0.9rem !important;
-  color: var(--fg-color) !important;
-  text-decoration: none !important;
-}
-
-.notion-aside-table-of-contents .notion-table-of-contents-item-body:hover {
-  color: var(--notion-blue) !important;
-  text-decoration: underline !important;
-}
-
-/* 1. 텍스트 콘트라스트 및 색상 절대 고정 */
-/* 목차 내용과 최신글 제목의 색상을 동일한 절대값(#555555)으로 통일합니다. */
-.notion-aside-table-of-contents .notion-table-of-contents-item-body,
-.aside-recent-posts .aside-recent-text {
-  color: #555555 !important; /* 명확한 대비를 위한 절대 색상값 */
-  font-weight: 400 !important;
-  font-size: 14px !important; /* 절대 수치 사용 */
-  opacity: 1 !important; /* 라이브러리 특유의 투명도 상속 차단 */
-}
-
-/* 2. 문장 간격 절대 수치(px) 적용 */
-/* 상속된 비율의 영향을 받지 않도록 px 단위를 사용하여 간격을 일치시킵니다. */
-
-/* 목차 아이템 간격 */
-.notion-aside-table-of-contents .notion-table-of-contents-item {
-  margin-bottom: 16px !important; /* 절대 수치 8px */
-  line-height: 1.4 !important;
-}
-
-/* 최신글 아이템 간격 */
-.aside-recent-item {
-  margin-bottom: 4px !important; /* 절대 수치 8px */
-  display: block;
-  line-height: 1.4 !important;
-}
-
-/* 3. 구역 간 간격 조절 (목차 하단선 ~ 최신글 헤더) */
-/* 목차 하단의 구분선과 '최신글 읽어보기' 사이의 거리를 조정합니다. */
-
+/* 1. 전체 레이아웃 및 수직 라인(Align) 일치 */
+.notion-aside-table-of-contents,
 .aside-recent-posts {
-  margin-top: 40px !important; /* 목차 끝과 구분선 사이의 상단 여백 */
-  padding-top: 40px !important; /* 구분선과 '최신글 읽어보기' 제목 사이의 여백 */
-  border-top: 1px solid #eeeeee !important; /* 구분선 색상 명시 */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important; /* 모든 요소를 왼쪽 라인에 칼같이 밀착 */
+  padding: 0 !important;
+  margin-left: 0 !important;
+  width: 100% !important;
+  background: transparent !important;
 }
 
-/* 4. 헤더 스타일(목차/최신글) 재확인 */
-.notion-aside-table-of-contents-header::before,
+/* 2. 헤더 공정: '목차' 및 '최신글 읽어보기' 스타일 동기화 */
+.notion-aside-table-of-contents-header,
 .aside-recent-posts .aside-recent-title {
-  color: #888888 !important; /* 헤더끼리의 색상 통일 */
+  /* [규격] 12px, 굵기 700, 자간 0.15em */
   font-size: 12px !important;
   font-weight: 700 !important;
   letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  color: #888888 !important; /* 헤더 전용 그레이 */
+  
+  /* [위치] 아래 리스트와의 간격 고정 */
+  margin-bottom: 24px !important; 
+  text-align: left !important;
+  width: 100% !important;
+  position: relative !important;
+}
+
+/* 2-1. '목차' 한글 교체 세밀 마감 */
+.notion-aside-table-of-contents-header {
+  color: transparent !important; /* 기존 영문 투명화 */
+  user-select: none;
+}
+
+.notion-aside-table-of-contents-header::before {
+  content: '목차' !important;
+  color: #888888 !important;
+  position: absolute !important;
+  left: 0 !important; /* 왼쪽 수직 라인 일치 */
+  top: 0 !important;
+  visibility: visible !important;
+}
+
+/* 3. 리스트 공정: 목차 내용과 최신글 텍스트 완벽 일치 */
+.notion-aside-table-of-contents .notion-table-of-contents-item-body,
+.aside-recent-posts .aside-recent-text {
+  /* [색상] 투명도 100%, 진회색(#444444) */
+  color: #444444 !important; 
+  opacity: 1 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  
+  /* [마감] 정렬 및 효과 제거 */
+  text-align: left !important;
+  text-decoration: none !important; /* 밑줄 제거로 정갈함 유지 */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 3-1. 목차 아이템 전용 간격 설정 */
+.notion-aside-table-of-contents .notion-table-of-contents-item {
+  margin-bottom: 20px !important; /* 목차 아이템 사이의 수직 간격 */
+  padding: 0 !important;
+  line-height: 1.5 !important;
+  list-style: none !important;
+}
+
+/* 3-2. 최신글 아이템 전용 간격 설정 */
+.aside-recent-posts .aside-recent-item {
+  margin-bottom: 1px !important; /* 최신글 아이템 사이의 수직 간격 (따로 조절 가능) */
+  padding: 0 !important;
+  line-height: 1.5 !important;
+  list-style: none !important;
+}
+
+/* 3-3. 인터랙션: 호버 효과 */
+.notion-aside-table-of-contents .notion-table-of-contents-item-body:hover,
+.aside-recent-posts .aside-recent-item:hover .aside-recent-text {
+  color: var(--notion-blue) !important;
+  opacity: 1 !important;
+  text-decoration: none !important;
+}
+
+/* 4. 구역(Zoning) 마감: 목차와 최신글 사이의 경계 설정 */
+.aside-recent-posts {
+  margin-top: 48px !important;    /* 목차 구역 끝 ~ 최신글 시작 사이 여백 */
+  padding-top: 60px !important;   /* 구분선 ~ '최신글 읽어보기' 제목 사이 여백 */
+  border-top: 1px solid #eeeeee !important; /* 정갈한 수평 구분선 */
 }
