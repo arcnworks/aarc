@@ -14,6 +14,9 @@ export const mapPageUrl =
   (pageId = '') => {
     const pageUuid = parsePageId(pageId, { uuid: true });
 
+    // [추가된 안전장치 1] 가져온 페이지 ID가 비어있으면 무시합니다.
+    if (!pageUuid) return '';
+
     if (uuidToId(pageUuid) === site.rootNotionPageId) {
       return createUrl('/', searchParams);
     } else {
@@ -28,6 +31,9 @@ export const getCanonicalPageUrl =
   (site: Site, recordMap: ExtendedRecordMap) =>
   (pageId = '') => {
     const pageUuid = parsePageId(pageId, { uuid: true });
+
+    // [추가된 안전장치 2] 가져온 페이지 ID가 비어있으면 무시합니다.
+    if (!pageId || !pageUuid) return '';
 
     if (uuidToId(pageId) === site.rootNotionPageId) {
       return `https://${site.domain}`;

@@ -6,7 +6,7 @@ export default siteConfig({
 
   // if you want to restrict pages to a single notion workspace (optional)
   // (this should be a Notion ID; see the docs for how to extract this)
-  rootNotionSpaceId: 'null',
+  rootNotionSpaceId: null,
 
   // 사이트 기본 정보 (필수)
   name: '감정적인 건축가,아크(AaRC)', // 사이트 이름

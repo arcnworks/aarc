@@ -55,32 +55,47 @@
   }
 }
 
-.notion-gallery-grid {
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 갤러리를 반응형 그리드로 설정 */
-  grid-gap: 1.5vmin; /* 그리드 간격 설정 */
-  gap: 1.5vmin; /* IE와 호환성을 위한 추가 간격 설정 */
-}
+
 
 .notion-gallery-grid .notion-page-icon-inline {
   display: none; /* 갤러리에서 페이지 아이콘 숨김 */
 }
 
+/* --- 갤러리 카드 제목 및 속성 정렬 최적화 --- */
+
 .notion-gallery-grid .notion-page-title-text {
-  font-size: 1.2em; /* 페이지 제목 텍스트 크기 조정 */
-  white-space: unset; /* 텍스트 줄바꿈 허용 */
+  font-size: 1.2em;           /* 제목의 폰트 높이 */
+  line-height: 1.5;           /* 줄 간격을 1.5로 명확히 설정 */
+  height: 3.0em;              /* line-height(1.5) * 2줄 = 3.0em 공간을 무조건 확보 */
+  
+  /* 최대 2줄까지만 보여주고 넘치면 말줄임표(...) 처리 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  
+  overflow: hidden;
+  white-space: normal;        /* 줄바꿈 허용 */
+  word-break: break-all;      /* 단어 단위로 깔끔하게 줄바꿈 */
+  margin-bottom: 4px;         /* 아래쪽 속성과의 간격 */
 }
 
+/* --- 갤러리 카드 속성(텍스트) 줄바꿈 설정 --- */
+
 .notion-gallery-grid .notion-collection-card-property {
-  white-space: unset; /* 컬렉션 카드 속성에서 텍스트 줄바꿈 허용 */
-  text-overflow: unset; /* 텍스트 오버플로우 방지 */
+  white-space: normal !important;     /* 자동 줄바꿈 허용 (기존 nowrap 해제) */
+  text-overflow: unset !important;    /* 말줄임표(...) 제거 */
+  overflow: visible !important;       /* 넘치는 텍스트가 보이도록 설정 */
+  display: block;                     /* 영역을 블록 단위로 설정하여 줄바꿈 원활화 */
 }
 
 .notion-gallery-grid .notion-property-text {
-  font-size: 12px; /* 속성 텍스트 크기 조정 */
+  font-size: 12px;                    /* 속성 텍스트 크기 유지 */
+  white-space: normal;                /* 내부 텍스트 줄바꿈 허용 */
+  word-break: break-all;              /* 너무 긴 단어도 레이아웃을 깨지 않고 줄바꿈 */
+  line-height: 1.4;                   /* 줄바꿈 시 가독성을 위한 간격 조정 */
 }
-
 .notion-collection-card {
-  border-radius: 0px; /* 카드의 모서리를 둥글게 하지 않음 */
+  border-radius: 0px; /* 그림자의 모서리를 둥글게 하지 않음 */
   box-shadow: none; /* 그림자 제거 */
 }
 
@@ -139,4 +154,12 @@
   margin: 2em 0; /* 수평선 위아래 여백 설정 */
 }
 
+/* 노션 컬렉션 탭 아이콘 숨기기 */
+.notion-collection-view-tabs .notion-collection-view-type-icon {
+  display: none !important;
+}
 
+/* 아이콘 공간 제거 */
+.notion-collection-view-tabs .notion-collection-view-tab-title {
+  margin-left: 0 !important;
+}

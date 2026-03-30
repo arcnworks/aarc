@@ -150,69 +150,7 @@ body:not(.dark-mode) {
     left: var(--notion-page-left-right-padding);
   }
 
-  // 페이지 속성들
-  .notion-collection-page-properties {
-    .notion-collection-row {
-      margin-bottom: none;
-      border-bottom: none;
-      padding-bottom: 0;
-      padding-left: 4px
-      ;
-    }
 
-    .notion-collection-row-body {
-      flex-wrap: wrap;
-      flex-direction: row;
-      gap: 0;
-    }
-
-    .notion-collection-row-property {
-      margin-bottom: 0.5rem;
-
-      + .notion-collection-row-property {
-        &::before {
-          content: '';
-          width: 1px;
-          height: 12px;
-          background-color: var(--fg-color);
-          opacity: 0.6;
-          margin: 0 0.3rem;
-        }
-      }
-    }
-
-    @media (max-width: 700px) {
-      .notion-collection-property-type-multi_select {
-        width: 100%;
-
-        &::before {
-          display: none;
-        }
-
-        .notion-property {
-          justify-content: flex-start;
-        }
-      }
-    }
-
-    .notion-collection-row-value {
-      min-height: auto;
-    }
-
-    .notion-property-select-item,
-    .notion-property-multi_select-item {
-      background-color: transparent !important;
-      padding: 0;
-    }
-
-    .notion-property-multi_select-item {
-      opacity: 0.7;
-
-      &::before {
-        content: '#';
-      }
-    }
-  }
 
   // 페이지 우측 사이드
   .notion-aside {
@@ -555,202 +493,438 @@ body:not(.dark-mode) {
 }
 
 /**
- * ================ notion 페이지 - 커스텀 블럭 스타일 ================
+ * ARC BLOG - 통합 커스텀 스타일 시트
  */
-.notion {
-  // 유저 프로필
+
+ .notion {
+  // 1. 페이지 기초 레이아웃
+  .notion-page {
+    position: relative;
+    padding: 0;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  // 2. 유저 프로필 스타일
   .notion-user-container {
     display: flex;
     align-items: center;
-
-    .notion-user {
-      margin-right: 0.3rem;
-    }
+    .notion-user { margin-right: 0.3rem; }
   }
 
-  // 데이터베이스 - 갤러리뷰 스타일 정의
-  /* 인덱스 페이지에서만 중앙 정렬 */
-  .index-page .postList {
-    justify-content: left; /* 메인 페이지 중앙 정렬 */
-  }
+  // 3. 통합 반응형 그리드 규칙 (메인 목록 & 본문 갤러리)
+  .postList,
+  .notion-gallery-grid {
+    display: grid !important;
+    gap: 20px !important;
+    margin-top: 0.8rem;
+    
+    // 열 개수: 화면 너비에 따라 2열 -> 3열 -> 4열 자동 전환
+    grid-template-columns: repeat(2, 1fr) !important;
+    @media (min-width: 641px) { grid-template-columns: repeat(3, 1fr) !important; }
+    @media (min-width: 771px) { grid-template-columns: repeat(4, 1fr) !important; }
 
-  .postList {
-    display: grid;
-    margin-top: 0.8rem; // 위쪽 여백을 추가합니다.
-    gap: 20px; // 카드 사이의 간격을 20px로 설정합니다.
+    // 4. 카드(Card) 디자인 - 라운드 제거 및 그림자 설정
+    > a, .notion-collection-card {
+      background-color: var(--notion-card-background-color);
+      transition: 250ms transform, 250ms background-color;
+      border-radius: 0 !important; // 카드 외부 라운드 제거
+      box-shadow: none !important;
+      overflow: visible !important;
+      text-decoration: none;
 
-    // 기본 2열, 화면이 커짐에 따라 3, 4열로 변경됩니다.
-    grid-template-columns: repeat(2, 1fr);
-
-    @media (min-width: 641px) {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    @media (min-width: 771px) {
-      grid-template-columns: repeat(4, 1fr);
-    }
-    > a {
-      background-color: var(--notion-card-background-color); /* 카드 배경색 설정 */
-      //box-shadow: 10px 20px 20px 0 rgb(92 95 112 / 8%); /* 그림자 효과 */
-      //margin-bottom: 1px; /* 카드 아래 여백 */
-      transition: 250ms transform, 250ms background-color; /* 호버 시 전환 효과 */
-
-       &:hover {
-        //transform: translateY(-8px); /* 호버 시 위로 살짝 이동 */
-      }
+      // 카드 그림(커버) 영역 최적화
       .notion-collection-card-cover {
-        border-radius: 0;
-        box-shadow: none;
-        aspect-ratio: 3 / 2; /* 기본 비율 */
-        width: 100%;
+        height: auto !important; 
+        aspect-ratio: 16 / 9 !important; // 황금 비율 유지
         overflow: hidden;
-      }
-      
-      .notion-collection-card-cover img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center center;
-        display: block;
-      }
-      
-      /* 화면이 760px 이하일 경우 */
-      @media (max-width: 760px) {
-        .notion-collection-card-cover {
-          aspect-ratio: 1 / 1; /* 1:1 비율로 변경 */
+        border-radius: 0 !important; // 커버 영역 라운드 제거
+        box-shadow: 2px 2px 8px 4px rgba(15, 15, 15, 0.1);
+
+        img, .lazy-image-wrapper, span {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+          border-radius: 0 !important; // 실제 이미지 라운드 제거
         }
-      
-        /* 카드 크기 조정 */
-        .notion-collection-card {
-          width: calc(50% - 20px);
-          margin: 10px;
+
+        @media (max-width: 760px) {
+          aspect-ratio: 1 / 1 !important; // 모바일 1:1 비율
         }
       }
 
-      .notion-collection-card-property {
-        padding: 0.1rem; // 카드 속성 영역의 패딩을 설정
-      }
-
-      .notion-property-select-item {
-        margin-bottom: 0.2rem; // 선택 속성의 아래쪽 여백 설정.
-      }
-
-      .notion-property-multi_select-item {
-        &::before {
-          content: '#'; // 다중 선택 속성 앞에 '#'을 추가합니다.
-        }
-      }
-
+      // 카드 본문 및 텍스트 설정
       .notion-collection-card-body {
-        display: block; // 카드 본문을 블록 레벨 요소로 설정합니다.
-        padding: 0.4rem 0.4rem 0.4rem; // 내부 여백을 설정합니다. (갤러리 뷰의 제목과 작성자)
-        
+        display: block;
+        padding: 0.4rem;
 
-        .notion-page-icon-image {
-          display: none; // 페이지 아이콘 이미지를 숨깁니다.
-        }
-
+        // 제목: 2줄 제한 및 고정 높이 확보
         .notion-page-title-text {
-          font-size: 1.1rem; // 기본 폰트 크기 설정.
-          font-weight: 600; // 볼드체로 설정.
-          margin-bottom: 0.8rem; // 아래쪽 여백 추가.
-          display: -webkit-box; // 플렉스 기반의 레이아웃 상자.
-          -webkit-line-clamp: 2; // 텍스트를 최대 두 줄로 제한.
-          -webkit-box-orient: vertical; // 텍스트가 수직 방향으로 정렬되도록 설정.
-          overflow: hidden; // 넘치는 텍스트를 숨김.
-          text-overflow: ellipsis; // 두 줄 이후의 텍스트는 말 줄임표로 표시.
-          white-space: normal; // 여러 줄 표시 허용.
-          line-height: 1.5; // 줄 간격 설정.
-          height: 3rem; // 두 줄의 높이에 해당하는 고정 높이 설정 (line-height × 2).
-        }
-        
-        
-        .notion-property-title {
-          width: 100%; // 제목 속성의 너비를 100%로 설정.
-          display: block; // 블록 레벨 요소로 설정.
-        }
-        
-        .notion-property-select {
-          margin-right: 6px; // 선택 속성의 오른쪽 여백 추가.
+          font-size: 1.1rem !important;
+          font-weight: 600 !important;
+          line-height: 1.5 !important;
+          height: 3rem !important; 
+          display: -webkit-box !important;
+          -webkit-line-clamp: 2 !important;
+          -webkit-box-orient: vertical !important;
+          overflow: hidden !important;
+          white-space: normal !important;
+          text-overflow: ellipsis;
+          margin-bottom: 0.8rem;
         }
 
-        .notion-collection-card-property:last-child {
-          padding-top: 0.8rem; // 위쪽 패딩 추가.
-          overflow: hidden; // 넘치는 텍스트를 숨김.
-          text-overflow: ellipsis; // 두 줄 이후의 텍스트는 말 줄임표로 표시.
-          white-space: normal; // 여러 줄 표시 허용.
-          line-height: 1.5; // 줄 간격 설정.
-          height: 3rem; // 두 줄의 높이에 해당하는 고정 높이 설정 (line-height × 2).
-
-          .notion-property-created_time {
-            display: block; // 생성 시간 속성을 블록 레벨 요소로 설정.
-            width: calc(100% + 1.3rem * 2); // 생성 시간의 너비를 카드 본문과 맞춥니다.
-            margin-left: -1.3rem; // 왼쪽으로 이동하여 본문과 정렬.
-            padding-left: 1.3rem; // 내부 여백 추가.
-            padding-top: 1rem; // 위쪽 패딩 추가.
-            margin-top: 0.8gitrem; // 위쪽 여백 추가.
-            border-top: 1px solid var(--line-color); // 위쪽에 선 추가.
-            opacity: 0.7; // 불투명도 설정.
-            line-height: 1; // 행 간격 설정.
-          }
-        }
-
-        .notion-collection-card-property:nth-child(2) {
-          height: 24px; // 두 번째 속성의 높이 설정. 갤러리 박스의 높이설정
+        // 속성(태그 등) 줄바꿈 허용
+        .notion-collection-card-property {
+          padding: 0.1rem;
+          white-space: normal !important;
+          text-overflow: unset !important;
+          overflow: visible !important;
+          font-size: 12px;
 
           .notion-property-text {
-            width: 100%; // 텍스트 속성의 너비를 100%로 설정.
-            white-space: initial; // 텍스트 줄 바꿈 허용.
-            color: #7a7c85; // 텍스트 색상 설정.
-            font-size: 12px; // 텍스트 폰트 크기 설정.
-            overflow: hidden; // 넘치는 텍스트를 숨깁니다.
-            display: -webkit-box; // 텍스트를 Flexbox로 표시.
-            -webkit-line-clamp: 3; // 텍스트를 3줄로 제한.
-            -webkit-box-orient: vertical; // Flexbox 방향을 세로로 설정.
-            text-overflow: ellipsis; // 넘치는 텍스트를 줄임표로 표시.
+            width: 100%;
+            color: #7a7c85;
+            word-break: break-all !important;
           }
         }
       }
+    }
+  }
+
+  // 5. 페이지 상단 커버 스타일
+  .notion-page-cover,
+  .notion-page-cover-wrapper,
+  .notion-page-cover-wrapper span,
+  .notion-page-cover-wrapper img {
+    width: 100% !important;
+    height: 30vh !important;
+    min-height: 30vh !important;
+    max-height: 30vh !important;
+    object-fit: cover;
+    border-radius: 0 !important; // 페이지 커버 라운드 제거
+  }
+
+  // 커버 유무에 따른 상단 여백
+  .notion-page-no-cover { margin-top: 48px !important; padding-top: 48px !important; }
+  .notion-page-has-cover { padding-top: 48px !important; }
+  .notion-page-has-cover.notion-page-no-icon { padding-top: 48px !important; }
+}
+
+// 6. 다크모드 및 검색 UI 최적화
+.dark-mode {
+  background-color: var(--bg-color);
+  .notion-header .breadcrumb { text-shadow: 0 0 3px black; }
+  .notion-search {
+    color: var(--fg-color);
+    background-color: var(--bg-color-1);
+    input { background-color: transparent; }
+  }
+}
+
+// 7. 시스템 아이콘 숨기기
+.notion-collection-view-type-icon, 
+.notion-page-icon-image,           
+.notion-page-icon-hero {           
+  display: none !important;
+}
+
+.notion-collection-view-tabs .notion-collection-view-tab-title {
+  margin-left: 0 !important;
+}
+
+/* =========================================================
+   8. 본문 가독성(폭) 및 우측 목차(Aside) 반응형 레이아웃
+   ========================================================= */
+   :root {
+    --notion-max-width: 760px;          /* 본문이 가장 읽기 편안한 최대 폭 */
+    --notion-aside-width: 260px;        /* 우측 목차의 폭 */
+    --notion-aside-space-width: 100px;   /* 본문과 목차 사이의 여백 */
+  }
+  
+  .notion {
+    /* 1) 본문 영역의 폭 제한 및 중앙 정렬 */
+    .notion-page-content-inner {
+      width: 100% !important;
+      max-width: var(--notion-max-width) !important;
+      margin: 0 auto !important; 
+    }
+  
+    /* 2) PC 화면 (1200px 이상): 본문과 목차 나란히 배치 */
+    @media (min-width: 1200px) {
+      .notion-page-content-has-aside {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        width: 100% !important;
+        max-width: calc(var(--notion-max-width) + var(--notion-aside-space-width) + var(--notion-aside-width)) !important;
+        margin: 0 auto !important;
+      }
+
+      .notion-aside {
+        display: flex !important;
+        width: var(--notion-aside-width) !important;
+        margin-left: var(--notion-aside-space-width) !important;
+        
+        /* [수정 포인트] 목차를 아래로 내리는 설정 */
+        /* 숫자를 키울수록 목차가 더 아래에서 시작합니다. (예: 100px, 150px 등) */
+        margin-top: 540px !important; 
+        
+        /* 스크롤 시 목차가 멈추는 상단 위치 (원하는 경우 함께 조절) */
+        position: sticky;
+        top:540px; 
+      }
+    }
+  
+    /* 3) 모바일/태블릿 화면 (1199px 이하): 반응형 적용 */
+    @media (max-width: 1199px) {
+      .notion-aside {
+        display: none !important; /* 화면이 좁을 땐 사이드 목차 숨김 */
+      }
+  
+      .notion-page-content-inner {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+      }
+    }
+  }
+
+  
+
+  /* =========================================================
+   9. 헤더 폭 최적화 (모니터 끝까지 확장)
+   ========================================================= */
+.notion-header {
+  .notion-nav-header {
+    /* 1440px 제한을 없애고 화면 전체 너비를 사용합니다 */
+    max-width: 100% !important; 
+    
+    /* 로고와 메뉴를 모니터 양 끝으로 밀어냅니다 */
+    display: flex !important;
+    justify-content: space-between !important;
+    
+    /* 모니터 베젤 끝에 너무 딱 붙으면 답답해 보일 수 있으므로 
+       양옆에 시각적 여백(예: 40px 또는 4vw)을 줍니다. */
+    padding-left: 4vw !important;
+    padding-right: 4vw !important;
+    
+    margin: 0 !important; /* 가운데 정렬 해제 */
+  }
+}
+
+// =========================================================
+  // 11. 페이지 속성(Properties) 수직 리스트 스타일 (색상 통일 포함)
+  // =========================================================
+  .notion-collection-page-properties {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--fg-color-1); 
+    padding-top: 1rem;
+
+    .notion-collection-row-body {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+    }
+
+    .notion-collection-row-property {
+      display: flex !important;
+      align-items: flex-start !important;
+      margin-bottom: 0 !important;
+      &::before { display: none !important; }
+    }
+
+    .notion-collection-column-title {
+      width: 80px !important;
+      flex: 0 0 80px !important;
+      color: var(--fg-color-3); 
+      font-size: 13px;
+      font-weight: 500;
+      padding-top: 2px;
+    }
+
+    .notion-collection-row-value {
+      flex: 1;
+      padding-left: 10px !important;
+      font-size: 14px;
+      color: var(--fg-color);
+      line-height: 1.4;
+    }
+
+    // 태그 및 선택 아이템 스타일 (색상 통일 추가)
+    .notion-property-select-item,
+    .notion-property-multi_select-item {
+      background-color: transparent !important; // 배경 투명화
+      color: var(--fg-color) !important;       // 노션 색상 무시하고 본문 색상으로 통일
+      padding: 0 !important;
+      opacity: 0.8;
+      
+      &::before { content: '#'; }
+      
+      // 노션 라이브러리가 강제로 입히는 개별 색상 클래스들을 모두 무력화
+      span { color: inherit !important; } 
+    }
+  }
+  
+  /* =========================================================
+   12. 글 제목 및 속성(Properties) 축 정렬 (본문과 좌측 라인 일치)
+   ========================================================= */
+.notion-title,
+.notion-collection-page-properties {
+  width: 100% !important;
+  /* 기본적으로 본문의 폭(760px)과 동일하게 맞춥니다 */
+  max-width: var(--notion-max-width) !important; 
+  margin: 0 auto !important; 
+  padding-left: 0 !important; 
+  padding-right: 0 !important;
+}
+
+/* PC 화면 (1200px 이상): 본문 컨테이너와 동일한 폭(1120px)으로 확장 */
+@media (min-width: 1200px) {
+  .notion-title,
+  .notion-collection-page-properties {
+    /* 8번 항목의 구조와 똑같이: 본문(760) + 여백(100) + 목차(260)를 합쳐서 중앙 정렬합니다. 
+       이렇게 하면 텍스트의 왼쪽 끝선이 본문과 정확히 맞아떨어집니다. */
+    max-width: calc(var(--notion-max-width) + var(--notion-aside-space-width) + var(--notion-aside-width)) !important;
+  }
+}
+
+/* 모바일/태블릿 화면 (1199px 이하): 본문과 동일한 여백 적용 */
+@media (max-width: 1199px) {
+  .notion-title,
+  .notion-collection-page-properties {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+/* ARC 텍스트 전용 사이드바 스타일 */
+.aside-recent-posts {
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--fg-color-1);
+
+  .aside-recent-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--fg-color-3);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .aside-recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .aside-recent-item {
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover .aside-recent-text {
+      color: var(--notion-blue);
+      text-decoration: underline;
+    }
+
+    .aside-recent-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--fg-color);
+      word-break: keep-all;
     }
   }
 }
 
-/**
- * ================ 다크모드 처리 ================
- */
-.dark-mode {
-  background-color: var(--bg-color);
+/* 1. 사이드바 목차 레이아웃 정렬 (건축적 정렬을 위해 왼쪽으로 밀착) */
+.notion-aside-table-of-contents {
+  align-items: flex-start !important;
+}
 
-  // 헤더
-  .notion-header {
-    .breadcrumb {
-      text-shadow: 0 0 3px black;
-    }
-  }
+/* 2. 기존 'TABLE OF CONTENTS' 텍스트 투명하게 숨기기 */
+.notion-aside-table-of-contents-header {
+  color: transparent !important; /* 영문 텍스트 투명화 */
+  font-size: 0.75rem !important; /* '최신글 읽어보기'와 동일한 폰트 크기 */
+  position: relative !important;
+  margin-bottom: 1.5rem !important;
+  user-select: none;
+  width: 100%;
+}
 
-  // 검색
-  .notion-search {
-    color: var(--fg-color);
-    caret-color: var(--fg-color);
-    background-color: var(--bg-color-1);
+/* 3. 투명해진 자리 위에 '목차' 현판 올리기 */
+.notion-aside-table-of-contents-header::before {
+  content: '목차' !important; /* 한글 변경 */
+  color: var(--fg-color-3) !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  
+  /* [최신글 읽어보기와 100% 스타일 동기화] */
+  font-weight: 700 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  visibility: visible !important;
+}
 
-    input {
-      color: var(--fg-color);
-      caret-color: var(--fg-color);
-      background-color: transparent;
+/* 4. 목차 리스트 폰트 및 간격 정밀 조정 */
+.notion-aside-table-of-contents .notion-table-of-contents-item {
+  line-height: 1.6 !important;
+  padding: 0.2rem 0 !important;
+}
 
-      &::placeholder {
-        color: var(--fg-color-5);
-      }
-    }
+.notion-aside-table-of-contents .notion-table-of-contents-item-body {
+  font-size: 0.9rem !important;
+  color: var(--fg-color) !important;
+  text-decoration: none !important;
+}
 
-    .noResults {
-      color: var(--fg-color-5);
-    }
+.notion-aside-table-of-contents .notion-table-of-contents-item-body:hover {
+  color: var(--notion-blue) !important;
+  text-decoration: underline !important;
+}
 
-    .noResultsDetail {
-      color: var(--fg-color-5);
-      opacity: 0.6;
-    }
-  }
+/* 1. 텍스트 콘트라스트 및 색상 절대 고정 */
+/* 목차 내용과 최신글 제목의 색상을 동일한 절대값(#555555)으로 통일합니다. */
+.notion-aside-table-of-contents .notion-table-of-contents-item-body,
+.aside-recent-posts .aside-recent-text {
+  color: #555555 !important; /* 명확한 대비를 위한 절대 색상값 */
+  font-weight: 400 !important;
+  font-size: 14px !important; /* 절대 수치 사용 */
+  opacity: 1 !important; /* 라이브러리 특유의 투명도 상속 차단 */
+}
+
+/* 2. 문장 간격 절대 수치(px) 적용 */
+/* 상속된 비율의 영향을 받지 않도록 px 단위를 사용하여 간격을 일치시킵니다. */
+
+/* 목차 아이템 간격 */
+.notion-aside-table-of-contents .notion-table-of-contents-item {
+  margin-bottom: 16px !important; /* 절대 수치 8px */
+  line-height: 1.4 !important;
+}
+
+/* 최신글 아이템 간격 */
+.aside-recent-item {
+  margin-bottom: 4px !important; /* 절대 수치 8px */
+  display: block;
+  line-height: 1.4 !important;
+}
+
+/* 3. 구역 간 간격 조절 (목차 하단선 ~ 최신글 헤더) */
+/* 목차 하단의 구분선과 '최신글 읽어보기' 사이의 거리를 조정합니다. */
+
+.aside-recent-posts {
+  margin-top: 40px !important; /* 목차 끝과 구분선 사이의 상단 여백 */
+  padding-top: 40px !important; /* 구분선과 '최신글 읽어보기' 제목 사이의 여백 */
+  border-top: 1px solid #eeeeee !important; /* 구분선 색상 명시 */
+}
+
+/* 4. 헤더 스타일(목차/최신글) 재확인 */
+.notion-aside-table-of-contents-header::before,
+.aside-recent-posts .aside-recent-title {
+  color: #888888 !important; /* 헤더끼리의 색상 통일 */
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.15em !important;
 }

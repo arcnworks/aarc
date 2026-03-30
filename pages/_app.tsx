@@ -20,7 +20,7 @@ import { posthogConfig, posthogId } from '~/lib/config';
 import '~/styles/custom/index.scss';
 
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Analytics } from '@vercel/analytics/react'; // 추가된 부분
+import { Analytics } from '@vercel/analytics/react';
 
 const notoSansKr = Noto_Sans_KR({
   subsets: ['latin'], // 필요한 언어 서브셋을 지정합니다.

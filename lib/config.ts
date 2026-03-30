@@ -23,7 +23,7 @@ if (!rootNotionPageId) {
 export const rootNotionSpaceId: string | null = parsePageId(
   getSiteConfig('rootNotionSpaceId', null),
   { uuid: true },
-);
+) || null;
 
 export const pageUrlOverrides = cleanPageUrlMap(getSiteConfig('pageUrlOverrides', {}) || {}, {
   label: 'pageUrlOverrides',
