@@ -12,7 +12,8 @@ import { PageProps as BasePageProps, Params } from 'lib/types';
 import { NotionPage } from 'components';
 import { PageBlock } from 'notion-types';
 import { getBlockTitle, getPageProperty } from 'notion-utils';
-import { defaultMapImageUrl } from 'lib/map-image-url';
+
+// [수정 1] 문제가 되었던 defaultMapImageUrl import를 삭제했습니다.
 
 type PageProps = BasePageProps & {
   page?: PageBlock;
@@ -30,17 +31,16 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
   const rawPageId = context.params!.pageId as string;
 
   try {
-    // 1. 본문 데이터 로드
     const notionProps = await resolveNotionPage(domain, rawPageId);
     
     if (!notionProps || (notionProps as any).error) {
       throw new Error(`데이터 로드 실패: ${rawPageId}`);
     }
 
-    // 2. 무거운 최신글 검색 제외 (초경량화)
+    // 최신글 제외 (초경량화)
     const recentPosts: any[] = []; 
 
-    // 3. SEO 메타데이터 추출
+    // SEO 메타데이터 추출
     const recordMap = notionProps.recordMap;
     const pageBlockId = Object.keys(recordMap.block).find(
       (id) => recordMap.block[id]?.value?.type === 'page'
@@ -54,9 +54,14 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
                       defaultSiteDescription;
     if (typeof description !== 'string') description = defaultSiteDescription;
 
+    // [수정 2] 복잡한 함수 호출 대신, 노션 이미지 주소를 안전하게 조립하는 방식으로 변경
     let image = 'https://aarc.kr/default-og-image.png'; 
     if (pageBlock?.format?.page_cover) {
-      image = defaultMapImageUrl(pageBlock.format.page_cover, pageBlock);
+      const coverUrl = pageBlock.format.page_cover;
+      // 노션 자체 이미지인지, 외부 이미지인지에 따라 안전하게 인코딩 처리
+      image = coverUrl.startsWith('http') 
+        ? coverUrl 
+        : `https://www.notion.so${coverUrl}`; 
     }
 
     const url = `https://aarc.kr/${rawPageId}`;
@@ -78,13 +83,11 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
 
 export async function getStaticPaths() {
   if (isDev) return { paths: [], fallback: true };
-  const siteMap = await getSiteMap();
+  const siteMap = await getSiteMap(); // 사이트맵 객체 로딩 유지 (에러 방지)
   
-  // 4. ISR 적용: 페이지를 미리 만들어두어 과부하 방지
+  // [수정 3] 429 에러의 주범인 일괄 빌드를 포기하고, 접속 시 렌더링(ISR)으로 회귀합니다.
   return { 
-    paths: Object.keys(siteMap.canonicalPageMap).map((pageId) => ({
-      params: { pageId }
-    })), 
+    paths: [], // 중요: 여기서 배열을 비워야 빌드 시 노션 서버를 때리지 않습니다.
     fallback: 'blocking' 
   };
 }
@@ -92,24 +95,18 @@ export async function getStaticPaths() {
 export default function NotionDomainDynamicPage(props: PageProps) {
   const { seo } = props;
   
-  // 5. HTML <head> 태그에 메타데이터 주입
   return (
     <>
       <Head>
-        {/* 기본 SEO */}
         <title>{seo?.title}</title>
         <meta name="description" content={seo?.description} />
         <link rel="canonical" href={seo?.url} />
-
-        {/* 오픈 그래프 (SNS 공유용) */}
         <meta property="og:title" content={seo?.title} />
         <meta property="og:description" content={seo?.description} />
         <meta property="og:url" content={seo?.url} />
         <meta property="og:image" content={seo?.image} />
         <meta property="og:type" content="article" />
         <meta property="og:site_name" content="AaRC" />
-
-        {/* 트위터 카드 */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={seo?.title} />
         <meta name="twitter:description" content={seo?.description} />
