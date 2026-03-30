@@ -21,26 +21,29 @@ type PageProps = BasePageProps & {
 // [강화된 지연 함수] 2~3초의 랜덤 딜레이를 주어 429 에러 원천 차단
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// pages/[pageId].tsx 의 getStaticProps 함수 부분만 교체
+
 export const getStaticProps: GetStaticProps<PageProps, Params> = async (context) => {
   const rawPageId = context.params!.pageId as string;
   
-  // [핵심 변경] 빌드 모드일 때만 강력한 대기 시간을 적용합니다.
   if (!isDev) {
-    const delay = Math.floor(Math.random() * 2000) + 1000; // 1~3초 랜덤 대기
+    const delay = Math.floor(Math.random() * 2000) + 1000;
     await sleep(delay);
   }
 
   try {
+    // 1. 본문 데이터 로드 (여기가 가장 중요합니다)
     const notionProps = await resolveNotionPage(domain, rawPageId);
     
     if (!notionProps || (notionProps as any).error) {
       console.error(`[ARC Fail] 데이터 로드 실패 (Slug: ${rawPageId})`);
-      throw new Error(`Build failed for page: ${rawPageId} due to API issues.`);
+      throw new Error(`Build failed for page: ${rawPageId}`);
     }
 
     let recentPosts = [];
+    
+    // 2. 최신글(사이드바) 데이터 로드 (본문과 철저히 독립된 에러 처리)
     try {
-      // (최신글 로직은 기존과 완전히 동일하게 유지합니다)
       const pageBlockId = Object.keys(notionProps.recordMap.block).find((id) => {
         const b = notionProps.recordMap.block[id]?.value;
         return b?.type === 'page';
@@ -50,8 +53,9 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
       const parentId = currentBlock?.parent_id;
 
       if (parentId) {
-        // [주의] 최근 글 검색에서도 과부하가 걸릴 수 있으므로 limit을 30으로 약간 줄였습니다.
-        const searchResults = await search({ query: '', ancestorId: rootNotionPageId, limit: 30 });
+        // [근본적 최적화] 검색 하중을 30에서 5로 대폭 축소하여 메모리 과부하 및 타임아웃 원천 차단
+        const searchResults = await search({ query: '', ancestorId: rootNotionPageId, limit: 5 });
+        
         if (searchResults?.recordMap?.block) {
           const blocks = Object.values(searchResults.recordMap.block);
           const posts = blocks
@@ -62,11 +66,15 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
               url: `/${b.value.id.replace(/-/g, '')}`,
               date: Number(b.value.created_time || 0)
             }));
-          recentPosts = posts.sort((a, b) => b.date - a.date).slice(0, 6);
+          
+          // 가져온 5개 중 최신 3개만 추출하여 화면에 표시
+          recentPosts = posts.sort((a, b) => b.date - a.date).slice(0, 3);
         }
       }
     } catch (e) {
-      console.warn(`[ARC Sidebar Warning] 사이드바 데이터를 가져오지 못했습니다.`);
+      // 사이드바 로딩에 실패하더라도 전체 페이지(500 에러)를 터뜨리지 않고 조용히 빈 배열만 넘깁니다.
+      console.warn(`[ARC Sidebar Load Skipped] 과부하 방지를 위해 사이드바를 생략합니다.`);
+      recentPosts = []; 
     }
 
     return { 
@@ -79,7 +87,7 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
     };
   } catch (err) {
     console.error(`[ARC Critical] '${rawPageId}' 빌드 중단:`, err);
-    if (!isDev) throw err; // 여기서 에러를 던져야 Vercel이 404로 덮어쓰지 않습니다.
+    if (!isDev) throw err; 
     return { notFound: true, revalidate: 5 };
   }
 };
