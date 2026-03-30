@@ -23,7 +23,7 @@ export default siteConfig({
   //github: '#',
   // linkedin: '#',
   //newsletter: '#', // optional newsletter URL
-  youtube: 'arcnworks', // optional youtube channel name or `channel/UCGbXXXXXXXXXXXXXXXXXXXXXX`
+  youtube: '@갖지못한방', // optional youtube channel name or `channel/UCGbXXXXXXXXXXXXXXXXXXXXXX`
 
   // default notion icon and cover images for site-wide consistency (optional)
   // page-specific values will override these site-wide defaults
