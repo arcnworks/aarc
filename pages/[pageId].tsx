@@ -18,26 +18,29 @@ type PageProps = BasePageProps & {
   recentPosts?: Array<{ id: string; title: string; url: string; date: number }>;
 };
 
-// pages/[pageId].tsx
+// [강화된 지연 함수] 2~3초의 랜덤 딜레이를 주어 429 에러 원천 차단
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const getStaticProps: GetStaticProps<PageProps, Params> = async (context) => {
-  const rawPageId = context.params!.pageId as string; // 주소창의 슬러그(예: 'blog')를 가져옴
+  const rawPageId = context.params!.pageId as string;
+  
+  // [핵심 변경] 빌드 모드일 때만 강력한 대기 시간을 적용합니다.
+  if (!isDev) {
+    const delay = Math.floor(Math.random() * 2000) + 1000; // 1~3초 랜덤 대기
+    await sleep(delay);
+  }
 
   try {
-    // 1. 슬러그를 통해 노션 데이터를 불러옵니다.
     const notionProps = await resolveNotionPage(domain, rawPageId);
     
-    // [핵심 수정] 에러가 발생하거나 데이터가 없으면 'notFound'를 주지 말고 에러를 던집니다.
-    // 이렇게 해야 Vercel 빌드가 실패하고, 깨진 사이트가 배포되는 것을 막습니다.
     if (!notionProps || (notionProps as any).error) {
       console.error(`[ARC Fail] 데이터 로드 실패 (Slug: ${rawPageId})`);
       throw new Error(`Build failed for page: ${rawPageId} due to API issues.`);
     }
 
-    // 2. 최근 글(recentPosts) 추출 로직 (안정성을 위해 내부 try-catch 유지)
     let recentPosts = [];
     try {
-      // 페이지의 실제 UUID를 찾아 부모 ID를 추적합니다.
+      // (최신글 로직은 기존과 완전히 동일하게 유지합니다)
       const pageBlockId = Object.keys(notionProps.recordMap.block).find((id) => {
         const b = notionProps.recordMap.block[id]?.value;
         return b?.type === 'page';
@@ -47,7 +50,8 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
       const parentId = currentBlock?.parent_id;
 
       if (parentId) {
-        const searchResults = await search({ query: '', ancestorId: rootNotionPageId, limit: 40 });
+        // [주의] 최근 글 검색에서도 과부하가 걸릴 수 있으므로 limit을 30으로 약간 줄였습니다.
+        const searchResults = await search({ query: '', ancestorId: rootNotionPageId, limit: 30 });
         if (searchResults?.recordMap?.block) {
           const blocks = Object.values(searchResults.recordMap.block);
           const posts = blocks
@@ -75,8 +79,7 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
     };
   } catch (err) {
     console.error(`[ARC Critical] '${rawPageId}' 빌드 중단:`, err);
-    // 빌드 중에는 실패하게 만들고, 배포 후 운영 중(ISR)에만 404를 허용합니다.
-    if (!isDev) throw err; 
+    if (!isDev) throw err; // 여기서 에러를 던져야 Vercel이 404로 덮어쓰지 않습니다.
     return { notFound: true, revalidate: 5 };
   }
 };
@@ -84,9 +87,14 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
 export async function getStaticPaths() {
   if (isDev) return { paths: [], fallback: true };
   const siteMap = await getSiteMap();
+  
+  // [중요] paths 배열을 빈 배열([])로 두고, fallback을 'blocking'으로 설정하면
+  // Vercel이 빌드할 때 페이지를 미리 만들지 않고, 
+  // 첫 방문자가 접속할 때 실시간으로 페이지를 만들어 냅니다. (과부하 방지에 탁월)
+  
   return { 
-    paths: Object.keys(siteMap.canonicalPageMap).map((pageId) => ({ params: { pageId } })), 
-    fallback: 'blocking' // fallback: true 대신 'blocking' 사용으로 안정성 강화
+    paths: [], // 기존의 Object.keys(...).map(...) 코드를 빈 배열로 변경
+    fallback: 'blocking' 
   };
 }
 
