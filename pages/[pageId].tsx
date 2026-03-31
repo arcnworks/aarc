@@ -19,7 +19,7 @@ type PageProps = BasePageProps & {
 };
 
 /**
- * [이미지 보안 우회] 노션 서버에 서명을 요청하지 않고 이미지를 출력하여 400 에러를 방지합니다.
+ * [이미지 보안 우회] 노션 서버에 서명을 요청하지 않고 이미지를 출력하여 400 에러를 원천 차단합니다.
  */
 function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
   if (!recordMap || !recordMap.block) return recordMap;
@@ -52,6 +52,7 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
       throw new Error("Notion API Fetch Error");
     }
 
+    // 이미지 경로 치환 로직 실행
     if ('recordMap' in notionProps) {
       notionProps.recordMap = sanitizeRecordMap(notionProps.recordMap);
     }
@@ -68,10 +69,11 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
         pageId: rawPageId,
         page: pageBlock
       }, 
-      revalidate: 60 // [전략 변경] 10초에서 60초로 늘려 노션 서버의 안정성을 극대화합니다.
+      revalidate: 60 // 60초마다 백그라운드에서 최신 데이터를 체크합니다.
     };
   } catch (err) {
-    console.error(`[ARC ISR] '${rawPageId}' 로드 지연 발생:`, err);
+    console.error(`[ARC ISR] '${rawPageId}' 데이터 수신 중 지연 발생:`, err);
+    // 에러 발생 시 404를 반환하되, 60초 뒤에 다시 시도하도록 설정
     return { notFound: true, revalidate: 60 };
   }
 };
@@ -83,24 +85,35 @@ export async function getStaticPaths() {
   const allPageIds = Object.keys(siteMap.canonicalPageMap);
 
   /**
-   * [전략적 전진 배치]
-   * 메인(/), blog, work 페이지만 골라내어 빌드 시점에 미리 생성합니다.
-   * 나머지 프로젝트 상세 페이지들은 fallback: 'blocking'으로 실시간 생성됩니다.
+   * [전략적 전진 배치 명단 설계]
    */
-  const targetHubPages = ['index', 'blog', 'work']; 
+  // 1. 고정 핵심 페이지
+  const hubPages = ['index', 'blog', 'work']; 
   
-  const paths = allPageIds
-    .filter(id => targetHubPages.includes(id)) 
-    .map((pageId) => ({
-      params: { pageId }
-    }));
+  // 2. 블로그 최신글 5개 (URL에 'blog'가 포함된 페이지 중 상위 5개)
+  const latestBlogPosts = allPageIds
+    .filter(id => id.toLowerCase().includes('blog'))
+    .slice(0, 5);
+    
+  // 3. 워크 최신 프로젝트 5개 (URL에 'work'가 포함된 페이지 중 상위 5개)
+  const latestWorkPosts = allPageIds
+    .filter(id => id.toLowerCase().includes('work'))
+    .slice(0, 5);
+
+  // 명단 합치기 및 중복 제거
+  const priorityPaths = Array.from(new Set([...hubPages, ...latestBlogPosts, ...latestWorkPosts]));
+
+  const paths = priorityPaths.map((pageId) => ({
+    params: { pageId }
+  }));
 
   return { 
     paths, 
-    fallback: 'blocking' 
+    fallback: 'blocking' // 명단에 없는 페이지는 접속 즉시 서버에서 조립합니다.
   };
 }
 
+// SEO 메타데이터 생성 함수
 function generateMeta(page: any, pageId: string) {
   const title = page?.properties?.title?.[0]?.[0] || 'AaRC - Architecture and Research in Culture';
   const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'AaRC(아크)는 과학적 통찰과 인문적 감수성으로 감정의 공간을 이야기 합니다.';
@@ -118,13 +131,20 @@ function generateMeta(page: any, pageId: string) {
 
 export default function NotionDomainDynamicPage(props: PageProps) {
   const { page, pageId } = props;
+  
+  // ISR 처리 중 데이터가 없을 때의 방어 로직
   if (!page) return null;
 
   const meta = generateMeta(page, pageId);
   
   return (
     <>
-      <Meta title={meta.title} description={meta.description} image={meta.image} url={meta.url} />
+      <Meta 
+        title={meta.title} 
+        description={meta.description} 
+        image={meta.image} 
+        url={meta.url} 
+      />
       <NotionPage {...props} />
     </>
   );
