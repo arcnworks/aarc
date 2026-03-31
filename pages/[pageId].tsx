@@ -55,13 +55,16 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
 }
 
 export const getStaticProps: GetStaticProps<PageProps, Params> = async (context) => {
-  const rawPageId = context.params!.pageId as string;
+  // [수정된 부분 1] URL로 넘어온 pageId가 인코딩된 한글일 수 있으므로 명시적으로 디코딩합니다.
+  const rawPageId = context.params?.pageId 
+    ? decodeURIComponent(context.params.pageId as string) 
+    : '';
 
   try {
     const notionProps = await resolveNotionPage(domain, rawPageId);
     
     if (!notionProps || (notionProps as any).error) {
-      throw new Error("Notion API Fetch Error");
+      throw new Error(`Notion API Fetch Error for page: ${rawPageId}`);
     }
 
     // 이미지 및 임베드 무결성 로직 적용
@@ -81,14 +84,18 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
         pageId: rawPageId,
         page: pageBlock
       }, 
-      revalidate: 60 // 1분마다 최신 데이터를 체크하여 갱신합니다.
+      revalidate: 60 // 1분마다 갱신
     };
   } catch (err) {
     console.error(`[ARC ISR Error] ${rawPageId}:`, err);
-    // [핵심 변경 사항] 
-    // 기존 return { notFound: true } 대신 throw err를 사용하여 
-    // Notion API에서 400 에러가 발생하더라도 기존에 캐싱된(Stale) 정상 페이지를 계속 보여줍니다.
-    throw err; 
+    
+    // [수정된 부분 2] 클라이언트 사이드 라우팅 시 500 에러가 나는 것을 방지하기 위해,
+    // 데이터를 정말 못 찾았을 때는 에러를 던지지 않고 notFound: true를 반환하여 안전하게 404 페이지로 넘깁니다.
+    // (이전의 throw err는 배경 갱신 방어에는 좋지만, 초기 렌더링 시에는 서버를 죽일 수 있습니다)
+    return { 
+      notFound: true,
+      revalidate: 60 
+    }; 
   }
 };
 
