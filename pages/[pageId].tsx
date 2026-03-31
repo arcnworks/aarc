@@ -1,94 +1,108 @@
 import * as React from 'react';
 import { GetStaticProps } from 'next';
-import Head from 'next/head';
 import { 
   isDev, 
   domain, 
-  description as defaultSiteDescription 
+  pageUrlOverrides 
 } from 'lib/config';
 import { getSiteMap } from 'lib/get-site-map';
 import { resolveNotionPage } from 'lib/resolve-notion-page';
 import { PageProps as BasePageProps, Params } from 'lib/types';
 import { NotionPage } from 'components';
-import { PageBlock } from 'notion-types';
-import { getBlockTitle, getPageProperty } from 'notion-utils';
+import Meta from '../components/Meta';
+import { ExtendedRecordMap } from 'notion-types';
+import { mapImageUrl } from 'lib/map-image-url';
 
 type PageProps = BasePageProps & {
-  page?: PageBlock;
+  page?: any; 
   pageId: string;
-  recentPosts?: Array<{ id: string; title: string; url: string; date: number }>;
-  seo?: {
-    title: string;
-    description: string;
-    image: string;
-    url: string;
-  };
 };
+
+/**
+ * [하이브리드 핵심 1: 과거의 유산 복구]
+ * recordMap 내부 모든 이미지 URL을 mapImageUrl로 치환해 줍니다.
+ * 이렇게 하면 노션에 무리한 서명 요청을 하지 않아 400 Bad Request 에러를 완벽히 차단합니다.
+ */
+function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
+  if (!recordMap || !recordMap.block) return recordMap;
+  
+  Object.keys(recordMap.block).forEach((key) => {
+    const block = recordMap.block[key]?.value;
+    if (!block) return;
+
+    if (block.format?.display_source) {
+      block.format.display_source = mapImageUrl(block.format.display_source, block as any);
+    }
+    if (block.format?.page_cover) {
+      block.format.page_cover = mapImageUrl(block.format.page_cover, block as any);
+    }
+    if (block.properties?.source?.[0]?.[0]) {
+      block.properties.source[0][0] = mapImageUrl(block.properties.source[0][0], block as any);
+    }
+  });
+  
+  return recordMap;
+}
 
 export const getStaticProps: GetStaticProps<PageProps, Params> = async (context) => {
   const rawPageId = context.params!.pageId as string;
 
-  // [핵심 혁신 1: 트래픽 분산] Vercel이 수십 개의 페이지를 동시에 요청하여 노션이 다운되는 것을 막기 위해, 0~2초 사이의 무작위 지연(Stagger)을 줍니다.
+  // [하이브리드 핵심 2: 병목 통제] Vercel이 모든 페이지를 동시에 렌더링하여 발생하는 429 에러 방어
   if (!isDev) {
-    const staggerDelay = Math.floor(Math.random() * 2000);
-    await new Promise(resolve => setTimeout(resolve, staggerDelay));
+    const startDelay = Math.floor(Math.random() * 3000);
+    await new Promise(resolve => setTimeout(resolve, startDelay));
   }
 
-  let notionProps;
-  let retries = 3; // 429 에러 시 최대 3번까지 끈질기게 재시도합니다.
+  let notionProps: any;
+  let retries = 3; 
   let success = false;
 
+  // [하이브리드 핵심 3: 3전 4기 시스템] 에러 발생 시 포기(404)하지 않고 5초 대기 후 재진입
   while (retries > 0 && !success) {
     try {
       notionProps = await resolveNotionPage(domain, rawPageId);
-      if (notionProps && !(notionProps as any).error) {
-        success = true;
-      } else {
+      
+      if (!notionProps || notionProps.error) {
         throw new Error("Notion API Data Error");
       }
+      
+      success = true; 
     } catch (err) {
       retries--;
       if (retries > 0) {
-        console.log(`[ARC Retry] '${rawPageId}' 429 방어 중... 3초 후 재시도합니다. (남은 횟수: ${retries})`);
-        await new Promise(resolve => setTimeout(resolve, 3000)); // 3초 대기 후 재시도
+        console.warn(`[ARC 재시도] '${rawPageId}' 병목 발생. 5초 대기 후 재진입합니다. (남은 횟수: ${retries})`);
+        await new Promise(resolve => setTimeout(resolve, 5000));
       } else {
-        console.error(`[ARC Critical] '${rawPageId}' 최종 로드 실패`);
+        console.error(`[ARC 치명적 오류] '${rawPageId}' 데이터 수신 최종 실패`);
       }
     }
   }
 
-  // 3번의 끈질긴 재시도 끝에도 실패하면, 그때서야 아주 잠깐 404를 내보내고 10초 뒤 복구를 도모합니다.
+  // 404 폭증을 막기 위해, 실패 시 notFound를 반환하지 않고 시스템 에러를 던져 과거의 정상 화면을 보호합니다.
   if (!success) {
-    return { notFound: true, revalidate: 10 };
+    throw new Error(`페이지 로드 실패 - 재시도 횟수 초과: ${rawPageId}`);
   }
 
-  const recentPosts: any[] = []; 
+  // 데이터 치환 (400 에러 방어)
+  if (notionProps && 'recordMap' in notionProps) {
+    notionProps.recordMap = sanitizeRecordMap(notionProps.recordMap);
+  }
+
+  // 페이지 블록 추출 (SEO 메타데이터용)
   const recordMap = notionProps.recordMap;
   const pageBlockId = Object.keys(recordMap.block).find(
     (id) => recordMap.block[id]?.value?.type === 'page'
   );
-  const pageBlock = pageBlockId ? recordMap.block[pageBlockId]?.value as PageBlock : undefined;
+  const pageBlock = pageBlockId ? recordMap.block[pageBlockId]?.value : undefined;
 
-  const title = getBlockTitle(pageBlock, recordMap) || 'AaRC - Architecture and Research in Culture';
-  
-  let description = getPageProperty('Description', pageBlock, recordMap) || 
-                    getPageProperty('Summary', pageBlock, recordMap) || 
-                    defaultSiteDescription;
-  if (typeof description !== 'string') description = defaultSiteDescription;
-
-  let image = 'https://aarc.kr/default-og-image.png'; 
-  if (pageBlock?.format?.page_cover) {
-    const coverUrl = pageBlock.format.page_cover;
-    image = coverUrl.startsWith('http') ? coverUrl : `https://www.notion.so${coverUrl}`; 
-  }
+  const props: PageProps = { 
+    ...notionProps, 
+    pageId: rawPageId,
+    page: pageBlock
+  };
 
   return { 
-    props: { 
-      ...notionProps, 
-      pageId: rawPageId, 
-      recentPosts, 
-      seo: { title, description, image, url: `https://aarc.kr/${rawPageId}` } 
-    }, 
+    props, 
     revalidate: 60 
   };
 };
@@ -98,37 +112,45 @@ export async function getStaticPaths() {
   
   const siteMap = await getSiteMap(); 
   
-  // [핵심 혁신 2: 모든 페이지 사전 빌드 복구] 10개 제한을 없애고 모든 페이지를 한 번에 빌드합니다.
+  // [완벽한 사용자 경험] 10개 제한을 풀고, 원호 님의 뜻대로 모든 페이지를 한 번에 빌드합니다.
   const paths = Object.keys(siteMap.canonicalPageMap).map((pageId) => ({
     params: { pageId }
   }));
 
   return { 
     paths, 
-    fallback: 'blocking' // 검색 방문자는 100% 확률로 0초 만에 렌더링된 완벽한 페이지를 보게 됩니다.
+    fallback: 'blocking' 
   };
 }
 
+// 예전 코드의 메타 정보 자동 생성 함수 복원
+function generateMeta(page: any, pageId: string) {
+  const title = page?.properties?.title?.[0]?.[0] || 'AaRC - Architecture and Research in Culture';
+  const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 감정의 공간을 이야기 합니다.';
+  const image = page?.cover?.external?.url || page?.cover?.file?.url || 'https://aarc.kr/og-image.png';
+  
+  let url = `https://aarc.kr/${pageId}`;
+  const currentPageNotionId = page?.id?.replace(/-/g, '');
+
+  if (pageUrlOverrides && currentPageNotionId === pageUrlOverrides.blog) {
+    url = 'https://aarc.kr';
+  }
+
+  return { title, description, image, url };
+}
+
 export default function NotionDomainDynamicPage(props: PageProps) {
-  const { seo } = props;
+  const { page, pageId } = props;
+  const meta = generateMeta(page, pageId);
   
   return (
     <>
-      <Head>
-        <title>{seo?.title}</title>
-        <meta name="description" content={seo?.description} />
-        <link rel="canonical" href={seo?.url} />
-        <meta property="og:title" content={seo?.title} />
-        <meta property="og:description" content={seo?.description} />
-        <meta property="og:url" content={seo?.url} />
-        <meta property="og:image" content={seo?.image} />
-        <meta property="og:type" content="article" />
-        <meta property="og:site_name" content="AaRC" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={seo?.title} />
-        <meta name="twitter:description" content={seo?.description} />
-        <meta name="twitter:image" content={seo?.image} />
-      </Head>
+      <Meta 
+        title={meta.title} 
+        description={meta.description} 
+        image={meta.image} 
+        url={meta.url} 
+      />
       <NotionPage {...props} />
     </>
   );
