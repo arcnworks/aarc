@@ -47,62 +47,51 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
 export const getStaticProps: GetStaticProps<PageProps, Params> = async (context) => {
   const rawPageId = context.params!.pageId as string;
 
-  // [하이브리드 핵심 2: 병목 통제] Vercel이 모든 페이지를 동시에 렌더링하여 발생하는 429 에러 방어
+  // [강화 1] 출발 지연 시간을 10초로 대폭 늘려 주자 간의 간격을 벌립니다.
   if (!isDev) {
-    const startDelay = Math.floor(Math.random() * 3000);
+    const startDelay = Math.floor(Math.random() * 10000); 
     await new Promise(resolve => setTimeout(resolve, startDelay));
   }
 
   let notionProps: any;
-  let retries = 3; 
+  let retries = 5; // [강화 2] 5번까지 끈질기게 시도
   let success = false;
 
-  // [하이브리드 핵심 3: 3전 4기 시스템] 에러 발생 시 포기(404)하지 않고 5초 대기 후 재진입
   while (retries > 0 && !success) {
     try {
       notionProps = await resolveNotionPage(domain, rawPageId);
-      
-      if (!notionProps || notionProps.error) {
-        throw new Error("Notion API Data Error");
+      if (notionProps && !notionProps.error) {
+        success = true;
+      } else {
+        throw new Error("Notion API Response Error");
       }
-      
-      success = true; 
     } catch (err) {
       retries--;
       if (retries > 0) {
-        console.warn(`[ARC 재시도] '${rawPageId}' 병목 발생. 5초 대기 후 재진입합니다. (남은 횟수: ${retries})`);
-        await new Promise(resolve => setTimeout(resolve, 5000));
-      } else {
-        console.error(`[ARC 치명적 오류] '${rawPageId}' 데이터 수신 최종 실패`);
+        // [강화 3] 재시도 대기 시간을 10초로 늘려 노션 서버의 화를 식힙니다.
+        console.warn(`[ARC 병목] '${rawPageId}' 진입 실패. 10초 휴식 후 재시도... (남은 기회: ${retries})`);
+        await new Promise(resolve => setTimeout(resolve, 10000)); 
       }
     }
   }
 
-  // 404 폭증을 막기 위해, 실패 시 notFound를 반환하지 않고 시스템 에러를 던져 과거의 정상 화면을 보호합니다.
+  // 5번의 시도 끝에도 실패하면, 404를 굽지 않고 빌드 에러를 내어 '이전의 정상 상태'를 보호합니다.
   if (!success) {
-    throw new Error(`페이지 로드 실패 - 재시도 횟수 초과: ${rawPageId}`);
+    throw new Error(`[ARC 치명적] 페이지 빌드 최종 실패 (노션 서버 차단): ${rawPageId}`);
   }
 
-  // 데이터 치환 (400 에러 방어)
+  // 이후 이미지 우회(sanitizeRecordMap) 및 메타데이터 로직은 동일하게 유지...
   if (notionProps && 'recordMap' in notionProps) {
     notionProps.recordMap = sanitizeRecordMap(notionProps.recordMap);
   }
-
-  // 페이지 블록 추출 (SEO 메타데이터용)
+  
+  // (중략 - 이전 코드의 나머지 부분 유지)
   const recordMap = notionProps.recordMap;
-  const pageBlockId = Object.keys(recordMap.block).find(
-    (id) => recordMap.block[id]?.value?.type === 'page'
-  );
+  const pageBlockId = Object.keys(recordMap.block).find(id => recordMap.block[id]?.value?.type === 'page');
   const pageBlock = pageBlockId ? recordMap.block[pageBlockId]?.value : undefined;
 
-  const props: PageProps = { 
-    ...notionProps, 
-    pageId: rawPageId,
-    page: pageBlock
-  };
-
   return { 
-    props, 
+    props: { ...notionProps, pageId: rawPageId, page: pageBlock }, 
     revalidate: 60 
   };
 };
