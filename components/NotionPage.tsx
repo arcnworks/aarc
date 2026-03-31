@@ -1,15 +1,12 @@
 import dynamic from 'next/dynamic'; 
 import Image from 'next/image'; 
-
 import Link from 'next/link'; 
 import { useRouter } from 'next/router'; 
 import * as React from 'react'; 
 import BodyClassName from 'react-body-classname'; 
-// core notion renderer
 import { NotionRenderer } from 'react-notion-x'; 
 import TweetEmbed from 'react-tweet-embed'; 
 import { useSearchParam } from 'react-use'; 
-
 import cs from 'classnames'; 
 import * as config from 'lib/config'; 
 import { mapImageUrl } from 'lib/map-image-url'; 
@@ -18,23 +15,15 @@ import { searchNotion } from 'lib/search-notion';
 import * as types from 'lib/types'; 
 import { useDarkMode } from 'lib/use-dark-mode'; 
 import { PageBlock } from 'notion-types'; 
-// utils
 import { formatDate, getBlockTitle, getPageProperty } from 'notion-utils'; 
-
 import { loadPrismComponentsWithRetry } from '~/lib/load-prism-components'; 
-
 import Comments from './Comments'; 
-// components
 import { Loading } from './Loading'; 
 import { Footer } from './Footer'; 
 import { NotionPageHeader, ToggleThemeButton } from './NotionPageHeader'; 
 import { Page404 } from './Page404'; 
 import { PageAside } from './PageAside'; 
 import styles from './styles.module.css'; 
-
-// -----------------------------------------------------------------------------
-// dynamic imports for optional components
-// -----------------------------------------------------------------------------
 
 const Code = dynamic(() =>
   import('react-notion-x/third-party/code').then(async m => {
@@ -54,172 +43,165 @@ const Code = dynamic(() =>
   }),
 );
 
-const Collection = dynamic(
-  () => import('react-notion-x/third-party/collection').then(m => m.Collection), 
-);
+const Collection = dynamic(() => import('react-notion-x/third-party/collection').then(m => m.Collection));
 const Equation = dynamic(() => import('react-notion-x/third-party/equation').then(m => m.Equation)); 
-const Pdf = dynamic(() => import('react-notion-x/third-party/pdf').then(m => m.Pdf), {
-  ssr: false, 
-});
-const Modal = dynamic(
-  () =>
-    import('react-notion-x/third-party/modal').then(m => {
-      m.Modal.setAppElement('.notion-viewport'); 
-      return m.Modal;
-    }),
-  {
-    ssr: false, 
-  },
+const Pdf = dynamic(() => import('react-notion-x/third-party/pdf').then(m => m.Pdf), { ssr: false });
+const Modal = dynamic(() => import('react-notion-x/third-party/modal').then(m => { m.Modal.setAppElement('.notion-viewport'); return m.Modal; }), { ssr: false });
+const Tweet = ({ id }: { id: string }) => <TweetEmbed tweetId={id} />;
+
+const CustomMermaid = dynamic(() => {
+    return Promise.resolve(({ code }: { code: string }) => {
+      const ref = React.useRef<HTMLDivElement>(null);
+      React.useEffect(() => {
+        if (!ref.current) return;
+        ref.current.innerHTML = '';
+        const textNode = document.createTextNode(code);
+        ref.current.appendChild(textNode);
+        import('mermaid').then((m) => {
+          const mermaidAPI = m.default || m;
+          mermaidAPI.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose', flowchart: { useMaxWidth: true, htmlLabels: true } });
+          mermaidAPI.run({ nodes: [ref.current!] }).catch((e) => console.error('Mermaid error', e));
+        });
+      }, [code]);
+      return (
+        <div className="mermaid-wrapper" style={{ width: '100%', margin: '2.5rem 0' }}>
+          <style dangerouslySetInnerHTML={{ __html: `.mermaid-render svg { width: 100% !important; height: auto !important; max-width: 100% !important; }` }} />
+          <div className="mermaid-render" ref={ref} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>{code}</div>
+        </div>
+      );
+    });
+  }, { ssr: false }
 );
 
-const Tweet = ({ id }: { id: string }) => {
-  return <TweetEmbed tweetId={id} />; 
+const LivePreview = ({ code, language }: { code: string; language: string }) => {
+  const [height, setHeight] = React.useState('150px');
+  const [srcDoc, setSrcDoc] = React.useState('');
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'resize-iframe' && event.source === iframeRef.current?.contentWindow) {
+        const newHeight = Math.max(event.data.height, 100);
+        setHeight(`${newHeight}px`);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      let headContent = '<meta charset="utf-8">';
+      let bodyContent = '';
+
+      if (language === 'html') {
+        bodyContent = code;
+      } else if (language === 'css') {
+        // [핵심 수정] CSS 테스트를 위해 300px 높이의 투명 도화지를 자동 생성합니다.
+        headContent += `<style>${code}</style>`;
+        bodyContent = `<div style="width:100%; height:300px;"></div>`;
+      } else if (language === 'javascript' || language === 'js') {
+        bodyContent = `<div id="js-output"></div><script>try { ${code} } catch(e) { document.body.innerHTML = e.message; }</script>`;
+      }
+
+      setSrcDoc(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            ${headContent}
+            <style>
+              body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background: transparent; }
+              #content-wrapper { display: block; width: 100%; min-height: 10px; }
+            </style>
+          </head>
+          <body>
+            <div id="content-wrapper">${bodyContent}</div>
+            <script>
+              function sendHeight() {
+                const wrapper = document.getElementById('content-wrapper');
+                const height = wrapper.scrollHeight || wrapper.offsetHeight;
+                window.parent.postMessage({ type: 'resize-iframe', height: height }, '*');
+              }
+              window.onload = () => { sendHeight(); setTimeout(sendHeight, 500); };
+              new ResizeObserver(sendHeight).observe(document.body);
+            </script>
+          </body>
+        </html>
+      `);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [code, language]);
+
+  return (
+    <div style={{ width: '100%', margin: '1.5rem 0', overflow: 'hidden' }}>
+      <iframe
+        ref={iframeRef}
+        srcDoc={srcDoc}
+        title="preview-output"
+        sandbox="allow-scripts"
+        frameBorder="0"
+        width="100%"
+        style={{ display: 'block', width: '100%', height: height, transition: 'height 0.2s ease', border: 'none' }}
+      />
+    </div>
+  );
 };
 
-const propertyLastEditedTimeValue = ({ block, pageHeader }, defaultFn: () => React.ReactNode) => {
-  if (pageHeader && block?.last_edited_time) {
-    return `Last updated ${formatDate(block?.last_edited_time, { month: 'long' })}`; 
-  }
-  return defaultFn(); 
-};
-
-const propertyDateValue = ({ data, schema, pageHeader }, defaultFn: () => React.ReactNode) => {
-  if (pageHeader && schema?.name?.toLowerCase() === 'published') {
-    const publishDate = data?.[0]?.[1]?.[0]?.[1]?.start_date;
-    if (publishDate) {
-      return `Published ${formatDate(publishDate, { month: 'long' })}`; 
-    }
-  }
-  return defaultFn(); 
-};
-
-const propertyTextValue = ({ schema, pageHeader }, defaultFn: () => React.ReactNode) => {
-  if (pageHeader && schema?.name?.toLowerCase() === 'author') {
-    return <b>{defaultFn()}</b>; 
-  }
-  return defaultFn(); 
-};
-
-export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = ({
-  site,
-  recordMap,
-  error,
-  pageId,
-  draftView,
-  recentPosts, 
-}) => {
+export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = ({ site, recordMap, error, pageId, draftView, recentPosts }) => {
   const router = useRouter(); 
   const lite = useSearchParam('lite'); 
+  const { isDarkMode } = useDarkMode();
 
-  const components = React.useMemo(
-    () => ({
+  const components = React.useMemo(() => ({
       nextImage: Image,
-      // [완벽 방어 코드] 주소가 비어있으면 에러 주소(/[pageId])를 부르지 않고 클릭을 무시('#')합니다.
       nextLink: ({ href, as, ...rest }: any) => {
         const targetUrl = as !== undefined ? (as || '#') : (href || '#');
         return <Link href={targetUrl} {...rest} />;
       },
-      Code,
-      Collection,
-      Equation,
-      Pdf,
-      Modal,
-      Tweet,
+      Code: (props: any) => {
+        const language = props.block?.properties?.language?.[0]?.[0]?.toLowerCase() || props.language?.toLowerCase();
+        const codeText = props.block?.properties?.title?.[0]?.[0] || '';
+        const caption = props.block?.properties?.caption?.[0]?.[0];
+        if (language === 'mermaid') return <CustomMermaid code={codeText} />;
+        const previewLanguages = ['html', 'css', 'javascript', 'js'];
+        if (previewLanguages.includes(language) && caption?.toLowerCase().includes('preview')) {
+          return <LivePreview code={codeText} language={language} />;
+        }
+        return <Code {...props} />;
+      },
+      Collection, Equation, Pdf, Modal, Tweet,
       Header: NotionPageHeader,
-      propertyLastEditedTimeValue,
-      propertyTextValue,
-      propertyDateValue,
-      // [완벽 방어 코드]
+      propertyLastEditedTimeValue: ({ block, pageHeader }, defaultFn: any) => (pageHeader && block?.last_edited_time) ? `Last updated ${formatDate(block?.last_edited_time, { month: 'long' })}` : defaultFn(),
+      propertyDateValue: ({ data, schema, pageHeader }, defaultFn: any) => (pageHeader && schema?.name?.toLowerCase() === 'published' && data?.[0]?.[1]?.[0]?.[1]?.start_date) ? `Published ${formatDate(data?.[0]?.[1]?.[0]?.[1]?.start_date, { month: 'long' })}` : defaultFn(),
+      propertyTextValue: ({ schema, pageHeader }, defaultFn: any) => (pageHeader && schema?.name?.toLowerCase() === 'author') ? <b>{defaultFn()}</b> : defaultFn(),
       PageLink: ({ children, href, as, ...rest }: any) => {
         const targetUrl = as !== undefined ? (as || '#') : (href || '#');
-        return (
-          <Link href={targetUrl} {...rest}>
-            {children}
-          </Link>
-        );
+        return <Link href={targetUrl} {...rest}>{children}</Link>;
       },
-    }),
-    [],
-  );
+    }), [site, draftView]);
 
   const isLiteMode = lite === 'true';
-  const { isDarkMode } = useDarkMode();
-
-  const siteMapPageUrl = React.useMemo(() => {
-    const params: any = {};
-    if (lite) params.lite = lite;
-    const searchParams = new URLSearchParams(params);
-    return mapPageUrl(site, recordMap, searchParams, draftView);
-  }, [site, recordMap, lite, draftView]);
-
-  const keys = Object.keys(recordMap?.block || {});
-  const block = recordMap?.block?.[keys[0]]?.value;
+  if (router.isFallback) return null;
+  if (error || !site || !recordMap) return <Page404 site={site} pageId={pageId} error={error} />;
+  const block = recordMap.block[Object.keys(recordMap.block)[0]]?.value;
+  if (!block) return <Page404 site={site} pageId={pageId} />;
 
   const isBlogPost = block?.type === 'page' && block?.parent_table === 'collection';
-
-  const showTableOfContents = !!isBlogPost;
-  const minTableOfContentsItems = 1;
-
-  const pageAside = React.useMemo(
-    () => <PageAside block={block} recordMap={recordMap} isBlogPost={isBlogPost} recentPosts={recentPosts} />,
-    [block, recordMap, isBlogPost, recentPosts],
-  );
-
-  if (router.isFallback) {
-    return null;
-  }
-
-  if (error || !site || !block) {
-    return <Page404 site={site} pageId={pageId} error={error} />;
-  }
-
-  const title = getBlockTitle(block, recordMap) || site.name;
-
-  if (!config.isServer && process.env.NODE_ENV === 'development') {
-    const g = window as any;
-    g.pageId = pageId;
-    g.recordMap = recordMap;
-    g.block = block;
-  }
-
-  const canonicalPageUrl = !config.isDev && getCanonicalPageUrl(site, recordMap)(pageId);
-
-  const socialImage = mapImageUrl(
-    getPageProperty<string>('Social Image', block, recordMap) ||
-      (block as PageBlock).format?.page_cover ||
-      config.defaultPageCover,
-    block,
-  );
-
-  const socialDescription = getPageProperty<string>('설명', block, recordMap) || config.description; 
-
-  const isIndexPage = pageId === site.rootNotionPageId; 
-
-  const hasCollectionView = Object.keys(recordMap.collection_query).length; 
+  const pageAside = <PageAside block={block} recordMap={recordMap} isBlogPost={isBlogPost} recentPosts={recentPosts} />;
 
   return (
     <>
       {isLiteMode && <BodyClassName className="notion-lite" />}
       <NotionRenderer
-        className={cs(isIndexPage ? 'indexPage' : 'childPage', { hasCollectionView })} 
-        bodyClassName={cs(styles.notion, isIndexPage && 'index-page')} 
-        darkMode={isDarkMode} 
-        components={components} 
-        recordMap={recordMap} 
-        rootPageId={site.rootNotionPageId} 
-        rootDomain={site.domain} 
-        fullPage={!isLiteMode} 
-        previewImages={!!recordMap.preview_images} 
-        showCollectionViewDropdown={true} 
-        showTableOfContents={showTableOfContents} 
-        minTableOfContentsItems={minTableOfContentsItems} 
-        mapPageUrl={siteMapPageUrl} 
-        mapImageUrl={mapImageUrl} 
-        searchNotion={config.isSearchEnabled ? searchNotion :undefined} 
-        pageAside={pageAside}
-        pageFooter={
-          config.enableComment && isBlogPost && <Comments pageId={block.id} recordMap={recordMap} />
-        }
+        className={cs(pageId === site.rootNotionPageId ? 'indexPage' : 'childPage')} 
+        bodyClassName={cs(styles.notion, pageId === site.rootNotionPageId && 'index-page')} 
+        darkMode={isDarkMode} components={components} recordMap={recordMap} 
+        rootPageId={site.rootNotionPageId} rootDomain={site.domain} fullPage={!isLiteMode} 
+        previewImages={!!recordMap.preview_images} showCollectionViewDropdown={true} 
+        showTableOfContents={isBlogPost} minTableOfContentsItems={1} 
+        mapPageUrl={mapPageUrl(site, recordMap, new URLSearchParams(lite ? { lite } : {}), draftView)} 
+        mapImageUrl={mapImageUrl} searchNotion={config.isSearchEnabled ? searchNotion : undefined} pageAside={pageAside}
+        pageFooter={config.enableComment && isBlogPost && <Comments pageId={block.id} recordMap={recordMap} />}
         footer={<Footer />} 
       />
     </>
