@@ -94,21 +94,14 @@ export async function getStaticPaths() {
   const siteMap = await getSiteMap(); 
   const allPageIds = Object.keys(siteMap.canonicalPageMap);
 
-  /**
-   * [전략적 전진 배치: 13대 핵심 명당]
-   * index(메인), blog, work 허브 페이지와 각 카테고리의 최신글 5개씩을 미리 빌드합니다.
-   */
+  // 1. 확실한 허브 페이지들
   const hubPages = ['index', 'blog', 'work']; 
   
-  const latestBlogPosts = allPageIds
-    .filter(id => id.toLowerCase().includes('blog'))
-    .slice(0, 5);
-    
-  const latestWorkPosts = allPageIds
-    .filter(id => id.toLowerCase().includes('work'))
-    .slice(0, 5);
+  // 2. 주소에 상관없이 최신/상위 15개 페이지를 무조건 미리 빌드합니다.
+  // 이렇게 하면 블로그와 워크의 최신글들이 자연스럽게 포함됩니다.
+  const top15Pages = allPageIds.slice(0, 15);
 
-  const priorityPaths = Array.from(new Set([...hubPages, ...latestBlogPosts, ...latestWorkPosts]));
+  const priorityPaths = Array.from(new Set([...hubPages, ...top15Pages]));
 
   const paths = priorityPaths.map((pageId) => ({
     params: { pageId }
@@ -116,7 +109,7 @@ export async function getStaticPaths() {
 
   return { 
     paths, 
-    fallback: 'blocking' // 그 외 페이지는 첫 방문 시 실시간으로 빌드 후 캐싱합니다.
+    fallback: 'blocking' 
   };
 }
 
