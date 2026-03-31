@@ -1,12 +1,11 @@
 import * as React from 'react';
 import { GetStaticProps } from 'next';
-import Script from 'next/script'; // Tally 임베드 스크립트 로드를 위해 추가
+import Script from 'next/script'; 
 import { 
   isDev, 
   domain, 
   pageUrlOverrides 
 } from 'lib/config';
-// 미리 빌드를 위한 getSiteMap 임포트 제거
 import { resolveNotionPage } from 'lib/resolve-notion-page';
 import { PageProps as BasePageProps, Params } from 'lib/types';
 import { NotionPage } from 'components';
@@ -20,7 +19,7 @@ type PageProps = BasePageProps & {
 };
 
 /**
- * [무결성 이미지 보안 우회] 
+ * [무결성 이미지 보안 우회 - 이모지 예외 처리 적용] 
  * 블록의 'Type'을 기준으로 이미지(image)만 골라내어 처리합니다.
  * Tally, YouTube 등 임베드 블록은 건드리지 않아 데이터 깨짐을 원천 차단합니다.
  */
@@ -31,11 +30,10 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
     const block = recordMap.block[key]?.value;
     if (!block) return;
 
-    // url인지 판별하는 간단한 헬퍼 함수
+    // [핵심] URL인지 판별하는 헬퍼 함수 (이모지가 이미지 URL 변환기에 들어가 404 에러를 내는 것을 방지)
     const isUrl = (str: string) => str && (str.startsWith('http') || str.startsWith('/'));
 
     // 1. 공통 이미지 요소 (커버, 아이콘) 처리
-    // [핵심 변경] 값에 'http'나 '/'가 포함된 진짜 '이미지'일 경우에만 매핑합니다. (이모지 패스)
     if (block.format?.page_cover && isUrl(block.format.page_cover)) {
       block.format.page_cover = mapImageUrl(block.format.page_cover, block as any);
     }
@@ -43,7 +41,7 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
       block.format.page_icon = mapImageUrl(block.format.page_icon, block as any);
     }
 
-    // 2. 블록 타입이 'image'인 경우에만 본문 소스 처리 (여기는 본래 이미지이므로 그대로 둡니다)
+    // 2. 블록 타입이 'image'인 경우에만 본문 소스 처리
     if (block.type === 'image') {
       if (block.format?.display_source) {
         block.format.display_source = mapImageUrl(block.format.display_source, block as any);
@@ -58,10 +56,9 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
 }
 
 export const getStaticProps: GetStaticProps<PageProps, Params> = async (context) => {
-  // [수정된 부분 1] URL로 넘어온 pageId가 인코딩된 한글일 수 있으므로 명시적으로 디코딩합니다.
-  const rawPageId = context.params?.pageId 
-    ? decodeURIComponent(context.params.pageId as string) 
-    : '';
+  // 한글 슬러그를 포기했으므로, 전달되는 pageId는 영문/숫자 조합의 Notion 고유 ID입니다.
+  // 서버가 오작동을 일으키던 디코딩(decodeURIComponent) 로직을 완전히 제거하여 속도를 높였습니다.
+  const rawPageId = context.params!.pageId as string;
 
   try {
     const notionProps = await resolveNotionPage(domain, rawPageId);
@@ -87,27 +84,21 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
         pageId: rawPageId,
         page: pageBlock
       }, 
-      revalidate: 60 // 1분마다 갱신
+      revalidate: 60 // 1분마다 최신 데이터를 체크하여 백그라운드에서 조용히 갱신합니다.
     };
   } catch (err) {
     console.error(`[ARC ISR Error] ${rawPageId}:`, err);
-    
-    // [수정된 부분 2] 클라이언트 사이드 라우팅 시 500 에러가 나는 것을 방지하기 위해,
-    // 데이터를 정말 못 찾았을 때는 에러를 던지지 않고 notFound: true를 반환하여 안전하게 404 페이지로 넘깁니다.
-    // (이전의 throw err는 배경 갱신 방어에는 좋지만, 초기 렌더링 시에는 서버를 죽일 수 있습니다)
-    return { 
-      notFound: true,
-      revalidate: 60 
-    }; 
+    // 고유 ID 라우팅 구조에서는 매칭 에러가 날 확률이 극히 적으므로, 
+    // Notion API 일시 장애 시 기존 정상 화면을 띄워주는 throw err 방어막을 그대로 유지합니다.
+    throw err; 
   }
 };
 
 export async function getStaticPaths() {
-  // [핵심 변경 사항] 전략적 전진 배치(미리 빌드) 로직을 모두 제거했습니다.
-  // 빌드 타임에는 아무 페이지도 생성하지 않으며, 모든 페이지는 완전한 ISR로 동작합니다.
+  // 전략적 전진 배치(미리 빌드)가 전혀 필요 없는 가장 가벼운 100% ISR 세팅입니다.
   return { 
     paths: [], 
-    fallback: 'blocking' // 누군가 최초로 접속할 때 서버에서 즉시 빌드 후 캐싱합니다.
+    fallback: 'blocking' // 고유 ID를 직접 찌르므로 서버 렌더링(블로킹) 딜레이가 최소화됩니다.
   };
 }
 
@@ -136,10 +127,7 @@ export default function NotionDomainDynamicPage(props: PageProps) {
     <>
       <Meta title={meta.title} description={meta.description} image={meta.image} url={meta.url} />
       
-      {/* [Tally 임베드 스크립트 안전 로드]
-        lazyOnload를 통해 React의 렌더링이 완전히 끝난 후 스크립트를 실행하여 
-        정적 생성(ISR) 화면과 Tally iframe 간의 충돌을 방지합니다. 
-      */}
+      {/* Tally 임베드 스크립트 안전 로드 */}
       <Script 
         src="https://tally.so/widgets/embed.js" 
         strategy="lazyOnload" 

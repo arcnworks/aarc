@@ -65,8 +65,8 @@ export const isPreviewImageSupportEnabled: boolean = getSiteConfig(
   false,
 );
 
-// Optional whether or not to include the Notion ID in page URLs or just use slugs
-export const includeNotionIdInUrls: boolean = getSiteConfig('includeNotionIdInUrls', !!isDev);
+// [수정 완료] 한글 슬러그 에러를 방지하고 ID 기반의 안정적인 URL을 위해 true로 고정합니다.
+export const includeNotionIdInUrls: boolean = true;
 
 export const navigationStyle: NavigationStyle = getSiteConfig('navigationStyle', 'default');
 

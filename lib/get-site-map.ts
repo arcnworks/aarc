@@ -41,13 +41,11 @@ async function getAllPagesImpl(
       throw new Error(`Error loading page "${pageId}"`);
     }
 
-    const canonicalPageId = getCanonicalPageId(pageId, recordMap, {
-      uuid,
-    });
+    // [수정 포인트] getCanonicalPageId 대신 pageId를 직접 가공하여 사용합니다.
+    // 대시(-)를 제거한 순수 32자리 UUID만 사용하여 한글 슬러그를 원천 차단합니다.
+    const canonicalPageId = pageId.replace(/-/g, ''); 
 
     if (map[canonicalPageId]) {
-      // you can have multiple pages in different collections that have the same id
-      // TODO: we may want to error if neither entry is a collection page
       console.warn('error duplicate canonical page id', {
         canonicalPageId,
         pageId,
