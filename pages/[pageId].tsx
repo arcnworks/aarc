@@ -19,7 +19,7 @@ type PageProps = BasePageProps & {
 };
 
 /**
- * [이미지 보안 우회] 400 Bad Request를 원천 차단합니다.
+ * [이미지 보안 우회] 노션 서버에 서명을 요청하지 않고 이미지를 출력하여 400 에러를 방지합니다.
  */
 function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
   if (!recordMap || !recordMap.block) return recordMap;
@@ -49,10 +49,9 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
     const notionProps = await resolveNotionPage(domain, rawPageId);
     
     if (!notionProps || (notionProps as any).error) {
-      throw new Error("Notion API Data Fetch Failed");
+      throw new Error("Notion API Fetch Error");
     }
 
-    // 이미지 경로 치환 (400 에러 방지)
     if ('recordMap' in notionProps) {
       notionProps.recordMap = sanitizeRecordMap(notionProps.recordMap);
     }
@@ -63,43 +62,48 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
     );
     const pageBlock = pageBlockId ? recordMap.block[pageBlockId]?.value : undefined;
 
-    const props: PageProps = { 
-      ...notionProps, 
-      pageId: rawPageId,
-      page: pageBlock
-    };
-
     return { 
-      props, 
-      revalidate: 10 // [핵심] 원호 님의 요청대로 10초마다 최신 정보를 체크합니다.
+      props: { 
+        ...notionProps, 
+        pageId: rawPageId,
+        page: pageBlock
+      }, 
+      revalidate: 60 // [전략 변경] 10초에서 60초로 늘려 노션 서버의 안정성을 극대화합니다.
     };
   } catch (err) {
-    console.error(`[ARC ISR 에러] '${rawPageId}' 로드 실패:`, err);
-    
-    // 실패 시 404를 캐싱하지 않고, 10초 뒤에 다시 시도하도록 설정합니다.
-    return { 
-      notFound: true, 
-      revalidate: 10 
-    };
+    console.error(`[ARC ISR] '${rawPageId}' 로드 지연 발생:`, err);
+    return { notFound: true, revalidate: 60 };
   }
 };
 
 export async function getStaticPaths() {
+  if (isDev) return { paths: [], fallback: true };
+  
+  const siteMap = await getSiteMap(); 
+  const allPageIds = Object.keys(siteMap.canonicalPageMap);
+
   /**
-   * [ISR의 핵심 전략]
-   * 빌드 시점에 어떤 페이지도 미리 만들지 않습니다. (paths: [])
-   * 이로써 빌드 단계에서 발생하는 429 에러를 100% 원천 차단합니다.
+   * [전략적 전진 배치]
+   * 메인(/), blog, work 페이지만 골라내어 빌드 시점에 미리 생성합니다.
+   * 나머지 프로젝트 상세 페이지들은 fallback: 'blocking'으로 실시간 생성됩니다.
    */
+  const targetHubPages = ['index', 'blog', 'work']; 
+  
+  const paths = allPageIds
+    .filter(id => targetHubPages.includes(id)) 
+    .map((pageId) => ({
+      params: { pageId }
+    }));
+
   return { 
-    paths: [], 
-    fallback: 'blocking' // 사용자가 클릭하는 순간 서버에서 실시간으로 생성합니다.
+    paths, 
+    fallback: 'blocking' 
   };
 }
 
-// 메타 정보 생성 로직 (이전과 동일)
 function generateMeta(page: any, pageId: string) {
   const title = page?.properties?.title?.[0]?.[0] || 'AaRC - Architecture and Research in Culture';
-  const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'AaRC(아크)는 과학적 통찰과 인문적 감수성을 바탕으로 감정의 공간을 이야기 합니다.';
+  const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'AaRC(아크)는 과학적 통찰과 인문적 감수성으로 감정의 공간을 이야기 합니다.';
   const image = page?.cover?.external?.url || page?.cover?.file?.url || 'https://aarc.kr/og-image.png';
   
   let url = `https://aarc.kr/${pageId}`;
@@ -114,20 +118,13 @@ function generateMeta(page: any, pageId: string) {
 
 export default function NotionDomainDynamicPage(props: PageProps) {
   const { page, pageId } = props;
-  
-  // 데이터 로딩 중일 때 (fallback: 'blocking'이므로 드물게 발생)
   if (!page) return null;
 
   const meta = generateMeta(page, pageId);
   
   return (
     <>
-      <Meta 
-        title={meta.title} 
-        description={meta.description} 
-        image={meta.image} 
-        url={meta.url} 
-      />
+      <Meta title={meta.title} description={meta.description} image={meta.image} url={meta.url} />
       <NotionPage {...props} />
     </>
   );
