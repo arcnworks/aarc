@@ -31,16 +31,19 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
     const block = recordMap.block[key]?.value;
     if (!block) return;
 
+    // url인지 판별하는 간단한 헬퍼 함수
+    const isUrl = (str: string) => str && (str.startsWith('http') || str.startsWith('/'));
+
     // 1. 공통 이미지 요소 (커버, 아이콘) 처리
-    if (block.format?.page_cover) {
+    // [핵심 변경] 값에 'http'나 '/'가 포함된 진짜 '이미지'일 경우에만 매핑합니다. (이모지 패스)
+    if (block.format?.page_cover && isUrl(block.format.page_cover)) {
       block.format.page_cover = mapImageUrl(block.format.page_cover, block as any);
     }
-    if (block.format?.page_icon) {
+    if (block.format?.page_icon && isUrl(block.format.page_icon)) {
       block.format.page_icon = mapImageUrl(block.format.page_icon, block as any);
     }
 
-    // 2. 블록 타입이 'image'인 경우에만 본문 소스 처리
-    // Tally(embed), Video 등 다른 타입은 이 로직을 타지 않아 안전하게 보존됩니다.
+    // 2. 블록 타입이 'image'인 경우에만 본문 소스 처리 (여기는 본래 이미지이므로 그대로 둡니다)
     if (block.type === 'image') {
       if (block.format?.display_source) {
         block.format.display_source = mapImageUrl(block.format.display_source, block as any);
