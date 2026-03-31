@@ -28,55 +28,69 @@ type PageProps = BasePageProps & {
 export const getStaticProps: GetStaticProps<PageProps, Params> = async (context) => {
   const rawPageId = context.params!.pageId as string;
 
-  try {
-    // [개선] 노션 API 호출 시 429나 400 에러에 대비해 더 유연하게 대응합니다.
-    const notionProps = await resolveNotionPage(domain, rawPageId);
-    
-    if (!notionProps || (notionProps as any).error) {
-      // 만약 노션 측 에러라면, 404를 캐싱하지 않고 짧은 시간 뒤에 재시도하도록 설정합니다.
-      return { 
-        props: {} as any,
-        revalidate: 10,
-        notFound: true 
-      };
+  // [핵심 혁신 1: 트래픽 분산] Vercel이 수십 개의 페이지를 동시에 요청하여 노션이 다운되는 것을 막기 위해, 0~2초 사이의 무작위 지연(Stagger)을 줍니다.
+  if (!isDev) {
+    const staggerDelay = Math.floor(Math.random() * 2000);
+    await new Promise(resolve => setTimeout(resolve, staggerDelay));
+  }
+
+  let notionProps;
+  let retries = 3; // 429 에러 시 최대 3번까지 끈질기게 재시도합니다.
+  let success = false;
+
+  while (retries > 0 && !success) {
+    try {
+      notionProps = await resolveNotionPage(domain, rawPageId);
+      if (notionProps && !(notionProps as any).error) {
+        success = true;
+      } else {
+        throw new Error("Notion API Data Error");
+      }
+    } catch (err) {
+      retries--;
+      if (retries > 0) {
+        console.log(`[ARC Retry] '${rawPageId}' 429 방어 중... 3초 후 재시도합니다. (남은 횟수: ${retries})`);
+        await new Promise(resolve => setTimeout(resolve, 3000)); // 3초 대기 후 재시도
+      } else {
+        console.error(`[ARC Critical] '${rawPageId}' 최종 로드 실패`);
+      }
     }
+  }
 
-    const recentPosts: any[] = []; 
-    const recordMap = notionProps.recordMap;
-    const pageBlockId = Object.keys(recordMap.block).find(
-      (id) => recordMap.block[id]?.value?.type === 'page'
-    );
-    const pageBlock = pageBlockId ? recordMap.block[pageBlockId]?.value as PageBlock : undefined;
-
-    const title = getBlockTitle(pageBlock, recordMap) || 'AaRC - Architecture and Research in Culture';
-    
-    let description = getPageProperty('Description', pageBlock, recordMap) || 
-                      getPageProperty('Summary', pageBlock, recordMap) || 
-                      defaultSiteDescription;
-    if (typeof description !== 'string') description = defaultSiteDescription;
-
-    let image = 'https://aarc.kr/default-og-image.png'; 
-    if (pageBlock?.format?.page_cover) {
-      const coverUrl = pageBlock.format.page_cover;
-      image = coverUrl.startsWith('http') ? coverUrl : `https://www.notion.so${coverUrl}`; 
-    }
-
-    return { 
-      props: { 
-        ...notionProps, 
-        pageId: rawPageId, 
-        recentPosts, 
-        seo: { title, description, image, url: `https://aarc.kr/${rawPageId}` } 
-      }, 
-      revalidate: 60 
-    };
-  } catch (err) {
-    // [중요] 에러 로그를 더 상세히 남겨 원인을 추적합니다.
-    console.error(`[ARC Critical] '${rawPageId}' 로드 중단 사유:`, err.message);
-    
-    // 치명적 에러 시에도 1초가 아닌 10초의 여유를 두어 노션 서버의 부하를 줄입니다.
+  // 3번의 끈질긴 재시도 끝에도 실패하면, 그때서야 아주 잠깐 404를 내보내고 10초 뒤 복구를 도모합니다.
+  if (!success) {
     return { notFound: true, revalidate: 10 };
   }
+
+  const recentPosts: any[] = []; 
+  const recordMap = notionProps.recordMap;
+  const pageBlockId = Object.keys(recordMap.block).find(
+    (id) => recordMap.block[id]?.value?.type === 'page'
+  );
+  const pageBlock = pageBlockId ? recordMap.block[pageBlockId]?.value as PageBlock : undefined;
+
+  const title = getBlockTitle(pageBlock, recordMap) || 'AaRC - Architecture and Research in Culture';
+  
+  let description = getPageProperty('Description', pageBlock, recordMap) || 
+                    getPageProperty('Summary', pageBlock, recordMap) || 
+                    defaultSiteDescription;
+  if (typeof description !== 'string') description = defaultSiteDescription;
+
+  let image = 'https://aarc.kr/default-og-image.png'; 
+  if (pageBlock?.format?.page_cover) {
+    const coverUrl = pageBlock.format.page_cover;
+    image = coverUrl.startsWith('http') ? coverUrl : `https://www.notion.so${coverUrl}`; 
+  }
+
+  return { 
+    props: { 
+      ...notionProps, 
+      pageId: rawPageId, 
+      recentPosts, 
+      seo: { title, description, image, url: `https://aarc.kr/${rawPageId}` } 
+    }, 
+    revalidate: 60 
+  };
 };
 
 export async function getStaticPaths() {
@@ -84,15 +98,14 @@ export async function getStaticPaths() {
   
   const siteMap = await getSiteMap(); 
   
-  const paths = Object.keys(siteMap.canonicalPageMap)
-  .slice(0, 10) // 최신/중요 페이지 10개만 미리 빌드 (노션 서버 보호)
-  .map((pageId) => ({
+  // [핵심 혁신 2: 모든 페이지 사전 빌드 복구] 10개 제한을 없애고 모든 페이지를 한 번에 빌드합니다.
+  const paths = Object.keys(siteMap.canonicalPageMap).map((pageId) => ({
     params: { pageId }
   }));
 
   return { 
     paths, 
-    fallback: 'blocking' // 새로 추가된 글은 클릭 시 즉시 생성됩니다.
+    fallback: 'blocking' // 검색 방문자는 100% 확률로 0초 만에 렌더링된 완벽한 페이지를 보게 됩니다.
   };
 }
 
