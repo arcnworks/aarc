@@ -19,7 +19,9 @@ type PageProps = BasePageProps & {
 };
 
 /**
- * [이미지 보안 우회] 노션 서버에 서명을 요청하지 않고 이미지를 출력하여 400 에러를 원천 차단합니다.
+ * [무결성 이미지 보안 우회] 
+ * 블록의 'Type'을 기준으로 이미지(image)만 골라내어 처리합니다.
+ * Tally, YouTube 등 임베드 블록은 건드리지 않아 데이터 깨짐을 원천 차단합니다.
  */
 function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
   if (!recordMap || !recordMap.block) return recordMap;
@@ -28,14 +30,23 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
     const block = recordMap.block[key]?.value;
     if (!block) return;
 
-    if (block.format?.display_source) {
-      block.format.display_source = mapImageUrl(block.format.display_source, block as any);
-    }
+    // 1. 공통 이미지 요소 (커버, 아이콘) 처리
     if (block.format?.page_cover) {
       block.format.page_cover = mapImageUrl(block.format.page_cover, block as any);
     }
-    if (block.properties?.source?.[0]?.[0]) {
-      block.properties.source[0][0] = mapImageUrl(block.properties.source[0][0], block as any);
+    if (block.format?.page_icon) {
+      block.format.page_icon = mapImageUrl(block.format.page_icon, block as any);
+    }
+
+    // 2. 블록 타입이 'image'인 경우에만 본문 소스 처리
+    // Tally(embed), Video 등 다른 타입은 이 로직을 타지 않아 안전하게 보존됩니다.
+    if (block.type === 'image') {
+      if (block.format?.display_source) {
+        block.format.display_source = mapImageUrl(block.format.display_source, block as any);
+      }
+      if (block.properties?.source?.[0]?.[0]) {
+        block.properties.source[0][0] = mapImageUrl(block.properties.source[0][0], block as any);
+      }
     }
   });
   
@@ -52,7 +63,7 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
       throw new Error("Notion API Fetch Error");
     }
 
-    // 이미지 경로 치환 로직 실행
+    // 이미지 및 임베드 무결성 로직 적용
     if ('recordMap' in notionProps) {
       notionProps.recordMap = sanitizeRecordMap(notionProps.recordMap);
     }
@@ -69,11 +80,10 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
         pageId: rawPageId,
         page: pageBlock
       }, 
-      revalidate: 60 // 60초마다 백그라운드에서 최신 데이터를 체크합니다.
+      revalidate: 60 // 1분마다 최신 데이터를 체크하여 갱신합니다.
     };
   } catch (err) {
-    console.error(`[ARC ISR] '${rawPageId}' 데이터 수신 중 지연 발생:`, err);
-    // 에러 발생 시 404를 반환하되, 60초 뒤에 다시 시도하도록 설정
+    console.error(`[ARC ISR Error] ${rawPageId}:`, err);
     return { notFound: true, revalidate: 60 };
   }
 };
@@ -85,22 +95,19 @@ export async function getStaticPaths() {
   const allPageIds = Object.keys(siteMap.canonicalPageMap);
 
   /**
-   * [전략적 전진 배치 명단 설계]
+   * [전략적 전진 배치: 13대 핵심 명당]
+   * index(메인), blog, work 허브 페이지와 각 카테고리의 최신글 5개씩을 미리 빌드합니다.
    */
-  // 1. 고정 핵심 페이지
   const hubPages = ['index', 'blog', 'work']; 
   
-  // 2. 블로그 최신글 5개 (URL에 'blog'가 포함된 페이지 중 상위 5개)
   const latestBlogPosts = allPageIds
     .filter(id => id.toLowerCase().includes('blog'))
     .slice(0, 5);
     
-  // 3. 워크 최신 프로젝트 5개 (URL에 'work'가 포함된 페이지 중 상위 5개)
   const latestWorkPosts = allPageIds
     .filter(id => id.toLowerCase().includes('work'))
     .slice(0, 5);
 
-  // 명단 합치기 및 중복 제거
   const priorityPaths = Array.from(new Set([...hubPages, ...latestBlogPosts, ...latestWorkPosts]));
 
   const paths = priorityPaths.map((pageId) => ({
@@ -109,14 +116,13 @@ export async function getStaticPaths() {
 
   return { 
     paths, 
-    fallback: 'blocking' // 명단에 없는 페이지는 접속 즉시 서버에서 조립합니다.
+    fallback: 'blocking' // 그 외 페이지는 첫 방문 시 실시간으로 빌드 후 캐싱합니다.
   };
 }
 
-// SEO 메타데이터 생성 함수
 function generateMeta(page: any, pageId: string) {
   const title = page?.properties?.title?.[0]?.[0] || 'AaRC - Architecture and Research in Culture';
-  const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'AaRC(아크)는 과학적 통찰과 인문적 감수성으로 감정의 공간을 이야기 합니다.';
+  const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'AaRC(아크)는 과학적 통찰과 인문적 감수성으로 공간의 감정을 이야기 합니다.';
   const image = page?.cover?.external?.url || page?.cover?.file?.url || 'https://aarc.kr/og-image.png';
   
   let url = `https://aarc.kr/${pageId}`;
@@ -131,20 +137,13 @@ function generateMeta(page: any, pageId: string) {
 
 export default function NotionDomainDynamicPage(props: PageProps) {
   const { page, pageId } = props;
-  
-  // ISR 처리 중 데이터가 없을 때의 방어 로직
   if (!page) return null;
 
   const meta = generateMeta(page, pageId);
   
   return (
     <>
-      <Meta 
-        title={meta.title} 
-        description={meta.description} 
-        image={meta.image} 
-        url={meta.url} 
-      />
+      <Meta title={meta.title} description={meta.description} image={meta.image} url={meta.url} />
       <NotionPage {...props} />
     </>
   );
