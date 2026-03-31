@@ -13,8 +13,6 @@ import { NotionPage } from 'components';
 import { PageBlock } from 'notion-types';
 import { getBlockTitle, getPageProperty } from 'notion-utils';
 
-// [수정 1] 문제가 되었던 defaultMapImageUrl import를 삭제했습니다.
-
 type PageProps = BasePageProps & {
   page?: PageBlock;
   pageId: string;
@@ -37,10 +35,9 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
       throw new Error(`데이터 로드 실패: ${rawPageId}`);
     }
 
-    // 최신글 제외 (초경량화)
+    // 최신글 제외로 시스템 과부하를 원천 차단했습니다.
     const recentPosts: any[] = []; 
 
-    // SEO 메타데이터 추출
     const recordMap = notionProps.recordMap;
     const pageBlockId = Object.keys(recordMap.block).find(
       (id) => recordMap.block[id]?.value?.type === 'page'
@@ -54,11 +51,9 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
                       defaultSiteDescription;
     if (typeof description !== 'string') description = defaultSiteDescription;
 
-    // [수정 2] 복잡한 함수 호출 대신, 노션 이미지 주소를 안전하게 조립하는 방식으로 변경
     let image = 'https://aarc.kr/default-og-image.png'; 
     if (pageBlock?.format?.page_cover) {
       const coverUrl = pageBlock.format.page_cover;
-      // 노션 자체 이미지인지, 외부 이미지인지에 따라 안전하게 인코딩 처리
       image = coverUrl.startsWith('http') 
         ? coverUrl 
         : `https://www.notion.so${coverUrl}`; 
@@ -73,22 +68,29 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
         recentPosts, 
         seo: { title, description, image, url } 
       }, 
+      // [타협점 1] 페이지가 성공적으로 로드되면 60초 주기로 변경 사항을 자동 갱신합니다.
       revalidate: 60 
     };
   } catch (err) {
-    console.error(`[ARC Critical] '${rawPageId}' 로드 중단:`, err);
-    return { notFound: true, revalidate: 1 };
+    console.error(`[ARC Warning] '${rawPageId}' 로드 일시 중단 (재시도 대기):`, err);
+    // [타협점 2] 새 글이라서 데이터를 못 찾았을 경우, 영구적인 404를 캐싱하지 않고 10초 뒤에 다시 시도하도록 지시합니다.
+    return { notFound: true, revalidate: 10 };
   }
 };
 
 export async function getStaticPaths() {
   if (isDev) return { paths: [], fallback: true };
-  const siteMap = await getSiteMap(); // 사이트맵 객체 로딩 유지 (에러 방지)
   
-  // [수정 3] 429 에러의 주범인 일괄 빌드를 포기하고, 접속 시 렌더링(ISR)으로 회귀합니다.
+  const siteMap = await getSiteMap(); 
+  
+  // [타협점 3] 과부하의 원인이 제거되었으므로, 모든 페이지의 '주소록'을 빌드 시점에 정상적으로 생성합니다.
+  const paths = Object.keys(siteMap.canonicalPageMap).map((pageId) => ({
+    params: { pageId }
+  }));
+
   return { 
-    paths: [], // 중요: 여기서 배열을 비워야 빌드 시 노션 서버를 때리지 않습니다.
-    fallback: 'blocking' 
+    paths, 
+    fallback: 'blocking' // 새로 추가된 글은 클릭 시 즉시 생성됩니다.
   };
 }
 
