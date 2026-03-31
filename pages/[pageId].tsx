@@ -19,9 +19,7 @@ type PageProps = BasePageProps & {
 };
 
 /**
- * [무결성 이미지 보안 우회] 
- * 블록의 'Type'을 기준으로 이미지(image)만 골라내어 처리합니다.
- * Tally, YouTube 등 임베드 블록은 건드리지 않아 데이터 깨짐을 원천 차단합니다.
+ * [이미지 및 이모지 무결성 보호]
  */
 function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
   if (!recordMap || !recordMap.block) return recordMap;
@@ -30,16 +28,19 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
     const block = recordMap.block[key]?.value;
     if (!block) return;
 
-    // 1. 공통 이미지 요소 (커버, 아이콘) 처리
+    // 이모지나 노션 내부 아이콘(F0%9F... 등)은 우회 로직에서 제외하여 404 방지
+    const isExternalIcon = block.format?.page_icon?.startsWith('http');
+
     if (block.format?.page_cover) {
       block.format.page_cover = mapImageUrl(block.format.page_cover, block as any);
     }
-    if (block.format?.page_icon) {
+    
+    // 외부 이미지 아이콘일 때만 처리
+    if (block.format?.page_icon && isExternalIcon) {
       block.format.page_icon = mapImageUrl(block.format.page_icon, block as any);
     }
 
-    // 2. 블록 타입이 'image'인 경우에만 본문 소스 처리
-    // Tally(embed), Video 등 다른 타입은 이 로직을 타지 않아 안전하게 보존됩니다.
+    // 블록 타입이 'image'인 경우에만 본문 소스 처리 (Tally 임베드 보호)
     if (block.type === 'image') {
       if (block.format?.display_source) {
         block.format.display_source = mapImageUrl(block.format.display_source, block as any);
@@ -53,6 +54,10 @@ function sanitizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
   return recordMap;
 }
 
+/**
+ * [핵심: getStaticProps] 
+ * Next.js가 데이터를 가져오는 핵심 함수입니다. 반드시 export 되어야 합니다.
+ */
 export const getStaticProps: GetStaticProps<PageProps, Params> = async (context) => {
   const rawPageId = context.params!.pageId as string;
 
@@ -60,10 +65,9 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
     const notionProps = await resolveNotionPage(domain, rawPageId);
     
     if (!notionProps || (notionProps as any).error) {
-      throw new Error("Notion API Fetch Error");
+      throw new Error("Notion API Data Fetch Failed");
     }
 
-    // 이미지 및 임베드 무결성 로직 적용
     if ('recordMap' in notionProps) {
       notionProps.recordMap = sanitizeRecordMap(notionProps.recordMap);
     }
@@ -80,7 +84,7 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
         pageId: rawPageId,
         page: pageBlock
       }, 
-      revalidate: 60 // 1분마다 최신 데이터를 체크하여 갱신합니다.
+      revalidate: 60 
     };
   } catch (err) {
     console.error(`[ARC ISR Error] ${rawPageId}:`, err);
@@ -88,17 +92,18 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
   }
 };
 
+/**
+ * [핵심: getStaticPaths]
+ * 어떤 페이지를 미리 지을지 명단을 작성합니다.
+ */
 export async function getStaticPaths() {
   if (isDev) return { paths: [], fallback: true };
   
   const siteMap = await getSiteMap(); 
-  const allPageIds = Object.keys(siteMap.canonicalPageMap);
+  // 슬러그 유무와 상관없이 모든 페이지 ID를 가져옵니다.
+  const allPageIds = Object.keys(siteMap.pageMap);
 
-  // 1. 확실한 허브 페이지들
   const hubPages = ['index', 'blog', 'work']; 
-  
-  // 2. 주소에 상관없이 최신/상위 15개 페이지를 무조건 미리 빌드합니다.
-  // 이렇게 하면 블로그와 워크의 최신글들이 자연스럽게 포함됩니다.
   const top15Pages = allPageIds.slice(0, 15);
 
   const priorityPaths = Array.from(new Set([...hubPages, ...top15Pages]));
@@ -115,7 +120,7 @@ export async function getStaticPaths() {
 
 function generateMeta(page: any, pageId: string) {
   const title = page?.properties?.title?.[0]?.[0] || 'AaRC - Architecture and Research in Culture';
-  const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'AaRC(아크)는 과학적 통찰과 인문적 감수성으로 공간의 감정을 이야기 합니다.';
+  const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'AaRC(아크)는 과학적 통찰과 인문적 감수성으로 감정의 공간을 이야기 합니다.';
   const image = page?.cover?.external?.url || page?.cover?.file?.url || 'https://aarc.kr/og-image.png';
   
   let url = `https://aarc.kr/${pageId}`;
@@ -130,6 +135,7 @@ function generateMeta(page: any, pageId: string) {
 
 export default function NotionDomainDynamicPage(props: PageProps) {
   const { page, pageId } = props;
+  
   if (!page) return null;
 
   const meta = generateMeta(page, pageId);
