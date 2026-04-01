@@ -97,7 +97,6 @@ const LivePreview = ({ code, language }: { code: string; language: string }) => 
       if (language === 'html') {
         bodyContent = code;
       } else if (language === 'css') {
-        // [핵심 수정] CSS 테스트를 위해 300px 높이의 투명 도화지를 자동 생성합니다.
         headContent += `<style>${code}</style>`;
         bodyContent = `<div style="width:100%; height:300px;"></div>`;
       } else if (language === 'javascript' || language === 'js') {
@@ -162,6 +161,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
         const language = props.block?.properties?.language?.[0]?.[0]?.toLowerCase() || props.language?.toLowerCase();
         const codeText = props.block?.properties?.title?.[0]?.[0] || '';
         const caption = props.block?.properties?.caption?.[0]?.[0];
+        
         if (language === 'mermaid') return <CustomMermaid code={codeText} />;
         const previewLanguages = ['html', 'css', 'javascript', 'js'];
         if (previewLanguages.includes(language) && caption?.toLowerCase().includes('preview')) {
@@ -171,21 +171,43 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
       },
       Collection, Equation, Pdf, Modal, Tweet,
       Header: NotionPageHeader,
+
+      // [범용성 강화] '연도'라는 단어가 포함된 모든 날짜 속성을 YYYY로 포맷팅
+      propertyDateValue: ({ data, schema, pageHeader }: any, defaultFn: any) => {
+        // 속성 이름에 '연도'가 포함되어 있는지 확인합니다.
+        // 예: 연도, 작업연도, 작품연도, 준공연도 등 모두 대응 가능
+        if (schema?.name?.includes('연도')) {
+          try {
+            const dateString = data?.[0]?.[1]?.[0]?.[1]?.start_date;
+            if (dateString) {
+              return dateString.split('-')[0]; // ISO 날짜 형식에서 연도 부분만 추출
+            }
+          } catch (e) {
+            console.error('[ARC] Year property parsing error', e);
+          }
+        }
+
+        // 기존 Published 날짜 로직 유지
+        if (pageHeader && schema?.name?.toLowerCase() === 'published' && data?.[0]?.[1]?.[0]?.[1]?.start_date) {
+          return `Published ${formatDate(data?.[0]?.[1]?.[0]?.[1]?.start_date, { month: 'long' })}`;
+        }
+
+        return defaultFn();
+      },
+      
       propertyLastEditedTimeValue: ({ block, pageHeader }, defaultFn: any) => (pageHeader && block?.last_edited_time) ? `Last updated ${formatDate(block?.last_edited_time, { month: 'long' })}` : defaultFn(),
-      propertyDateValue: ({ data, schema, pageHeader }, defaultFn: any) => (pageHeader && schema?.name?.toLowerCase() === 'published' && data?.[0]?.[1]?.[0]?.[1]?.start_date) ? `Published ${formatDate(data?.[0]?.[1]?.[0]?.[1]?.start_date, { month: 'long' })}` : defaultFn(),
       propertyTextValue: ({ schema, pageHeader }, defaultFn: any) => (pageHeader && schema?.name?.toLowerCase() === 'author') ? <b>{defaultFn()}</b> : defaultFn(),
       PageLink: ({ children, href, as, ...rest }: any) => {
         const targetUrl = as !== undefined ? (as || '#') : (href || '#');
         return <Link href={targetUrl} {...rest}>{children}</Link>;
       },
-    }), [site, draftView]);
+    }), [site, draftView, recordMap]); 
 
   const isLiteMode = lite === 'true';
   if (router.isFallback) return null;
   if (error || !site || !recordMap) return <Page404 site={site} pageId={pageId} error={error} />;
   const block = recordMap.block[Object.keys(recordMap.block)[0]]?.value;
   if (!block) return <Page404 site={site} pageId={pageId} />;
-
   const isBlogPost = block?.type === 'page' && block?.parent_table === 'collection';
   const pageAside = <PageAside block={block} recordMap={recordMap} isBlogPost={isBlogPost} recentPosts={recentPosts} />;
 

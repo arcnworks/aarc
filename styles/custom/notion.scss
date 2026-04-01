@@ -736,70 +736,75 @@ body:not(.dark-mode) {
 }
 
 // =========================================================
-  // 11. 페이지 속성(Properties) 수직 리스트 스타일 (색상 통일 포함)
-  // =========================================================
-  .notion-collection-page-properties {
-    margin-top: 1.5rem;
-    border-top: 1px solid var(--fg-color-1); 
-    padding-top: 1rem;
+// 11. 페이지 속성(Properties) 수직 리스트 스타일 (픽셀 퍼펙트 정렬)
+// =========================================================
+.notion-collection-page-properties {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--fg-color-1); 
+  padding-top: 1.2rem;
 
-    .notion-collection-row-body {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 1px !important;
-    }
+  .notion-collection-row-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1px !important;
+  }
 
-    .notion-collection-row-property {
-      display: flex !important;
-      align-items: flex-start !important;
-      margin-bottom: 0 !important;
-      &::before { display: none !important; }
-    }
+  .notion-collection-row-property {
+    display: flex !important;
+    /* baseline으로 설정하여 '설명'과 '내용' 글자의 바닥선을 일치시킵니다 */
+    align-items: baseline !important; 
+    margin-bottom: 0 !important;
+    &::before { display: none !important; }
+    .notion-collection-column-title-icon { display: none !important; }
+  }
 
-    .notion-collection-column-title {
-      width: 80px !important;
-      flex: 0 0 80px !important;
-      color: var(--fg-color-3); 
-      font-size: 13px;
-      font-weight: 500;
-      padding-top: 2px;
-    }
+  // 왼쪽: 속성 항목 이름
+  .notion-collection-column-title {
+    width: 60px !important;
+    flex: 0 0 60px !important;
+    color: var(--fg-color-3); 
+    font-size: 14px !important;
+    font-weight: 700;
+    font-family: inherit;
+    /* 높이를 34px로 고정하기 위해 line-height를 1.5로 명시 */
+    line-height: 1.5 !important;
+    padding: 6px 0 7px !important;
+  }
 
-    .notion-collection-row-value {
-      flex: 1;
-      padding-left: 10px !important;
-      font-size: 14px;
-      color: var(--fg-color);
-      line-height: 1.4;
-    }
+  // 오른쪽: 속성 내용
+  .notion-collection-row-value {
+    flex: 1;
+    font-size: 14px !important;
+    font-weight: 400;
+    color: var(--fg-color);
+    /* 항목 이름과 동일하게 line-height를 1.5로 통일하여 21px 높이를 확보 */
+    line-height: 1.5 !important;
+    font-family: inherit;
+    display: flex;
+    flex-wrap: wrap;
+    /* 상하 패딩을 동일하게 적용 (전체 높이 34px로 일치) */
+    padding: 6px 0 7px 10px !important;
+  }
 
-    /* 1. 공통 스타일: 태그와 카테고리 모두 투명 배경 및 색상 통일 */
-.notion-property-select-item,
-.notion-property-multi_select-item {
-  background-color: transparent !important;
-  color: var(--fg-color) !important;
-  padding: 0 !important;
-  opacity: 0.8;
-  
-  /* 노션 라이브러리의 개별 색상 무력화 */
-  span { color: inherit !important; } 
-}
+  // 태그 및 카테고리 아이템 스타일 유지
+  .notion-property-select-item,
+  .notion-property-multi_select-item {
+    background-color: transparent !important;
+    color: var(--fg-color) !important;
+    padding: 0 !important;
+    opacity: 0.8;
+    span { color: inherit !important; } 
+  }
 
-/* 2. 태그(Multi-select) 전용: '#' 접두사 추가 */
-.notion-property-multi_select-item {
-  &::before { 
+  .notion-property-multi_select-item::before { 
     content: '#' !important; 
     margin-right: 1px;
   }
-}
 
-/* 3. 카테고리(Select) 전용: '#' 접두사 제거 */
-.notion-property-select-item {
-  &::before { 
-    content: none !important; /* 또는 "" */
+  .notion-property-select-item::before { 
+    content: none !important; 
   }
 }
-  }
   
   /* =========================================================
    12. 글 제목 및 속성(Properties) 축 정렬 (본문과 좌측 라인 일치)
