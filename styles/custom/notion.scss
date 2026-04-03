@@ -276,7 +276,7 @@
       display: grid !important;
       gap: 20px !important;
       margin-top: 0.8rem;
-      grid-template-columns: repeat(2, 1fr) !important;
+      grid-template-columns: repeat(1, 1fr) !important;
       @media (min-width: 641px) { grid-template-columns: repeat(3, 1fr) !important; }
       /* @media (min-width: 771px) { grid-template-columns: repeat(4, 1fr) !important; } */
   
