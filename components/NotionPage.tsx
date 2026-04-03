@@ -38,7 +38,7 @@ const Modal = dynamic(
   },
 );
 
-// --- [복구] 커스텀 다이어그램(Mermaid) 렌더러 ---
+// --- 커스텀 다이어그램(Mermaid) 렌더러 ---
 const CustomMermaid = dynamic(() => {
     return Promise.resolve(({ code }: { code: string }) => {
       const ref = React.useRef<HTMLDivElement>(null);
@@ -68,32 +68,33 @@ const CustomMermaid = dynamic(() => {
   }, { ssr: false }
 );
 
-// --- [복구] 실시간 코드 프리뷰 컴포넌트 ---
-const LivePreview = ({ code, language }: { code: string; language: string }) => {
+const LivePreview = ({ code, language, aspectRatio }: { code: string; language: string; aspectRatio?: string }) => {
   const [height, setHeight] = React.useState('150px');
   const [srcDoc, setSrcDoc] = React.useState('');
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
+  // [공정 1] 동적 높이 조절 (비례 설정이 없을 때만 작동)
   React.useEffect(() => {
+    if (aspectRatio) return; 
+
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'resize-iframe' && event.source === iframeRef.current?.contentWindow) {
-        const newHeight = Math.max(event.data.height, 100);
-        setHeight(`${newHeight}px`);
+        setHeight(`${Math.max(event.data.height, 100)}px`);
       }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [aspectRatio]);
 
+  // [공정 2] 내부 콘텐츠(srcDoc) 생성 로직
   React.useEffect(() => {
     const timeout = setTimeout(() => {
       let headContent = '<meta charset="utf-8">';
       let bodyContent = '';
 
       const lang = language?.toLowerCase();
-      if (lang === 'html') {
-        bodyContent = code;
-      } else if (lang === 'css') {
+      if (lang === 'html') bodyContent = code;
+      else if (lang === 'css') {
         headContent += `<style>${code}</style>`;
         bodyContent = `<div style="width:100%; height:300px;"></div>`;
       } else if (lang === 'javascript' || lang === 'js') {
@@ -106,8 +107,8 @@ const LivePreview = ({ code, language }: { code: string; language: string }) => 
           <head>
             ${headContent}
             <style>
-              body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background: transparent; }
-              #content-wrapper { display: block; width: 100%; min-height: 10px; }
+              body, html { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background: transparent; width: 100%; height: 100%; }
+              #content-wrapper { display: block; width: 100%; height: 100%; min-height: 10px; }
             </style>
           </head>
           <body>
@@ -115,8 +116,8 @@ const LivePreview = ({ code, language }: { code: string; language: string }) => 
             <script>
               function sendHeight() {
                 const wrapper = document.getElementById('content-wrapper');
-                const height = wrapper.scrollHeight || wrapper.offsetHeight;
-                window.parent.postMessage({ type: 'resize-iframe', height: height }, '*');
+                const h = wrapper.scrollHeight || wrapper.offsetHeight;
+                window.parent.postMessage({ type: 'resize-iframe', height: h }, '*');
               }
               window.onload = () => { sendHeight(); setTimeout(sendHeight, 500); };
               new ResizeObserver(sendHeight).observe(document.body);
@@ -129,15 +130,23 @@ const LivePreview = ({ code, language }: { code: string; language: string }) => 
   }, [code, language]);
 
   return (
-    <div style={{ width: '100%', margin: '1.5rem 0', overflow: 'hidden', border: '1px solid #ddd', borderRadius: '8px' }}>
+    <div style={{ width: '100%', margin: '1.5rem 0', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
       <iframe
         ref={iframeRef}
         srcDoc={srcDoc}
         title="preview-output"
         sandbox="allow-scripts"
         frameBorder="0"
-        width="100%"
-        style={{ display: 'block', width: '100%', height: height, transition: 'height 0.2s ease', border: 'none', background: '#fff' }}
+        style={{ 
+          display: 'block', 
+          width: '100%', 
+          // 🏗️ [핵심 수정] aspect-ratio를 iframe에 직접 걸고, height를 auto로 설정하여 0이 되는 것을 방지합니다.
+          aspectRatio: aspectRatio || 'auto',
+          height: aspectRatio ? 'auto' : height, 
+          border: 'none', 
+          background: '#fff',
+          transition: 'height 0.2s ease'
+        }}
       />
     </div>
   );
@@ -192,7 +201,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
   }, [tabFromUrl, router.asPath]); // 경로(asPath) 변화를 감지하여 리셋 집행
 
   // =========================================================================
-  // 🔽 여기부터 삽입하세요: 1. 검색 상태 및 엔진 로직 (디버깅 로그 포함)
+  // 1. 검색
   // =========================================================================
 
   // [상태 관리] 모달 열림 상태, 검색어, 검색 결과, 로딩 상태를 관리합니다.
@@ -330,7 +339,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
 
 
   // =========================================================================
-  // [AaRC 최종 완공] 예외 처리가 강화된 무결성 엔진
+  // [collection view tab] 예외 처리가 강화된 무결성 엔진
   // =========================================================================
   React.useEffect(() => {
     let observer: MutationObserver | null = null;
@@ -538,11 +547,16 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
     Code: (props: any) => {
       const language = props.block?.properties?.language?.[0]?.[0]?.toLowerCase() || props.language?.toLowerCase();
       const codeText = props.block?.properties?.title?.[0]?.[0] || '';
-      const caption = props.block?.properties?.caption?.[0]?.[0];
+      const caption = props.block?.properties?.caption?.[0]?.[0] || '';
       
       if (language === 'mermaid') return <CustomMermaid code={codeText} />;
-      if (['html', 'css', 'javascript', 'js'].includes(language) && caption?.toLowerCase().includes('preview')) {
-        return <LivePreview code={codeText} language={language} />;
+      
+      if (['html', 'css', 'javascript', 'js'].includes(language) && caption.toLowerCase().includes('preview')) {
+        // 💡 정규식 보강: preview:900, preview : 900, preview 900 모두 인식 가능하게 수정
+        const match = caption.match(/preview\s*[:\s]\s*(\d+)/i);
+        const dynamicRatio = match ? `1440 / ${match[1]}` : undefined;
+
+        return <LivePreview code={codeText} language={language} aspectRatio={dynamicRatio} />;
       }
       return <Code {...props} />;
     },
