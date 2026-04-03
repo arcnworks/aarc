@@ -39,34 +39,30 @@ export const Loading: React.FC = () => {
   useEffect(() => {
     const handleStart = (url: string) => {
       if (url === router.asPath) return;
-
       setIsRouteChanging(true);
       setIsMinTimeElapsed(false);
       setIsVisible(true);
-      
       document.body.style.overflow = 'hidden';
-
       if (timerRef.current) clearTimeout(timerRef.current);
       if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
-      
-      // 사용자가 지정한 시간(400ms)이 지나면 무조건 완료 신호를 보냅니다.
-      timerRef.current = setTimeout(() => {
-        setIsMinTimeElapsed(true);
-      }, 400); 
+      timerRef.current = setTimeout(() => { setIsMinTimeElapsed(true); }, 400); 
     };
 
-    const handleComplete = () => {
-      setIsRouteChanging(false);
-    };
+    const handleComplete = () => { setIsRouteChanging(false); };
+    const forceLoading = () => handleStart('/forced-loading-path');
 
     router.events.on('routeChangeStart', handleStart);
     router.events.on('routeChangeComplete', handleComplete);
     router.events.on('routeChangeError', handleComplete);
 
+    // 🚨 [AaRC 시공] 외부 강제 신호를 받기 위해 귀를 엽니다.
+    window.addEventListener('trigger-arc-loading', forceLoading);
+
     return () => {
       router.events.off('routeChangeStart', handleStart);
       router.events.off('routeChangeComplete', handleComplete);
       router.events.off('routeChangeError', handleComplete);
+      window.removeEventListener('trigger-arc-loading', forceLoading); // 철거 시에도 깔끔하게
     };
   }, [router.events, router.asPath]);
 

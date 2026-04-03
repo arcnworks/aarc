@@ -417,7 +417,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
 
 
   // =========================================================================
-  // [AaRC 이미지 링크 주입] 외부 링크 + 전역 우클릭 차단 (최종 완성본)
+  // [AaRC 이미지 링크 주입] 어제 작동했던 래핑(Wrap) 방식 + 절대경로 버그 완벽 픽스
   // =========================================================================
   React.useEffect(() => {
     if (!recordMap || !recordMap.block) return;
@@ -425,7 +425,6 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
     const blockKeys = Object.keys(recordMap.block);
     const targetBlocks: { shortId: string, link: string }[] = [];
     
-    // 1. [데이터 스캔] 외부 링크 데이터 확보 (기존 무적 방식 유지)
     blockKeys.forEach((id) => {
       const block = recordMap.block[id]?.value;
       if (!block) return;
@@ -433,7 +432,6 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
       const rawString = JSON.stringify(block);
       let link = null;
 
-      // 공식 경로 및 만능 정규식 탐색
       link = block?.format?.image_hyperlink || block?.format?.block_link || block?.properties?.caption?.[0]?.[1]?.[0]?.[1];
       
       if (!link && rawString.includes('http')) {
@@ -441,7 +439,6 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
         let m;
         while ((m = urlRegex.exec(rawString)) !== null) {
           const url = m[1];
-          // 노션 시스템 주소 제외
           if (!url.includes('notion.so') && !url.includes('amazonaws.com') && !url.includes('notion-static.com')) {
             link = url;
             break;
@@ -454,63 +451,74 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
       }
     });
 
-    // 2. [전역 우클릭 차단 및 유리막 주입] DOM 제어 통합 로직
     const processImages = () => {
-      // 2-1. [전역 우클릭 차단] 화면의 모든 이미지 래퍼를 찾습니다.
+      // 1. 전역 우클릭 차단
       const allImageWrappers = document.querySelectorAll('.notion-asset-wrapper-image, .notion-image-block');
       allImageWrappers.forEach((wrapper: any) => {
-        // 링크 유무와 상관없이 우클릭을 원천 봉쇄합니다.
         if (!wrapper.dataset.arcNoRightClickApplied) {
-          wrapper.oncontextmenu = (e: MouseEvent) => {
-            e.preventDefault();
-            console.log('🚫 [AaRC] 이미지 전역 우클릭 차단');
-          };
+          wrapper.oncontextmenu = (e: MouseEvent) => { e.preventDefault(); };
           wrapper.dataset.arcNoRightClickApplied = 'true';
         }
       });
 
-      // 2-2. [개별 유리막 주입] 링크가 있는 이미지에만 하이퍼링크 유리막을 씌웁니다.
+      // 2. 이미지 하이퍼링크 주입 및 래핑 (어제 성공 방식 복원)
       targetBlocks.forEach(({ shortId, link }) => {
         const wrappers = document.querySelectorAll(`.notion-block-${shortId}`);
         
         wrappers.forEach((wrapper: any) => {
           if (wrapper.dataset.arcLinkApplied === 'true') return;
           
-          if (!wrapper.classList.contains(`notion-block-${shortId}`)) return;
+          const img = wrapper.querySelector('img');
+          if (!img || !img.parentElement) return;
 
-          // 🚨 투명 유리막(a 태그) 생성
+          // ✅ 어제 성공했던 방식: <a> 태그를 생성해 이미지를 안에 넣습니다.
           const a = document.createElement('a');
           a.href = link;
-          a.target = '_self'; // 현재 창 이동
+          a.target = '_self'; 
           a.className = 'arc-link-applied';
-          // 손가락 커서와 클릭 활성화 (우클릭 차단은 위에서 전역으로 처리)
-          a.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:9999; cursor:pointer; display:block; pointer-events:auto !important;';
+          a.style.display = 'block';
+          a.style.width = '100%';
+          a.style.height = '100%';
+
+          a.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // 🚨 [AaRC 시공] 이미지 클릭 즉시 로딩 신호 발사!
+            window.dispatchEvent(new Event('trigger-arc-loading')); 
+            
+            try {
+              const url = new URL(link, window.location.origin);
+              if (url.origin === window.location.origin) {
+                // 상대 경로로 깎아내어 라우터 엔진에 태웁니다.
+                const relativePath = url.pathname + url.search + url.hash;
+                router.push(relativePath);
+              } else {
+                window.location.href = link;
+              }
+            } catch (err) {
+              router.push(link);
+            }
+          };
           
-          const img = wrapper.querySelector('img');
-          if (img) {
-            // 이미지가 클릭을 방해하지 못하게 설정 (우클릭 차단은 전역 스캐너가 담당)
-            img.style.pointerEvents = 'none'; 
-          }
+          img.style.cursor = 'pointer';
+          
+          // ✅ 어제 성공했던 물리적 구조: <a>를 img 앞에 넣고, img를 <a> 안으로 이동
+          img.parentElement.insertBefore(a, img);
+          a.appendChild(img);
 
-          if (window.getComputedStyle(wrapper).position === 'static') {
-            wrapper.style.position = 'relative';
-          }
-
-          wrapper.appendChild(a); 
           wrapper.dataset.arcLinkApplied = 'true';
-          console.log(`✨ [AaRC] 블록 ${shortId} 외부 링크 연결 성공: ${link}`);
         });
-      });
+      });;
     };
 
-    // 3. 비동기 렌더링 무한 추적 및 페이지 전환 대응
     const observer = new MutationObserver(processImages);
     observer.observe(document.body, { childList: true, subtree: true });
     const interval = setInterval(processImages, 1000);
-    processImages(); // 초기 실행
+    processImages();
 
     return () => { observer.disconnect(); clearInterval(interval); };
-  }, [recordMap, pageId]);
+  }, [recordMap, pageId, router]);
 
 
   // =========================================================================

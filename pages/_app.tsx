@@ -12,19 +12,21 @@ import { RecoilRoot, useRecoilState } from 'recoil';
 import { preferencesStore } from 'stores/settings';
 import { SWRConfig, SWRConfiguration } from 'swr';
 
-// [핵심] 1단계에서 삭제한 PageLoading 대신, Loading.tsx를 전역에서 정확하게 불러옵니다.
+// [컴포넌트] 로딩 커튼 및 부트스트랩 로직
 import { Loading } from '~/components/Loading'; 
-
 import { bootstrap } from '~/lib/bootstrap-client';
 import { posthogConfig, posthogId } from '~/lib/config';
 
+// [스타일] 외부 라이브러리 및 커스텀 SCSS
 import 'react-notion-x/src/styles.css'; 
 import 'rc-dropdown/assets/index.css';
-
 import '~/styles/custom/index.scss';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 
+/* ---------------------------------------------------------
+   1. 폰트 및 글로벌 규격 설정
+   --------------------------------------------------------- */
 const notoSansKr = Noto_Sans_KR({
   subsets: ['latin'],
   weight: ['400', '700'],
@@ -41,10 +43,14 @@ const pretendard = localFont({
   display: 'swap'
 });
 
+/* ---------------------------------------------------------
+   2. Bootstrap: 시스템 설정 및 글로벌 클릭 인터셉터
+   --------------------------------------------------------- */
 const Bootstrap = () => {
-  const [preferences, setPreferences] = useRecoilState(preferencesStore);
+  const [preferences] = useRecoilState(preferencesStore);
   const router = useRouter();
 
+  // [공정 1] 스크롤 복원 및 페이지 뷰 트래킹
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
@@ -66,6 +72,42 @@ const Bootstrap = () => {
     };
   }, [router.events, router.pathname]);
 
+  // [공정 2] 🚨 글로벌 하이퍼링크 인터셉터 (Loading.tsx 트리거용)
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a'); // 클릭된 요소 주변의 <a> 태그를 찾습니다.
+
+      if (
+        anchor && 
+        anchor.href && 
+        anchor.target !== '_blank' && 
+        !e.defaultPrevented && 
+        !e.metaKey && !e.ctrlKey && !e.shiftKey
+      ) {
+        try {
+          const url = new URL(anchor.href, window.location.origin);
+          // 내부 링크 이동일 때만 작동
+          if (url.origin === window.location.origin && url.pathname !== router.asPath) {
+            e.preventDefault();
+            
+            // 1. 일반 링크를 누를 때도 무적 로딩 신호를 발사합니다.
+            window.dispatchEvent(new Event('trigger-arc-loading'));
+            
+            // 2. 전체 주소(http://...)가 아닌 상대 경로(/blog 등)로 안전하게 이동
+            router.push(url.pathname + url.search + url.hash);
+          }
+        } catch (err) {
+          // URL 파싱 에러 무시
+        }
+      }
+    };
+
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, [router]);
+
+  // [공정 3] 다크모드 무결성 유지
   useEffect(() => {
     if (preferences.isDarkMode) {
       if (!document.body.classList.contains('dark-mode')) document.body.classList.add('dark-mode');
@@ -74,6 +116,7 @@ const Bootstrap = () => {
     }
   }, [preferences.isDarkMode]);
 
+  // [공정 4] 초기 부트스트랩 및 스크롤바 제어
   useEffect(() => {
     bootstrap();
     const style = document.createElement('style');
@@ -85,6 +128,9 @@ const Bootstrap = () => {
   return null;
 };
 
+/* ---------------------------------------------------------
+   3. 메인 App 컴포넌트
+   --------------------------------------------------------- */
 const swrConfig: SWRConfiguration = {
   fetcher: (url: string) => axios.get(url).then(res => res.data),
 };
@@ -97,7 +143,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
           <Bootstrap />
           <GoogleAnalytics trackPageViews />
           
-          {/* 전역 로딩 커튼 배치 */}
+          {/* 전역 로딩 커튼 배치 (이제 인터셉터 덕분에 항상 신호를 받습니다) */}
           <Loading />
 
           {/* 대기 모드 없이 즉각적인 뒷단 빌드 허용 */}
