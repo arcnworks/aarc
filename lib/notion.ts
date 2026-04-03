@@ -17,7 +17,7 @@ const getNavigationLinkPages = pMemoize(async (): Promise<ExtendedRecordMap[]> =
         notion.getPage(navigationLinkPageId, {
           chunkLimit: 1,
           fetchMissingBlocks: false,
-          fetchCollections: false,
+          fetchCollections: true,
           signFileUrls: false,
         }),
       {
@@ -39,7 +39,12 @@ export async function getPage(
 ): Promise<ExtendedRecordMap> {
   let recordMap = await notion.getPage(pageId, {
     ...options,
-    signFileUrls: false // ✅ 여기가 중요합니다!
+    // --- [수정 및 추가] ---
+    fetchCollections: true,     // 모든 데이터베이스 뷰 데이터를 가져옵니다.
+    chunkLimit: 100,            // 한 번에 가져올 데이터 양을 늘립니다 (탭 전환 시 유리).
+    fetchMissingBlocks: true,   // 누락된 블록을 보충합니다.
+    signFileUrls: false 
+    // -----------------------
   });
 
   if (navigationStyle !== 'default') {
@@ -52,6 +57,7 @@ export async function getPage(
       );
     }
   }
+
   if (isPreviewImageSupportEnabled) {
     const previewImageMap = await getPreviewImageMap(recordMap);
     (recordMap as any).preview_images = previewImageMap;

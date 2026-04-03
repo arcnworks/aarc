@@ -163,3 +163,9 @@
 .notion-collection-view-tabs .notion-collection-view-tab-title {
   margin-left: 0 !important;
 }
+
+
+.notion-collection-view-dropdown {
+  cursor: pointer !important;
+  background: #f0f0f0 !important;
+}

@@ -17,6 +17,10 @@ import { Loading } from '~/components/Loading';
 
 import { bootstrap } from '~/lib/bootstrap-client';
 import { posthogConfig, posthogId } from '~/lib/config';
+
+import 'react-notion-x/src/styles.css'; 
+import 'rc-dropdown/assets/index.css';
+
 import '~/styles/custom/index.scss';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';

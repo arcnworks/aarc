@@ -1,39 +1,177 @@
-* {
-  box-sizing: border-box;
+/* ============================================================ */
+/* 기본 요소 초기화 (Reset CSS) 및 타이포그래피 설정            */
+/* ============================================================ */
+
+/* 1. 모든 요소(*)의 크기 계산 방식 변경 */
+/* 패딩(안쪽 여백)이나 테두리 두께를 추가해도 지정한 너비(width)와 높이(height)가 
+   커지지 않고 내부로 수축되게 만들어 레이아웃이 틀어지는 것을 방지합니다. */
+   * {
+    box-sizing: border-box;
+  }
+  
+  /* 2. 하이퍼링크(a 태그) 기본 스타일 제거 */
+  a {
+    color: inherit;         /* 기본 파란색을 없애고, 부모 요소의 글자색을 그대로 따라가게 합니다. */
+    text-decoration: none;  /* 링크 아래에 생기는 기본 밑줄을 없앱니다. */
+  }
+  
+  /* 3. 문서의 뼈대(body, html) 여백 초기화 */
+  /* 브라우저가 기본적으로 부여하는 8px가량의 바깥 여백(margin)과 안쪽 여백(padding)을 
+     모두 없애 화면에 빈틈없이 꽉 차도록 만듭니다. */
+  body,
+  html {
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* 4. 문서 전체(body) 폰트 및 스크롤 설정 */
+  body {
+    /* next/font로 정의한 Pretendard를 최우선 기본 폰트로, 
+       Noto Sans KR을 대체(fallback) 폰트로 설정합니다. 
+       그 외에는 사용자의 운영체제(Mac, Windows 등)에 맞는 최적의 시스템 폰트를 순차적으로 적용합니다. */
+    font-family: var(--font-pretendard), var(--font-noto-sans-kr), -apple-system,
+      BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI',
+      'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji',
+      'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    
+    /* 콘텐츠가 화면 가로 너비를 넘어갈 때 가로 스크롤바가 생기는 것을 강제로 막아줍니다. */
+    overflow-x: hidden;
+    
+    /* 글자 자간을 미세하게(-0.0375em) 줄여 한글 폰트 특유의 벌어짐을 잡고 가독성을 높입니다. */
+    letter-spacing: -0.0375em;
+  }
+  
+  /* ============================================================ */
+  /* 트위터(X) 임베드 요소 관련 스타일 교정                       */
+  /* ============================================================ */
+  
+  /* 5. 정적 트윗 임베드 내부의 인용구(blockquote) 여백 초기화 */
+  /* 브라우저마다 제각각인 blockquote의 사방 여백(상하좌우 마진)을 0으로 만들어 
+     트윗 카드의 레이아웃이 일관되게 유지되도록 합니다. */
+  .static-tweet blockquote {
+    margin: 0;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+  }
+  
+  /* 6. 정적 트윗 임베드 내부의 이모지 크기 보정 */
+  /* 이모지가 너무 크거나 작게 렌더링되는 것을 막기 위해, 
+     현재 주변 글자 크기(em)의 1.2배 사이즈로 너비와 높이를 강제(!important) 고정합니다. */
+  .static-tweet-emoji {
+    height: 1.2em !important;
+    width: 1.2em !important;
+  }
+
+/* ============================================================ */
+/* 커스텀 검색 모달 UI 스타일                                 */
+/* ============================================================ */
+
+/* 1. 모달의 뒷배경 (백드롭) */
+/* 화면 전체를 덮고, 뒤를 흐리게(블러) 처리하며, 모달 창을 화면 중앙에 배치합니다. */
+.arc-search-backdrop { 
+  position: fixed;              /* 스크롤해도 화면에 고정 */
+  top: 0; left: 0;              /* 화면의 좌측 상단부터 시작 */
+  width: 100vw; height: 100vh;  /* 브라우저 화면 전체 크기 덮기 */
+  background: rgba(0,0,0,0.5);  /* 검은색 반투명 배경 */
+  backdrop-filter: blur(8px);   /* 뒷배경 흐림(블러) 효과 */
+  z-index: 100000;              /* 다른 모든 요소보다 항상 맨 위에 오도록 설정 */
+  display: flex;                /* 모달 창 중앙 정렬을 위한 플렉스 박스 */
+  justify-content: center;      /* 가로 기준 중앙 정렬 */
+  padding-top: 10vh;            /* 화면 위쪽에서 10% 정도 띄워줌 */
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* 2. 실제 검색 모달 창 본체 */
+.arc-search-modal { 
+  background: var(--bg-color);  /* 테마(라이트/다크)에 따른 배경색 적용 */
+  width: 90%; max-width: 650px; /* 기본 너비 90%, 최대 650px로 제한하여 모바일/PC 모두 대응 */
+  border-radius: 12px;          /* 모서리를 둥글게 */
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3); /* 모달 창 주변에 깊이감을 주는 그림자 */
+  overflow: hidden;             /* 모달 창 밖으로 삐져나가는 내용 숨김 */
+  border: 1px solid var(--fg-color-1); /* 테두리 선 (테마 변수 사용) */
+  display: flex; flex-direction: column; /* 헤더와 바디를 위아래로 배치 */
+  max-height: 75vh;             /* 모달 창의 최대 높이를 화면의 75%로 제한 (넘치면 스크롤) */
 }
 
-body,
-html {
-  padding: 0;
-  margin: 0;
+/* 3. 검색 모달의 상단 영역 (검색창 + 닫기 버튼) */
+.arc-search-header { 
+  display: flex; align-items: center; /* 내부 요소들을 가로로 나란히, 세로 중앙 정렬 */
+  padding: 20px 24px;           /* 안쪽 여백 */
+  border-bottom: 1px solid var(--fg-color-1); /* 상단과 하단 영역을 나누는 밑줄 */
+  gap: 14px;                    /* 돋보기 아이콘, 입력창, 닫기 버튼 사이의 간격 */
 }
 
-body {
-  /* next/font로 정의한 Pretendard를 기본 폰트로, Noto Sans KR을 대체(fallback) 폰트로 설정합니다. */
-  font-family: var(--font-pretendard), var(--font-noto-sans-kr), -apple-system,
-    BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI',
-    'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
-  overflow-x: hidden;
-  /* 글자 자간을 미세하게 줄여 가독성을 높입니다. */
-  letter-spacing: -0.0375em;
+/* 4. 사용자가 텍스트를 입력하는 검색창 */
+.arc-search-header input { 
+  flex: 1;                      /* 남은 가로 공간을 모두 차지하도록 늘림 */
+  background: transparent;      /* 입력창 자체의 배경은 투명하게 */
+  border: none;                 /* 입력창 기본 테두리 제거 */
+  color: var(--fg-color);       /* 입력되는 글자 색상 (테마 변수 사용) */
+  font-size: 1.25rem;           /* 글자 크기를 넉넉하게 키움 */
+  outline: none;                /* 클릭 시 생기는 기본 외곽선 제거 */
+  font-weight: 300;             /* 얇고 세련된 글꼴 두께 */
 }
 
-.static-tweet blockquote {
-  margin: 0;
-  margin-block-start: 0;
-  margin-block-end: 0;
-  margin-inline-start: 0;
-  margin-inline-end: 0;
+/* 5. 우측 닫기(✕) 버튼 */
+.arc-close-btn { 
+  background: transparent; border: none; /* 배경과 테두리 제거 */
+  font-size: 20px; color: var(--fg-color-3); /* 흐릿한 글자 색상 적용 */
+  cursor: pointer;              /* 마우스를 올리면 손가락 모양으로 변경 */
+  padding: 4px;                 /* 클릭하기 편하도록 여백 추가 */
 }
 
-.static-tweet-emoji {
-  height: 1.2em !important;
-  width: 1.2em !important;
+/* 6. 검색 결과가 리스트업되는 몸통 영역 */
+.arc-search-body { 
+  overflow-y: auto;             /* 결과가 많아지면 세로 스크롤 생성 */
+  padding: 12px 0;              /* 상하 여백만 주고 좌우는 꽉 채움 */
 }
 
+/* 7. 개별 검색 결과 항목 (클릭 가능한 한 줄) */
+.arc-search-item { 
+  padding: 18px 24px; cursor: pointer; /* 클릭 영역 확보 및 손가락 커서 */
+  border-bottom: 1px solid var(--fg-color-0); /* 각 항목 사이의 옅은 구분선 */
+  transition: background 0.1s;  /* 마우스 오버 시 배경색이 자연스럽게 변하도록 애니메이션 처리 */
+}
+
+/* 검색 결과 항목에 마우스를 올렸을 때의 효과 */
+.arc-search-item:hover { 
+  background: var(--fg-color-1); /* 배경색을 살짝 어둡게(다크모드에선 밝게) 변경 */
+}
+
+/* 8. 검색된 글의 제목 */
+.arc-search-title { 
+  font-size: 1.05rem; font-weight: 700; /* 제목답게 굵고 살짝 크게 */
+  color: var(--fg-color); margin-bottom: 6px; /* 텍스트 색상 및 아래쪽 요약문과의 간격 */
+}
+
+/* 9. 검색된 글의 문맥/요약 (Snippet) */
+.arc-search-snippet { 
+  font-size: 0.92rem; color: var(--fg-color-3); /* 부가 설명이므로 약간 작고 흐리게 */
+  line-height: 1.6;             /* 줄 간격을 넓혀 가독성 확보 */
+  
+  /* 요약문이 너무 길면 2줄까지만 보여주고 끝에 '...' 처리하는 기법 */
+  display: -webkit-box; 
+  -webkit-line-clamp: 2;        /* 최대 2줄 제한 */
+  -webkit-box-orient: vertical; 
+  overflow: hidden; 
+}
+
+/* 10. 검색된 키워드 하이라이트 (형광펜 효과) */
+.arc-mark { 
+  background: #fff5b1;          /* 라이트 모드에서의 파스텔톤 노란색 형광펜 */
+  color: #000;                  /* 글자는 검은색으로 고정 */
+  padding: 0 2px;               /* 배경색이 글자에 너무 붙지 않게 여백 추가 */
+  border-radius: 2px;           /* 모서리를 살짝 둥글게 */
+  font-weight: 600;             /* 눈에 띄도록 글씨를 굵게 */
+}
+
+/* 다크 모드일 때의 하이라이트 색상 보정 */
+.dark-mode .arc-mark { 
+  background: #ffd33d;          /* 다크 모드에 맞춰 형광펜 색상을 좀 더 진한 노란색으로 변경 */
+}
+
+/* 11. "분석 중...", "결과가 없습니다." 등의 안내 메시지 */
+.arc-search-msg { 
+  padding: 50px; text-align: center; color: var(--fg-color-3); /* 중앙 정렬 및 여백 확보 */
+}

@@ -1,676 +1,146 @@
-// 스크롤 스타일 제거
-::-webkit-scrollbar {
-  display: none;
-}
- 
-// --- 페이지 좌우 여백 (반응형, <= 1440px) ---
-@media only screen and (max-width: 1440px) {
-  :root {
-    --notion-page-left-right-padding: 2vw;
-    --notion-page-fullwith-left-right-padding: 2vw;
+/* =========================================================================
+   [AaRC] 브랜드 사이트 통합 마스터 스타일 시트 (notion.scss)
+   ========================================================================= */
+
+/* -------------------------------------------------------------------------
+   1. 전역 초기화 및 반응형 기본 설정
+   ------------------------------------------------------------------------- */
+   ::-webkit-scrollbar {
+    display: none;
   }
-}
- 
-@media only screen and (max-width: 700px) {
-  :root {
-    --base-font-size: 0.9rem;
+  
+  html {
+    scrollbar-gutter: stable;
   }
-}
-
-/**
- * ================ 전체적인 레이아웃 구성 관련 ================
- */
-
-html {
-  scrollbar-gutter: stable;
-}
-
-main {
-  font-family: var(--font-pretendard), var(--font-noto-sans-kr), sans-serif;
-  font-size: 16px;
-  transition-duration: 250ms;
-  transition-property: background-color, color;
-  -webkit-font-smoothing: antialiased;
-}
-
-.notion {
-  font-size: var(--base-font-size);
-  transition-duration: 250ms;
-  transition-property: background-color, color;
-}
-
-.notion-page {
-  padding-left: var(--notion-page-left-right-padding) !important;
-  padding-right: var(--notion-page-left-right-padding) !important;
-}
-
-.notion-full-width {
-  padding-left: var(--notion-page-fullwith-left-right-padding) !important;
-  padding-right: var(--notion-page-fullwith-left-right-padding) !important;
-
-    .notion-title {
-      text-align: left;
-    }
-
-    .notion-page-icon-hero {
-      left: var(--notion-fullwith-page-left-right-padding);
+  
+  main {
+    font-family: var(--font-pretendard), var(--font-noto-sans-kr), sans-serif;
+    font-size: 16px;
+    transition-duration: 250ms;
+    transition-property: background-color, color;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  @media only screen and (max-width: 1440px) {
+    :root {
+      --notion-page-left-right-padding: 2vw;
+      --notion-page-fullwith-left-right-padding: 2vw;
     }
   }
   
-// 루트 페이지가 아닌 경우 네비게이션 메뉴를 숨김
-body:not(.is-root-page) .notion-nav-header > .breadcrumbs:nth-child(2) {
-    display: none;
-  } 
-
-// 루트 페이지일 경우
-body.is-root-page {
-  // 타이틀 제목을 표시하지 않음
-  .notion-title {
+  @media only screen and (max-width: 700px) {
+    :root {
+      --base-font-size: 0.9rem;
+    }
+  }
+  
+  /* 루트 페이지 및 다크모드 전역 조건 처리 */
+  body:not(.is-root-page) .notion-nav-header > .breadcrumbs:nth-child(2) {
     display: none;
   }
-
-  // 네비게이션 메뉴를 숨김
-  .notion-nav-header > .breadcrumbs:nth-child(2) {
-    display: none;
+  
+  body.is-root-page {
+    .notion-title { display: none; }
+    .notion-nav-header > .breadcrumbs:nth-child(2) { display: none; }
   }
-}
-
-  // 헤더
+  
+  body:not(.dark-mode) .hasCollectionView {
+    --bg-color: #ffffff;
+  }
+  
+  /* 시스템 불필요 요소 제거 및 이미지 줌 방지 */
+  .notion-collection-view-type-icon,
+  .notion-page-icon-image,
+  .notion-page-icon-hero {
+    display: none !important;
+  }
+  
+  .notion-collection-view-tabs .notion-collection-view-tab-title {
+    margin-left: 0 !important;
+  }
+  
+  .notion-image-zoom-trigger {
+    cursor: auto !important;
+  }
+  
+  /* -------------------------------------------------------------------------
+     2. 헤더 및 네비게이션 (상단 고정 영역)
+     ------------------------------------------------------------------------- */
   .notion-header {
-    position: fixed; /* 'sticky'에서 'fixed'로 변경하여 블러 효과가 전체 너비에 적용되도록 함 */
-    top: 0; /* iOS Safari에서 상단 주소창과의 틈을 없애기 위해 명시적으로 설정 */
+    position: fixed;
+    top: 0;
     left: 0;
     width: 100%;
-    transform: translateZ(0); /* iOS Safari 렌더링 버그 수정을 위한 3D 변환 힌트 */
+    transform: translateZ(0);
     transition-duration: 250ms;
     transition-property: background-color, color;
-    background-color: rgba(255, 255, 255, 0.1); /* 반투명 배경색 추가 */
-    backdrop-filter: blur(5px); /* 블러 효과 설정 */
-    -webkit-backdrop-filter: blur(5px); /* 사파리 브라우저 지원 */
-
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 1000;
+  
     .notion-nav-header {
-      max-width: var(--notion-max-width);
-        
-
+      max-width: 100% !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      padding-left: 4vw !important;
+      padding-right: 4vw !important;
+      margin: 0 !important;
     }
-
+  
     .breadcrumb.notion-nav-header-mobile svg {
       fill: var(--fg-color);
     }
   }
-
-// 다크모드 아닐때
-body:not(.dark-mode) {
-  // 글 목록을 가지고 있는 페이지라면 배경 색 변경
-  .hasCollectionView {
-    --bg-color: #ffffff;
-  }
-}
-
-/**
- * ================ notion 페이지 관련 스타일 ================
- */
-.notion {
-  // 페이지
-  .notion-page {
-    line-height: 1.5;
-  }
-
-  // 페이지 제목
-.notion-title {
-  /* display: none; /* 페이지 제목 숨김 */
-  text-align: left;
-  font-size: 2.0em;
-  padding-left: 4px; /* 원하는 좌측 패딩 값 */
-  padding-right: 0px; /* 원하는 우측 패딩 값 */
-
-}
-
-  // 페이지 메인 이미지 (커버 이미지)
-  .notion-page-cover-wrapper,
-  .notion-page-cover-wrapper span,
-  .notion-page-cover-wrapper img {
-    max-width: 100% !important;
-    border-radius: 0;
-    height: calc(30vh + var(--notion-header-height)) !important;
-    min-height: calc(30vh + var(--notion-header-height)) !important;
-    max-height: calc(30vh + var(--notion-header-height)) !important;
-  }
-
-  // 페이지 메인 이미지 (커버 이미지) 없을 때 페이지 제목의 상단까지 간격
-  .notion-page-no-cover {
-    margin-top: 48px !important;
-    -webkit-margin-before: 48px !important; /* WebKit 전용 상단 간격 */
+  
+  .notion-nav-header-rhs.breadcrumbs {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.2rem !important;
   }
   
-
-  // 페이지 아이콘
-  .notion-page-icon-hero {
-    margin-left: 0 !important;
-    left: var(--notion-page-left-right-padding);
-  }
-
-
-
-  // 페이지 우측 사이드
-  .notion-aside {
-    width: var(--notion-aside-width);
-    margin-left: var(--notion-aside-space-width);
-    flex: none;
-
-    // 우측 사이드 목차
-    .notion-contentPosition {
+  /* -------------------------------------------------------------------------
+     3. 노션 페이지 본문 (레이아웃, 타이포그래피, 블록)
+     ------------------------------------------------------------------------- */
+  .notion {
+    font-size: var(--base-font-size);
+    transition-duration: 250ms;
+    transition-property: background-color, color;
+  
+    /* 페이지 기초 레이아웃 */
+    .notion-page {
+      position: relative;
+      padding: 0;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
       width: 100%;
-
-      .item {
-        display: block;
-        position: relative;
-        padding: 0.1rem 1rem 0.1rem 1rem;
-
-        .text {
-          opacity: 0.5;
-          font-size: 0.9rem;
-          transition: 250ms opacity;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        &.level1 {
-          padding-left: calc(1.3rem + 1rem);
-
-          .text {
-            font-size: 0.75rem;
-          }
-        }
-
-        &.level2 {
-          padding-left: calc(1.3rem + 2rem);
-
-          .text {
-            font-size: 0.7rem;
-          }
-        }
-
-        &.active {
-          .text {
-            opacity: 1;
-          }
-        }
-
-        &::before {
-          content: '';
-          height: 100%;
-          position: absolute;
-          left: 0;
-          top: 0;
-          border-right: 1px solid var(--fg-color);
-          z-index: 1;
-          opacity: 0.2;
-        }
-
-        .activeLine {
-          position: absolute;
-          background-color: var(--primary-color);
-          width: 3px;
-          height: 100%;
-          top: 0;
-          left: 0;
-          z-index: 2;
-
-          &::before {
-            content: '';
-            position: absolute;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            left: 0.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-          }
-        }
-      }
-
-      &.alignRight {
-        .item {
-          text-align: right;
-          padding: 0.3rem 1rem 0.3rem 1.3rem;
-
-          &.level1 {
-            padding-left: 0;
-            padding-right: calc(1.3rem + 1rem);
-          }
-
-          &.level2 {
-            padding-left: 0;
-            padding-right: calc(1.3rem + 2rem);
-          }
-
-          &::before {
-            right: 0;
-            left: auto;
-          }
-
-          .activeLine {
-            right: 0;
-            left: auto;
-
-            &::before {
-              left: auto;
-              right: 0.5rem;
-            }
-          }
-        }
-      }
+      max-width: 100%;
+      line-height: 1.5;
+      padding-left: var(--notion-page-left-right-padding) !important;
+      padding-right: var(--notion-page-left-right-padding) !important;
     }
-  }
-
-  // 메인 페이지인 경우
-  &.indexPage {
-    .notion-nav-header {
-      & > .breadcrumbs:first-child {
-        visibility: hidden;
-      }
-    }
-
-    .notion-aside {
-      display: none;
-    }
-  }
-
-  // 메인페이지가 아닌 모든 페이지
-  &.childPage {
-    .notion-page-icon-hero.notion-page-icon-image span,
-    .notion-page-icon-hero.notion-page-icon-image img {
-      border-radius: 0;
-    }
-
-    .notion-page-icon-hero.notion-page-icon-image {
-      box-shadow: none;
-      border-radius: 0;
-    }
-  }
-}
-
-/**
- * ================ notion 페이지 - 기본 블럭 스타일 (본문 내용) ================
- */
-.notion {
-  // 제목1 ~ 제목3
-  .notion {
-    &-h1 {
-      font-size: 2.0rem;
-
-      &::after {
-        content: '';
-        display: block;
-        height: 2px;
-        width: 4rem;
-        //background-color: var(--fg-color);  //제목 하단라인 삭제
-        margin-top: 0.0rem;
-        border-radius: 0px;
-      }
-    }
-
-    &-h2 {
-      font-size: 1.7rem;
-      
-    }
-
-    &-h3 {
-      font-size: 1.4rem;
-    }
-  }
-
-  // 일반 본문
-  .notion-text {
-    padding: 0.2rem px;
-  }
-
-  // 리스트
-  .notion-list {
-    li {
-      padding: 3.5px 0;
-      padding-left: 0.2rem;
-
-      &::marker {
-        font-weight: 400;
-      }
-    }
-  }
-
-  // 인라인코드
-  .notion-inline-code {
-    font-weight: 400;
-    font-family: var(--notion-font);
-    letter-spacing: 0;
-    background-color: transparent !important;
-    position: relative;
-    z-index: 0;
-    background-color: var(--fg-color-lighten) !important;
-    transition: 250ms background-color;
-  }
-
-  // 코드
-  .notion-code {
-    .notion-code-copy {
-      top: 0.7rem;
-
-      .notion-code-copy-button {
-        display: block;
-      }
-    }
-  }
-
-  // 구분선
-  .notion-hr {
-    margin: 6px 0;
-  }
-
-  // 콜아웃
-  .notion-callout {
-    border-radius: 0px;
-
-    .notion-page-icon-inline {
-      margin-right: 1rem;
-      transform: translateY(1px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .notion-inline-code {
-      background-color: var(--fg-color-1) !important;
-    }
-
-    &.warning {
-      background-color: var(--notion-yellow_background);
-      border-color: var(--notion-yellow);
-    }
-
-    &.error {
-      background-color: var(--notion-red_background);
-      border-color: var(--notion-red);
-    }
-
-    &.info {
-      background-color: var(--notion-blue_background);
-      border-color: var(--notion-blue);
-    }
-  }
-
-  // 인용
-  // 인용
-.notion-quote {
-  /* 1. 줄 높이 (Line Height) - 글자 자체의 수직 높이 */
-  // 본문(1.5)보다 약간 여유 있는 1.7~1.8 배율이 인용구의 우아함을 살려줍니다.
-  line-height: 1.5 !important; 
-
-  /* 2. 상하 여백 (Vertical Padding) - 글자 상하단의 빈 공간 */
-  // 이 수치를 높이면 인용구 박스 전체의 '높이감'이 커집니다.
-  padding-top: 1.2rem !important;
-  padding-bottom: 1.2rem !important;
-  padding-left: 2rem !important;
-  padding-right: 2rem !important;
-
-  /* 3. 최소 높이 (Min-Height) - 선택 사항 */
-  // 짧은 한 줄짜리 인용구라도 일정한 볼륨감을 유지하고 싶을 때 사용합니다.
-  min-height: 0px; 
-
-  /* --- 아래는 기존 유지 및 추천 스타일 --- */
-  font-family: 'Noto Serif KR', serif !important; // 명조체 추천
-  font-weight: 600 !important;
-  font-style: normal;
-  font-size: 0.8rem !important; // 본문보다 살짝 크게
-  border-left: 4px solid var(--primary-color) !important; // 왼쪽 강조선
-  position: relative;
-  background-color: var(--fg-color-lighten);
-  transition: 250ms background-color;
-}
-
-  // 체크박스 (할일)
-  .notion-property-checkbox {
-    &-unchecked {
-      border-radius: 2px;
-    }
-
-    &-checked {
-      border-radius: 2px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      svg {
-        width: 10px;
-        height: 10px;
-        top: initial;
-        left: initial;
-      }
-    }
-  }
-
-  // 파일 첨부 - 아이콘
-  .notion-file-icon {
-    fill: var(--fg-color);
-  }
-
-  // 페이지 링크 스타일
-  .notion-page-title-text {
-    border-bottom: none;
-  }
-
-  // 링크
-  .notion-link:focus,
-  .notion-link:hover {
-    border-bottom-color: transparent;
-
-    background-image: linear-gradient(
-      90.68deg,
-      var(--primary-color) 0.26%,
-      var(--primary-gradient-end-color) 102.37%
-    );
-    background-repeat: no-repeat;
-    background-position: 0 100%;
-    background-size: 100% 0.1rem;
-
-    // transition-property: background-position, background-size;
-    // transition-duration: 300ms;
-  }
-
-  // 북마크
-  .notion-bookmark {
-    transition: 250ms border-color;
-
-    &:hover {
-      border-color: var(--primary-color);
-    }
-
-    .notion-bookmark-link-icon img {
-      display: block;
-    }
-
-    .notion-bookmark-link-text {
-      max-width: 30rem;
-    }
-  }
-
-  // 테이블
-  .notion-simple-table-wrap {
-    max-width: 100%;
-    overflow-x: auto;
-
-    td {
-      border-color: var(--fg-color-lighten);
-    }
-
-    tr:first-child td {
-      background-color: var(--fg-color-lighten);
-    }
-  }
-}
-
-/**
- * ARC BLOG - 통합 커스텀 스타일 시트
- */
-
- .notion {
-  // 1. 페이지 기초 레이아웃
-  .notion-page {
-    position: relative;
-    padding: 0;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 100%;
-  }
-
-  // 2. 유저 프로필 스타일
-  .notion-user-container {
-    display: flex;
-    align-items: center;
-    .notion-user { margin-right: 0.3rem; }
-  }
-
-  // 3. 통합 반응형 그리드 규칙 (메인 목록 & 본문 갤러리)
-  .postList,
-  .notion-gallery-grid {
-    display: grid !important;
-    gap: 20px !important;
-    margin-top: 0.8rem;
-    
-    // 열 개수: 화면 너비에 따라 2열 -> 3열 -> 4열 자동 전환
-    grid-template-columns: repeat(2, 1fr) !important;
-    @media (min-width: 641px) { grid-template-columns: repeat(3, 1fr) !important; }
-    @media (min-width: 771px) { grid-template-columns: repeat(4, 1fr) !important; }
-
-    // 4. 카드(Card) 디자인 - 라운드 제거 및 그림자 설정
-    > a, .notion-collection-card {
-      background-color: var(--notion-card-background-color);
-      transition: 250ms transform, 250ms background-color;
-      border-radius: 0 !important; // 카드 외부 라운드 제거
-      box-shadow: none !important;
-      overflow: visible !important;
-      text-decoration: none;
-
-      // 카드 그림(커버) 영역 최적화
-      .notion-collection-card-cover {
-        height: auto !important; 
-        aspect-ratio: 16 / 9 !important; // 황금 비율 유지
-        overflow: hidden;
-        border-radius: 0 !important; // 커버 영역 라운드 제거
-        box-shadow: 2px 2px 8px 4px rgba(15, 15, 15, 0.1);
-
-        img, .lazy-image-wrapper, span {
-          width: 100% !important;
-          height: 100% !important;
-          object-fit: cover !important;
-          border-radius: 0 !important; // 실제 이미지 라운드 제거
-        }
-
-        @media (max-width: 760px) {
-          aspect-ratio: 1 / 1 !important; // 모바일 1:1 비율
-        }
-      }
-
-      // 카드 본문 및 텍스트 설정
-      .notion-collection-card-body {
-        display: block;
-        padding: 0.4rem;
-
-        // 제목: 2줄 제한 및 고정 높이 확보
-        .notion-page-title-text {
-          font-size: 1.1rem !important;
-          font-weight: 600 !important;
-          line-height: 1.5 !important;
-          height: 3rem !important; 
-          display: -webkit-box !important;
-          -webkit-line-clamp: 2 !important;
-          -webkit-box-orient: vertical !important;
-          overflow: hidden !important;
-          white-space: normal !important;
-          text-overflow: ellipsis;
-          margin-bottom: 0.8rem;
-        }
-
-        // 속성(태그 등) 줄바꿈 허용
-        .notion-collection-card-property {
-          padding: 0.1rem;
-          white-space: normal !important;
-          text-overflow: unset !important;
-          overflow: visible !important;
-          font-size: 12px;
-
-          .notion-property-text {
-            width: 100%;
-            color: #7a7c85;
-            word-break: break-all !important;
-          }
-        }
-      }
-    }
-  }
-
-  // 5. 페이지 상단 커버 스타일
-  .notion-page-cover,
-  .notion-page-cover-wrapper,
-  .notion-page-cover-wrapper span,
-  .notion-page-cover-wrapper img {
-    width: 100% !important;
-    height: 30vh !important;
-    min-height: 30vh !important;
-    max-height: 30vh !important;
-    object-fit: cover;
-    border-radius: 0 !important; // 페이지 커버 라운드 제거
-  }
-
-  // 커버 유무에 따른 상단 여백
-  .notion-page-no-cover { margin-top: 48px !important; padding-top: 48px !important; }
-  .notion-page-has-cover { padding-top: 48px !important; }
-  .notion-page-has-cover.notion-page-no-icon { padding-top: 48px !important; }
-}
-
-// 6. 다크모드 및 검색 UI 최적화
-.dark-mode {
-  background-color: var(--bg-color);
-  .notion-header .breadcrumb { text-shadow: 0 0 3px black; }
-  .notion-search {
-    color: var(--fg-color);
-    background-color: var(--bg-color-1);
-    input { background-color: transparent; }
-  }
-}
-
-// 7. 시스템 아이콘 숨기기
-.notion-collection-view-type-icon, 
-.notion-page-icon-image,           
-.notion-page-icon-hero {           
-  display: none !important;
-}
-
-.notion-collection-view-tabs .notion-collection-view-tab-title {
-  margin-left: 0 !important;
-}
-
-/* =========================================================
-   8. 본문 가독성(폭) 및 우측 목차(Aside) 반응형 레이아웃
-   ========================================================= */
-   :root {
-    --notion-max-width: 760px;          /* 본문이 가장 읽기 편안한 최대 폭 */
-    --notion-aside-width: 260px;        /* 우측 목차의 폭 */
-    --notion-aside-space-width: 100px;   /* 본문과 목차 사이의 여백 */
-  }
   
-  .notion {
-    /* 1) 본문 영역의 폭 제한 및 중앙 정렬 */
+    .notion-full-width {
+      padding-left: var(--notion-page-fullwith-left-right-padding) !important;
+      padding-right: var(--notion-page-fullwith-left-right-padding) !important;
+      .notion-title { text-align: left; }
+      .notion-page-icon-hero { left: var(--notion-fullwith-page-left-right-padding); }
+    }
+  
+    /* 본문 가독성 폭 제한 및 레이아웃 */
+    :root {
+      --notion-max-width: 760px;
+      --notion-aside-width: 260px;
+      --notion-aside-space-width: 100px;
+    }
+  
     .notion-page-content-inner {
       width: 100% !important;
       max-width: var(--notion-max-width) !important;
-      margin: 0 auto !important; 
+      margin: 0 auto !important;
     }
   
-    /* 2) PC 화면 (1200px 이상): 본문과 목차 나란히 배치 */
     @media (min-width: 1200px) {
       .notion-page-content-has-aside {
         display: flex;
@@ -680,289 +150,574 @@ body:not(.dark-mode) {
         max-width: calc(var(--notion-max-width) + var(--notion-aside-space-width) + var(--notion-aside-width)) !important;
         margin: 0 auto !important;
       }
-
-      .notion-aside {
-        display: flex !important;
-        width: var(--notion-aside-width) !important;
-        margin-left: var(--notion-aside-space-width) !important;
-        
-        /* [수정 포인트] 목차를 아래로 내리는 설정 */
-        /* 숫자를 키울수록 목차가 더 아래에서 시작합니다. (예: 100px, 150px 등) */
-        margin-top: 520px !important; 
-        
-        /* 스크롤 시 목차가 멈추는 상단 위치 (원하는 경우 함께 조절) */
-        position: sticky;
-        top:100px; 
-      }
     }
   
-    /* 3) 모바일/태블릿 화면 (1199px 이하): 반응형 적용 */
     @media (max-width: 1199px) {
-      .notion-aside {
-        display: none !important; /* 화면이 좁을 땐 사이드 목차 숨김 */
-      }
-  
       .notion-page-content-inner {
         padding-left: 20px !important;
         padding-right: 20px !important;
       }
-      
+    }
+  
+    /* 제목 (H1, H2, H3 및 페이지 타이틀) */
+    .notion-h1 {
+      font-size: 2.0rem;
+      &::after {
+        content: ''; display: block; height: 2px; width: 4rem; margin-top: 0.0rem; border-radius: 0px;
+      }
+    }
+    .notion-h2 { font-size: 1.7rem; }
+    .notion-h3 { font-size: 1.4rem; }
+  
+    .notion-title {
+      text-align: left;
+      font-size: 2.0em;
+      padding-left: 8px !important; /* 축 정렬 */
+      padding-right: 0px;
+    }
+  
+    .notion-text { padding: 0.2rem 0; }
+    .notion-hr { margin: 6px 0; }
+  
+    /* 리스트 */
+    .notion-list li {
+      padding: 3.5px 0;
+      padding-left: 0.2rem;
+      &::marker { font-weight: 400; }
+    }
+  
+    /* 인라인 코드 및 콜아웃 */
+    .notion-inline-code {
+      font-weight: 400; font-family: var(--notion-font); letter-spacing: 0;
+      background-color: var(--fg-color-lighten) !important;
+      transition: 250ms background-color;
+    }
+  
+    .notion-code .notion-code-copy {
+      top: 0.7rem;
+      .notion-code-copy-button { display: block; }
+    }
+  
+    .notion-callout {
+      border-radius: 0px;
+      .notion-page-icon-inline { margin-right: 1rem; transform: translateY(1px); display: flex; align-items: center; justify-content: center; }
+      .notion-inline-code { background-color: var(--fg-color-1) !important; }
+      &.warning { background-color: var(--notion-yellow_background); border-color: var(--notion-yellow); }
+      &.error { background-color: var(--notion-red_background); border-color: var(--notion-red); }
+      &.info { background-color: var(--notion-blue_background); border-color: var(--notion-blue); }
+    }
+  
+    /* 인용구 */
+    .notion-quote {
+      line-height: 1.5 !important;
+      padding-top: 1.2rem !important; padding-bottom: 1.2rem !important;
+      padding-left: 2rem !important; padding-right: 2rem !important;
+      min-height: 0px;
+      font-family: 'Noto Serif KR', serif !important;
+      font-weight: 600 !important; font-style: normal; font-size: 0.8rem !important;
+      border-left: 4px solid var(--primary-color) !important;
+      position: relative;
+      background-color: var(--fg-color-lighten);
+      transition: 250ms background-color;
+    }
+  
+    /* 부가 요소 (체크박스, 파일, 링크, 테이블, 유저) */
+    .notion-property-checkbox-unchecked { border-radius: 2px; }
+    .notion-property-checkbox-checked { border-radius: 2px; display: flex; align-items: center; justify-content: center; svg { width: 10px; height: 10px; top: initial; left: initial; } }
+    .notion-file-icon { fill: var(--fg-color); }
+    .notion-page-title-text { border-bottom: none; }
+    
+    .notion-link:focus, .notion-link:hover {
+      border-bottom-color: transparent;
+      background-image: linear-gradient(90.68deg, var(--primary-color) 0.26%, var(--primary-gradient-end-color) 102.37%);
+      background-repeat: no-repeat; background-position: 0 100%; background-size: 100% 0.1rem;
+    }
+  
+    .notion-bookmark {
+      transition: 250ms border-color;
+      &:hover { border-color: var(--primary-color); }
+      .notion-bookmark-link-icon img { display: block; }
+      .notion-bookmark-link-text { max-width: 30rem; }
+    }
+  
+    .notion-simple-table-wrap {
+      max-width: 100%; overflow-x: auto;
+      td { border-color: var(--fg-color-lighten); }
+      tr:first-child td { background-color: var(--fg-color-lighten); }
+    }
+  
+    .notion-user-container {
+      display: flex; align-items: center;
+      .notion-user { margin-right: 0.3rem; }
+    }
+  
+    /* -------------------------------------------------------------------------
+       4. 커버 및 갤러리 카드 (ARC 핵심 공정)
+       ------------------------------------------------------------------------- */
+    /* 페이지 커버 */
+    .notion-page-cover-wrapper,
+    .notion-page-cover-wrapper span,
+    .notion-page-cover-wrapper img,
+    .notion-page-cover {
+      max-width: 100% !important; width: 100% !important;
+      border-radius: 0 !important;
+      height: 30vh !important;
+      min-height: 30vh !important;
+      max-height: 30vh !important;
+      object-fit: cover;
+    }
+  
+    .notion-page-no-cover { margin-top: 48px !important; padding-top: 48px !important; -webkit-margin-before: 48px !important; }
+    .notion-page-has-cover { padding-top: 48px !important; }
+  
+    /* 반응형 갤러리 그리드 (2, 3, 4열) */
+    .postList,
+    .notion-gallery-grid {
+      display: grid !important;
+      gap: 20px !important;
+      margin-top: 0.8rem;
+      grid-template-columns: repeat(2, 1fr) !important;
+      @media (min-width: 641px) { grid-template-columns: repeat(3, 1fr) !important; }
+      @media (min-width: 771px) { grid-template-columns: repeat(4, 1fr) !important; }
+  
+      /* 개별 카드 스타일 및 레이아웃 */
+      > a, .notion-collection-card {
+        background-color: var(--notion-card-background-color);
+        transition: 250ms transform, 250ms background-color;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+        text-decoration: none;
+  
+        /* 썸네일 (16:9) */
+        .notion-collection-card-cover {
+          height: auto !important; 
+          aspect-ratio: 16 / 9 !important;
+          overflow: hidden;
+          border-radius: 0 !important;
+          box-shadow: 2px 2px 8px 4px rgba(15, 15, 15, 0.1);
+          img, .lazy-image-wrapper, span { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 0 !important; }
+          @media (max-width: 760px) { aspect-ratio: 1 / 1 !important; }
+        }
+  
+        /* 카드 본문 (축 정렬 및 행바꿈 보정) */
+        .notion-collection-card-body {
+          display: block;
+          padding: 0.4rem;
+  
+          /* 제목: 2줄 제한, 고정 높이, 수직 축 정렬 */
+          .notion-page-title-text {
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            line-height: 1.5 !important;
+            height: 3rem !important; 
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+            white-space: normal !important;
+            text-overflow: ellipsis;
+            margin-bottom: 0.8rem;
+            padding-left: 8px !important; /* 축 정렬 */
+            border-bottom: none;
+          }
+  
+          /* 속성(태그 등) 레이아웃 정밀 제어 */
+          .notion-collection-card-property {
+            padding: 0.1rem;
+            white-space: normal !important;
+            text-overflow: unset !important;
+            overflow: visible !important;
+            font-size: 12px;
+  
+            /* 박스가 없는 일반 속성 (연도, 숫자, 설명문) */
+            .notion-property-text,
+            .notion-property-date,
+            .notion-property-number {
+              width: 100%;
+              color: #2d2d2d;
+              word-break: break-all !important;
+              padding-left: 6px !important; /* 축 정렬 */
+              display: block !important; /* 행바꿈 정렬 */
+            }
+  
+            /* 박스 속성 (태그) */
+            .notion-property-select-item,
+            .notion-property-multi_select-item {
+              /*background-color: transparent !important;
+              padding: 0 !important;*/
+            }
+          }
+        }
+      }
+    }
+  } /* .notion 메인 블록 종료 */
+  
+  
+  /* -------------------------------------------------------------------------
+     5. 페이지 속성(Properties) 및 타이틀 위치 교정
+     ------------------------------------------------------------------------- */
+  .notion-title,
+  .notion-collection-page-properties {
+    width: 100% !important;
+    max-width: var(--notion-max-width) !important; 
+    margin: 0 auto !important; 
+    padding-left: 0 !important; 
+    padding-right: 0 !important;
+  }
+  
+  @media (min-width: 1200px) {
+    .notion-title,
+    .notion-collection-page-properties {
+      max-width: calc(var(--notion-max-width) + var(--notion-aside-space-width) + var(--notion-aside-width)) !important;
     }
   }
-
-
-
   
-
-  /* =========================================================
-   9. 헤더 폭 최적화 (모니터 끝까지 확장)
-   ========================================================= */
-.notion-header {
-  .notion-nav-header {
-    /* 1440px 제한을 없애고 화면 전체 너비를 사용합니다 */
-    max-width: 100% !important; 
-    
-    /* 로고와 메뉴를 모니터 양 끝으로 밀어냅니다 */
-    display: flex !important;
-    justify-content: space-between !important;
-    
-    /* 모니터 베젤 끝에 너무 딱 붙으면 답답해 보일 수 있으므로 
-       양옆에 시각적 여백(예: 40px 또는 4vw)을 줍니다. */
-    padding-left: 4vw !important;
-    padding-right: 4vw !important;
-    
-    margin: 0 !important; /* 가운데 정렬 해제 */
+  @media (max-width: 1199px) {
+    .notion-title,
+    .notion-collection-page-properties {
+      padding-left: 20px !important;
+      padding-right: 20px !important;
+    }
   }
+  
+  .notion-collection-page-properties {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--fg-color-1); 
+    padding-top: 1.2rem;
+  
+    .notion-collection-row-body { display: flex !important; flex-direction: column !important; gap: 1px !important; }
+    .notion-collection-row-property { display: flex !important; align-items: baseline !important; margin-bottom: 0 !important; &::before { display: none !important; } .notion-collection-column-title-icon { display: none !important; } }
+    
+    .notion-collection-column-title {
+      width: 60px !important; flex: 0 0 60px !important; color: var(--fg-color-3); 
+      font-size: 14px !important; font-weight: 700; font-family: inherit; line-height: 1.5 !important; padding: 6px 0 7px !important;
+    }
+  
+    .notion-collection-row-value {
+      flex: 1; font-size: 14px !important; font-weight: 400; color: var(--fg-color);
+      line-height: 1.5 !important; font-family: inherit; display: flex; flex-wrap: wrap; padding: 6px 0 7px 10px !important;
+    }
+  
+    .notion-property-select-item, .notion-property-multi_select-item {
+      background-color: transparent !important; color: var(--fg-color) !important; padding: 0 !important; opacity: 0.8; span { color: inherit !important; } 
+    }
+    .notion-property-multi_select-item::before { content: '#' !important; margin-right: 1px; }
+    .notion-property-select-item::before { content: none !important; }
+  }
+  
+  
+  /* =========================================================================
+   6. 사이드바 (목차 및 최신글) 복구 및 정렬
+   - 스크롤을 따라다니는 'Sticky' 기능과 내부 디자인을 제어하는 영역입니다.
+   ========================================================================= */
+
+/* ✅ [AaRC 긴급 보수] 스크롤 고정(Sticky)을 파괴하는 전역 충돌 요소 제어 */
+body {
+  /* global.css의 overflow-x: hidden이 sticky 기능을 무력화시키는 것을 방지합니다. */
+  overflow-x: clip !important; 
 }
 
-// =========================================================
-// 11. 페이지 속성(Properties) 수직 리스트 스타일 (픽셀 퍼펙트 정렬)
-// =========================================================
-.notion-collection-page-properties {
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--fg-color-1); 
-  padding-top: 1.2rem;
+/* -------------------------------------------------------------------------
+   A. 사이드바(목차) 전체 컨테이너 설정 (PC 화면 전용)
+   ------------------------------------------------------------------------- */
+@media (min-width: 1200px) {
+  /* 🚨 [핵심 해결책: 부모의 간섭 차단] 🚨
+     본문과 목차를 감싸는 최상위 부모 컨테이너입니다.
+     자식들(본문, 목차)이 똑같은 높이로 늘어나지 않도록 방지하여 스크롤 트랙을 만듭니다. */
+  .notion-page-content-has-aside {
+    align-items: flex-start !important; 
+  }
 
-  .notion-collection-row-body {
+  .notion-aside {
+    /* 사이드바를 화면에 표시하고, 내부 요소들을 수직(column)으로 배치합니다. */
     display: flex !important;
     flex-direction: column !important;
-    gap: 1px !important;
-  }
 
-  .notion-collection-row-property {
-    display: flex !important;
-    /* baseline으로 설정하여 '설명'과 '내용' 글자의 바닥선을 일치시킵니다 */
-    align-items: baseline !important; 
-    margin-bottom: 0 !important;
-    &::before { display: none !important; }
-    .notion-collection-column-title-icon { display: none !important; }
-  }
+    /* 사이드바의 너비와 왼쪽 여백을 변수 값(vars.scss)에서 가져와 적용합니다. */
+    width: var(--notion-aside-width) !important;
+    margin-left: var(--notion-aside-space-width) !important;
 
-  // 왼쪽: 속성 항목 이름
-  .notion-collection-column-title {
-    width: 60px !important;
-    flex: 0 0 60px !important;
-    color: var(--fg-color-3); 
-    font-size: 14px !important;
-    font-weight: 700;
-    font-family: inherit;
-    /* 높이를 34px로 고정하기 위해 line-height를 1.5로 명시 */
-    line-height: 1.5 !important;
-    padding: 6px 0 7px !important;
-  }
+    /* 🚨 [스크롤 시작점 교정] 🚨
+       기존 520px은 목차를 너무 아래로 내려 스크롤 시 위로 튀는 현상을 만듭니다.
+       본문 제목 라인과 자연스럽게 맞추기 위해 여백을 2rem으로 최적화합니다. */
+    margin-top: 460px !important; 
 
-  // 오른쪽: 속성 내용
-  .notion-collection-row-value {
-    flex: 1;
-    font-size: 14px !important;
-    font-weight: 400;
-    color: var(--fg-color);
-    /* 항목 이름과 동일하게 line-height를 1.5로 통일하여 21px 높이를 확보 */
-    line-height: 1.5 !important;
-    font-family: inherit;
-    display: flex;
-    flex-wrap: wrap;
-    /* 상하 패딩을 동일하게 적용 (전체 높이 34px로 일치) */
-    padding: 6px 0 7px 10px !important;
-  }
+    /* 🚨 [핵심 해결책: 스크롤 따라다니기(Sticky) 독립 보장] 🚨 */
+    /* 사이드바 자신이 내용물(글자)만큼의 높이만 가지도록 강제합니다. */
+    height: max-content !important; 
+    align-self: flex-start !important; 
 
-  // 태그 및 카테고리 아이템 스타일 유지
-  .notion-property-select-item,
-  .notion-property-multi_select-item {
-    background-color: transparent !important;
-    color: var(--fg-color) !important;
-    padding: 0 !important;
-    opacity: 0.8;
-    span { color: inherit !important; } 
-  }
-
-  .notion-property-multi_select-item::before { 
-    content: '#' !important; 
-    margin-right: 1px;
-  }
-
-  .notion-property-select-item::before { 
-    content: none !important; 
-  }
-}
-  
-  /* =========================================================
-   12. 글 제목 및 속성(Properties) 축 정렬 (본문과 좌측 라인 일치)
-   ========================================================= */
-.notion-title,
-.notion-collection-page-properties {
-  width: 100% !important;
-  /* 기본적으로 본문의 폭(760px)과 동일하게 맞춥니다 */
-  max-width: var(--notion-max-width) !important; 
-  margin: 0 auto !important; 
-  padding-left: 0 !important; 
-  padding-right: 0 !important;
-}
-
-/* PC 화면 (1200px 이상): 본문 컨테이너와 동일한 폭(1120px)으로 확장 */
-@media (min-width: 1200px) {
-  .notion-title,
-  .notion-collection-page-properties {
-    /* 8번 항목의 구조와 똑같이: 본문(760) + 여백(100) + 목차(260)를 합쳐서 중앙 정렬합니다. 
-       이렇게 하면 텍스트의 왼쪽 끝선이 본문과 정확히 맞아떨어집니다. */
-    max-width: calc(var(--notion-max-width) + var(--notion-aside-space-width) + var(--notion-aside-width)) !important;
+    /* 화면을 스크롤할 때, 화면 상단에서 100px 떨어진 위치에 닿으면 그 자리에 찰칵 고정되게 만듭니다. */
+    position: sticky !important;
+    top: 100px !important; 
   }
 }
 
-/* 모바일/태블릿 화면 (1199px 이하): 본문과 동일한 여백 적용 */
+/* 화면 너비가 1199px 이하(태블릿/모바일)일 때는 사이드바를 숨겨 본문 공간을 확보합니다. */
 @media (max-width: 1199px) {
-  .notion-title,
-  .notion-collection-page-properties {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+  .notion-aside { display: none !important; }
+}
+
+/* -------------------------------------------------------------------------
+   B. 커스텀 목차 컴포넌트(.notion-contentPosition) 디테일 복원
+   - 원호 님의 오리지널 디자인 (폰트 크기, 선 두께 등) 완벽 유지
+   ------------------------------------------------------------------------- */
+.notion-aside {
+  .notion-contentPosition {
+    width: 100%;
+
+    .item {
+      display: block;
+      position: relative;
+      padding: 0.1rem 1.3rem 0.1rem 1rem;
+
+      .text {
+        opacity: 0.5;
+        font-size: 0.9rem;
+        transition: 250ms opacity;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &.level1 {
+        padding-left: calc(1.3rem + 1rem);
+        .text {
+          font-size: 0.85rem;
+        }
+      }
+
+      &.level2 {
+        padding-left: calc(1.3rem + 2rem);
+        .text {
+          font-size: 0.8rem;
+        }
+      }
+
+      &.active {
+        .text {
+          opacity: 1;
+        }
+      }
+
+      &::before {
+        content: '';
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        border-right: 1px solid var(--fg-color);
+        z-index: 1;
+        opacity: 0.2;
+      }
+
+      .activeLine {
+        position: absolute;
+        background-color: var(--primary-color);
+        width: 1px;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 2;
+
+        &::before {
+          content: '';
+          position: absolute;
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background-color: var(--primary-color);
+          left: 0.5rem;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+      }
+    }
+
+    &.alignRight {
+      .item {
+        text-align: right;
+        padding: 0.3rem 1rem 0.3rem 1.3rem;
+
+        &.level1 {
+          padding-left: 0;
+          padding-right: calc(1.3rem + 1rem);
+        }
+
+        &.level2 {
+          padding-left: 0;
+          padding-right: calc(1.3rem + 2rem);
+        }
+
+        &::before {
+          right: 0;
+          left: auto;
+        }
+
+        .activeLine {
+          right: 0;
+          left: auto;
+
+          &::before {
+            left: auto;
+            right: 0.5rem;
+          }
+        }
+      }
+    }
   }
 }
 
-/* ARC 텍스트 전용 사이드바 스타일 */
-.aside-recent-posts {
-  margin-top: 3.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--fg-color-1);
-
-  .aside-recent-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--fg-color-3);
-    margin-bottom: 1.5rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
-  .aside-recent-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .aside-recent-item {
-    text-decoration: none;
-    transition: all 0.2s ease;
-
-    &:hover .aside-recent-text {
-      color: var(--notion-blue);
-      text-decoration: underline;
-    }
-
-    .aside-recent-text {
-      font-size: 0.9rem;
-      line-height: 1.5;
-      color: var(--fg-color);
-      word-break: keep-all;
-    }
-  }
-}
-
-/* 1. 전체 레이아웃 및 수직 라인(Align) 일치 */
+/* -------------------------------------------------------------------------
+   C. 기본 목차(Table of contents)와 최신글(Recent Posts) 공통 규격
+   - react-notion-x 기본 목차 블록과 커스텀 최신글 블록의 뼈대를 맞춥니다.
+   ------------------------------------------------------------------------- */
 .notion-aside-table-of-contents,
 .aside-recent-posts {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important; /* 모든 요소를 왼쪽 라인에 칼같이 밀착 */
-  padding: 0 !important;
-  margin-left: 0 !important;
-  width: 100% !important;
-  background: transparent !important;
+  display: flex !important; 
+  flex-direction: column !important; /* 위에서 아래로 수직 배치 */
+  align-items: flex-start !important; /* 모든 요소를 왼쪽으로 밀착시켜 칼같이 정렬 */
+  padding: 0 !important; margin-left: 0 !important; width: 100% !important; 
+  background: transparent !important; /* 배경을 투명하게 */
 }
 
-/* 2. 헤더 공정: '목차' 및 '최신글 읽어보기' 스타일 동기화 */
+/* -------------------------------------------------------------------------
+   D. 목차 및 최신글의 '헤더(제목)' 스타일
+   ------------------------------------------------------------------------- */
 .notion-aside-table-of-contents-header,
 .aside-recent-posts .aside-recent-title {
-  /* [규격] 12px, 굵기 700, 자간 0.15em */
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.15em !important;
-  text-transform: uppercase !important;
-  color: #888888 !important; /* 헤더 전용 그레이 */
-  
-  /* [위치] 아래 리스트와의 간격 고정 */
-  margin-bottom: 24px !important; 
-  text-align: left !important;
-  width: 100% !important;
-  position: relative !important;
+  font-size: 12px !important; 
+  font-weight: 700 !important; /* 글씨를 굵게 */
+  letter-spacing: 0.15em !important; /* 글자 사이 간격을 넓혀 고급스럽게 연출 */
+  text-transform: uppercase !important; /* 영문일 경우 모두 대문자로 강제 변환 */
+  color: #888888 !important; /* 세련된 중간 회색 */
+  margin-bottom: 24px !important; /* 아래 리스트와의 간격을 넉넉히 확보 */
+  text-align: left !important; width: 100% !important; position: relative !important;
 }
 
-/* 2-1. '목차' 한글 교체 세밀 마감 */
-.notion-aside-table-of-contents-header {
-  color: transparent !important; /* 기존 영문 투명화 */
-  user-select: none;
+/* 라이브러리의 기본 영문 목차 제목(Table of Contents)을 안 보이게 투명 처리합니다. */
+.notion-aside-table-of-contents-header { color: transparent !important; user-select: none; }
+/* 그 위에 한글 '목차'라는 글씨를 덮어씌워 출력합니다. */
+.notion-aside-table-of-contents-header::before { 
+  content: '목차' !important; color: #888888 !important; 
+  position: absolute !important; left: 0 !important; top: 0 !important; visibility: visible !important; 
 }
 
-.notion-aside-table-of-contents-header::before {
-  content: '목차' !important;
-  color: #888888 !important;
-  position: absolute !important;
-  left: 0 !important; /* 왼쪽 수직 라인 일치 */
-  top: 0 !important;
-  visibility: visible !important;
-}
-
-/* 3. 리스트 공정: 목차 내용과 최신글 텍스트 완벽 일치 */
+/* -------------------------------------------------------------------------
+   E. 리스트 내용 (목차 세부 항목 및 최신글 제목)
+   ------------------------------------------------------------------------- */
 .notion-aside-table-of-contents .notion-table-of-contents-item-body,
 .aside-recent-posts .aside-recent-text {
-  /* [색상] 투명도 100%, 진회색(#444444) */
-  color: #444444 !important; 
-  opacity: 1 !important;
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  
-  /* [마감] 정렬 및 효과 제거 */
-  text-align: left !important;
-  text-decoration: none !important; /* 밑줄 제거로 정갈함 유지 */
-  -webkit-font-smoothing: antialiased;
+  color: #444444 !important; /* 너무 진하지 않은 다크 그레이로 눈의 피로 최소화 */
+  opacity: 1 !important; font-size: 14px !important; font-weight: 400 !important;
+  text-align: left !important; text-decoration: none !important; /* 기본 밑줄 제거하여 정갈함 유지 */
+  -webkit-font-smoothing: antialiased; /* 글꼴 렌더링을 부드럽게 */
 }
 
-/* 3-1. 목차 아이템 전용 간격 설정 */
-.notion-aside-table-of-contents .notion-table-of-contents-item {
-  margin-bottom: 20px !important; /* 목차 아이템 사이의 수직 간격 */
-  padding: 0 !important;
-  line-height: 1.5 !important;
-  list-style: none !important;
-}
+/* 각 아이템의 위아래 간격 설정 (목차는 넓게, 최신글은 좁게) */
+.notion-aside-table-of-contents .notion-table-of-contents-item { margin-bottom: 20px !important; padding: 0 !important; line-height: 1.5 !important; list-style: none !important; }
+.aside-recent-posts .aside-recent-item { margin-bottom: 1px !important; padding: 0 !important; line-height: 1.5 !important; list-style: none !important; text-decoration: none; transition: all 0.2s ease;}
 
-/* 3-2. 최신글 아이템 전용 간격 설정 */
-.aside-recent-posts .aside-recent-item {
-  margin-bottom: 1px !important; /* 최신글 아이템 사이의 수직 간격 (따로 조절 가능) */
-  padding: 0 !important;
-  line-height: 1.5 !important;
-  list-style: none !important;
-}
-
-/* 3-3. 인터랙션: 호버 효과 */
+/* 마우스 호버(올렸을 때) 파란색으로 변하는 상호작용 효과 */
 .notion-aside-table-of-contents .notion-table-of-contents-item-body:hover,
-.aside-recent-posts .aside-recent-item:hover .aside-recent-text {
-  color: var(--notion-blue) !important;
-  opacity: 1 !important;
-  text-decoration: none !important;
+.aside-recent-posts .aside-recent-item:hover .aside-recent-text { 
+  color: var(--notion-blue) !important; opacity: 1 !important; text-decoration: none !important; 
 }
+/* 최신글에 마우스를 올렸을 때는 밑줄이 생기도록 추가 효과 부여 */
+.aside-recent-posts .aside-recent-item:hover .aside-recent-text { text-decoration: underline !important; }
 
-/* 4. 구역(Zoning) 마감: 목차와 최신글 사이의 경계 설정 */
+/* -------------------------------------------------------------------------
+   F. 구역(Zoning) 설정: 목차 구역과 최신글 구역 분리
+   ------------------------------------------------------------------------- */
 .aside-recent-posts {
-  margin-top: 48px !important;    /* 목차 구역 끝 ~ 최신글 시작 사이 여백 */
-  padding-top: 60px !important;   /* 구분선 ~ '최신글 읽어보기' 제목 사이 여백 */
-  border-top: 1px solid #eeeeee !important; /* 정갈한 수평 구분선 */
+  margin-top: 48px !important; /* 위의 목차 블록과 48px 떨어짐 */
+  padding-top: 60px !important; /* 가로 구분선과 '최신글 보기' 글씨 사이 60px 간격 */
+  border-top: 1px solid #eeeeee !important; /* 두 구역을 깔끔하게 나누는 연한 회색 가로선 */
+  
+  /* 최신글 내부 리스트들을 묶는 틀 */
+  .aside-recent-list { display: flex; flex-direction: column; gap: 1rem; }
+  /* 최신글 개별 글자의 줄바꿈을 단어 단위로 끊어지도록 최적화 */
+  .aside-recent-text { font-size: 0.9rem; line-height: 1.5; color: var(--fg-color); word-break: keep-all; }
 }
+  
+/* -------------------------------------------------------------------------
+   7. 다크모드 전용 최적화 (명도 확보 및 색상 무결성)
+   ------------------------------------------------------------------------- */
+.dark-mode {
+  background-color: var(--bg-color);
+  .notion-header .breadcrumb { text-shadow: 0 0 3px black; }
+  
+  .notion-search {
+    color: var(--fg-color); background-color: var(--bg-color-1);
+    input { background-color: transparent; }
+  }
+
+  // ✅ 다크모드 갤러리 속성 보정
+  .notion-collection-card-body {
+    .notion-property-text,
+    .notion-property-select-item,
+    .notion-property-multi_select-item,
+    .notion-property-date,
+    .notion-property-number {
+      color: var(--fg-color) !important; // 제목 색상과 통일
+      opacity: 1 !important; // 연도 흐림 방지
+    }
+    .notion-property-select-item span,
+    .notion-property-multi_select-item span { color: inherit !important; }
+    .notion-property-select-item { opacity: 0.9; }
+  }
+}
+  
+  
+  /* -------------------------------------------------------------------------
+     7. 다크모드 전용 최적화 (명도 확보 및 색상 무결성)
+     ------------------------------------------------------------------------- */
+  .dark-mode {
+    background-color: var(--bg-color);
+    .notion-header .breadcrumb { text-shadow: 0 0 3px black; }
+    
+    .notion-search {
+      color: var(--fg-color); background-color: var(--bg-color-1);
+      input { background-color: transparent; }
+    }
+  
+    // ✅ 다크모드 갤러리 속성 보정
+    .notion-collection-card-body {
+      .notion-property-text,
+      .notion-property-select-item,
+      .notion-property-multi_select-item,
+      .notion-property-date,
+      .notion-property-number {
+        color: var(--fg-color) !important; // 제목 색상과 통일
+        opacity: 1 !important; // 연도 흐림 방지
+      }
+      .notion-property-select-item span,
+      .notion-property-multi_select-item span { color: inherit !important; }
+      .notion-property-select-item { opacity: 0.9; }
+    }
+  }
+  
+  
+  /* -------------------------------------------------------------------------
+     8. 커스텀 검색 모달 UI
+     ------------------------------------------------------------------------- */
+  .notion-search-overlay,
+  .notion-search {
+    display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; z-index: -1 !important;
+  }
+  
+  .arc-search-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 100000; display: flex; justify-content: center; padding-top: 10vh; }
+  .arc-search-modal { background: var(--bg-color); width: 90%; max-width: 650px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid var(--fg-color-1); display: flex; flex-direction: column; max-height: 75vh; }
+  .arc-search-header { display: flex; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--fg-color-1); gap: 14px; }
+  .arc-search-header input { flex: 1; background: transparent; border: none; color: var(--fg-color); font-size: 1.25rem; outline: none; font-weight: 300; }
+  .arc-close-btn { background: transparent; border: none; font-size: 20px; color: var(--fg-color-3); cursor: pointer; padding: 4px; }
+  .arc-search-body { overflow-y: auto; padding: 12px 0; }
+  .arc-search-item { padding: 18px 24px; cursor: pointer; border-bottom: 1px solid var(--fg-color-0); transition: background 0.1s; }
+  .arc-search-item:hover { background: var(--fg-color-1); }
+  .arc-search-title { font-size: 1.05rem; font-weight: 700; color: #333333 !important; margin-bottom: 6px; }
+  .dark-mode .arc-search-title { color: #eeeeee !important; }
+  .arc-search-snippet { font-size: 0.92rem; color: var(--fg-color-3); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .arc-mark { background: #fff5b1; color: #000; padding: 0 2px; border-radius: 2px; font-weight: 600; }
+  .dark-mode .arc-mark { background: #ffd33d; }
+  .arc-search-msg { padding: 50px; text-align: center; color: #888888 !important; }
