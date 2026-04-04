@@ -154,8 +154,8 @@
   
     @media (max-width: 1199px) {
       .notion-page-content-inner {
-        padding-left: 20px !important;
-        padding-right: 20px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
       }
     }
   
@@ -299,15 +299,15 @@
     .notion-page-no-cover { margin-top: 48px !important; padding-top: 48px !important; -webkit-margin-before: 48px !important; }
     .notion-page-has-cover { padding-top: 48px !important; }
   
-    /* 반응형 갤러리 그리드 (2, 3, 4열) */
+    /* 반응형 갤러리 그리드 화면 분할 (2, 3, 4열) */
     .postList,
     .notion-gallery-grid {
       display: grid !important;
       gap: 20px !important;
       margin-top: 0.8rem;
-      grid-template-columns: repeat(1, 1fr) !important;
+      grid-template-columns: repeat(2, 1fr) !important;
       @media (min-width: 641px) { grid-template-columns: repeat(3, 1fr) !important; }
-      /* @media (min-width: 771px) { grid-template-columns: repeat(4, 1fr) !important; } */
+      @media (min-width: 771px) { grid-template-columns: repeat(4, 1fr) !important; }
   
       /* 개별 카드 스타일 및 레이아웃 */
       > a, .notion-collection-card {
