@@ -146,8 +146,18 @@
   margin-bottom: 0em; /* 제목 아래쪽 여백 설정 */
 }
 
+/* ✅ [AaRC v15.3] 콜아웃 내부 패딩 및 텍스트 간격 0으로 초기화 */
 .notion-callout {
-  margin: 0.75em 0; /* 호출 상자의 상하 여백 설정 */
+  margin: 0 !important;   /* 호출 상자의 상하 외부 여백 제거 */
+  padding: 0 !important;  /* 📍 녹색 패딩 여백(16px 등)을 0으로 강제 집행 */
+  border: none !important; /* 테두리를 없애 공간 왜곡 방지 */
+}
+
+/* 🚨 중요: 텍스트 박스 자체의 기본 마진(12px)도 제거해야 슬라이더가 왼쪽 끝까지 붙습니다. */
+.notion-callout-text {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
 }
 
 .notion-hr {

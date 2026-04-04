@@ -1,3 +1,8 @@
+import Swiper from 'swiper'; 
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import dynamic from 'next/dynamic'; 
 import Image from 'next/image'; 
 import Link from 'next/link'; 
@@ -130,7 +135,7 @@ const LivePreview = ({ code, language, aspectRatio }: { code: string; language: 
   }, [code, language]);
 
   return (
-    <div style={{ width: '100%', margin: '1.5rem 0', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
+    <div style={{ width: '100%', margin: '0', border: 'none', borderRadius: '0px', overflow: 'hidden' }}>
       <iframe
         ref={iframeRef}
         srcDoc={srcDoc}
@@ -144,7 +149,7 @@ const LivePreview = ({ code, language, aspectRatio }: { code: string; language: 
           aspectRatio: aspectRatio || 'auto',
           height: aspectRatio ? 'auto' : height, 
           border: 'none', 
-          background: '#fff',
+          background: 'transparent',
           transition: 'height 0.2s ease'
         }}
       />
@@ -335,6 +340,9 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
       isCancelled = true;
     };
   }, [searchQuery, isSearchOpen, site?.rootNotionPageId]);
+
+
+  
 
 
 
@@ -529,6 +537,149 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
     return () => { observer.disconnect(); clearInterval(interval); };
   }, [recordMap, pageId, router]);
 
+  // =========================================================================
+  // ✅ [AaRC v14.3] 리액트 충돌 원천 차단! (DOM 복제 및 비파괴 슬라이더 엔진)
+  // =========================================================================
+  React.useEffect(() => {
+    // 🛡️ [핵심 1. 비파괴 은폐] 리액트가 관리하는 원본 DOM을 파괴하지 않고, CSS로 살짝 가려주기만 합니다.
+    if (!document.getElementById('arc-slider-safe-css')) {
+      const style = document.createElement('style');
+      style.id = 'arc-slider-safe-css';
+      style.innerHTML = `
+        .arc-slider-applied .notion-callout-text > *:not(.swiper) {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const timer = setTimeout(() => {
+      const callouts = document.querySelectorAll('.notion-callout');
+
+      callouts.forEach((callout, index) => {
+        if (callout.classList.contains('arc-slider-applied')) return;
+
+        const contentWrapper = callout.querySelector('.notion-callout-text');
+        if (!contentWrapper) return;
+
+        // 1️⃣ [명령어 스캔]
+        const allText = contentWrapper.textContent || '';
+        const regex = /\[slide(?:\s*[:\|]\s*(\d+))?(?:\s*[:\|]\s*([a-zA-Z0-9\./:]+))?\s*\]/i;
+        const match = allText.match(regex);
+
+        if (!match) return;
+
+        const delay = match[1] ? parseInt(match[1], 10) : 4000;
+        let aspectRatio = match[2] ? match[2].replace(':', '/') : 'auto';
+
+        // 2️⃣ [스와이퍼 뼈대 시공]
+        const swiperContainer = document.createElement('div');
+        swiperContainer.className = `swiper arc-dom-swiper-${index}`;
+        swiperContainer.style.width = '100%';
+        swiperContainer.style.overflow = 'hidden';
+        swiperContainer.style.paddingBottom = '30px';
+
+        const swiperWrapper = document.createElement('div');
+        swiperWrapper.className = 'swiper-wrapper';
+
+        if (aspectRatio !== 'auto') {
+          swiperContainer.style.aspectRatio = aspectRatio;
+          swiperWrapper.style.height = '100%'; 
+        }
+
+        // 3️⃣ [핵심 2. DOM 복제] 원본을 뜯어내지 않고, 똑같은 복제본(Clone)을 뜹니다!
+        const rawChildren = Array.from(contentWrapper.children);
+        let validCount = 0;
+
+        rawChildren.forEach(child => {
+          // 노드 복제 (리액트 트리 붕괴 방지)
+          const clonedChild = child.cloneNode(true) as HTMLElement;
+
+          // 복제본의 텍스트에서만 명령어를 감쪽같이 지웁니다. 원본은 전혀 건드리지 않습니다.
+          const eraseCommand = (node: Node) => {
+            if (node.nodeType === 3) { 
+              if (node.nodeValue) {
+                node.nodeValue = node.nodeValue.replace(/\[slide[^\]]*\]/gi, '');
+              }
+            } else {
+              node.childNodes.forEach(c => eraseCommand(c));
+            }
+          };
+          eraseCommand(clonedChild);
+
+          // 명령어가 지워지고 껍데기만 남은 텍스트 블록은 슬라이드에 넣지 않습니다.
+          if (clonedChild.textContent?.trim() === '' && !clonedChild.querySelector('img, iframe, video')) {
+            return; 
+          }
+
+          validCount++;
+
+          const slide = document.createElement('div');
+          slide.className = 'swiper-slide';
+          slide.style.display = 'flex';
+          slide.style.justifyContent = 'center';
+          slide.style.alignItems = 'center';
+          slide.style.width = '100%';
+          if (aspectRatio !== 'auto') slide.style.height = '100%';
+
+          if (aspectRatio !== 'auto') {
+            const imgs = clonedChild.querySelectorAll('img');
+            imgs.forEach(img => {
+              img.style.width = '100%';
+              img.style.height = '100%';
+              img.style.objectFit = 'cover';
+              let parent = img.parentElement;
+              while (parent && parent !== slide) {
+                parent.style.width = '100%';
+                parent.style.height = '100%';
+                parent = parent.parentElement;
+              }
+            });
+          }
+
+          slide.appendChild(clonedChild);
+          swiperWrapper.appendChild(slide);
+        });
+
+        if (validCount === 0) return;
+
+        console.log(`🛠️ AaRC 격리형 슬라이더 가동: ${validCount}개 요소`);
+
+        const pagination = document.createElement('div');
+        pagination.className = 'swiper-pagination';
+        const prevBtn = document.createElement('div');
+        prevBtn.className = 'swiper-button-prev';
+        const nextBtn = document.createElement('div');
+        nextBtn.className = 'swiper-button-next';
+
+        swiperContainer.appendChild(swiperWrapper);
+        swiperContainer.appendChild(pagination);
+        swiperContainer.appendChild(prevBtn);
+        swiperContainer.appendChild(nextBtn);
+        
+        // 원본 자식들을 건드리지 않고 스와이퍼 덩어리를 덧붙입니다.
+        contentWrapper.appendChild(swiperContainer);
+
+        const isLoop = validCount >= 2; 
+        const autoplayConfig = delay > 0 ? { delay: delay, disableOnInteraction: false } : false;
+
+        new Swiper(`.arc-dom-swiper-${index}`, {
+          modules: [Navigation, Pagination, Autoplay],
+          navigation: { nextEl: nextBtn, prevEl: prevBtn },
+          pagination: { el: pagination, clickable: true },
+          autoplay: autoplayConfig,
+          loop: isLoop,
+          spaceBetween: 20
+        });
+
+        // 꼬리표 부착 (위에서 시공한 전역 CSS가 원본 요소들을 안전하게 숨겨줍니다)
+        callout.classList.add('arc-slider-applied');
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [recordMap, router.asPath]);
+
 
   // =========================================================================
   // [기능 5] NotionRenderer용 컴포넌트 매핑 (순정 상태 유지 + 커스텀 기능 복구)
@@ -537,13 +688,13 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
     // 🚨 이미지 이동은 전역 로직에서 처리하므로 가장 순수한 기본 컴포넌트만 연결합니다.
     nextImage: Image,
 
-    // 🚨 과거에 잘 작동했던 nextLink 로직 복구
+    // 🚨 nextLink 로직 복구
     nextLink: ({ href, as, ...rest }: any) => {
       const targetUrl = as !== undefined ? (as || '#') : (href || '#');
       return <Link href={targetUrl} {...rest} />;
     },
 
-    // 🚨 과거에 잘 작동했던 Mermaid 및 LivePreview 코드 렌더러 복구
+    // 🚨 Mermaid 및 LivePreview 코드 렌더러 복구
     Code: (props: any) => {
       const language = props.block?.properties?.language?.[0]?.[0]?.toLowerCase() || props.language?.toLowerCase();
       const codeText = props.block?.properties?.title?.[0]?.[0] || '';
@@ -561,6 +712,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
       return <Code {...props} />;
     },
 
+  
     Collection, 
     collection: Collection, 
     Equation,
@@ -658,22 +810,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
           </div>
         )}
 
-        {/* 커스텀 모달 디자인 스타일 (이전에 넣으셨던 것과 동일) */}
-        <style dangerouslySetInnerHTML={{ __html: `
-          .notion-search-overlay, .notion-search { display: none !important; }
-          .arc-search-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 100000; display: flex; justify-content: center; padding-top: 10vh; }
-          .arc-search-modal { background: var(--bg-color); width: 90%; max-width: 650px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid var(--fg-color-1); display: flex; flex-direction: column; max-height: 75vh; }
-          .arc-search-header { display: flex; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--fg-color-1); gap: 14px; }
-          .arc-search-header input { flex: 1; background: transparent; border: none; color: var(--fg-color); font-size: 1.25rem; outline: none; font-weight: 300; }
-          .arc-close-btn { background: transparent; border: none; font-size: 20px; color: var(--fg-color-3); cursor: pointer; padding: 4px; }
-          .arc-search-body { overflow-y: auto; padding: 12px 0; }
-          .arc-search-item { padding: 20px 24px; cursor: pointer; border-bottom: 1px solid var(--fg-color-0); border-left: 4px solid transparent; transition: all 0.2s; }
-          .arc-search-item:hover { background: var(--fg-color-1); border-left: 4px solid var(--primary-color); }
-          .arc-search-snippet { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
-          .arc-mark { background: #fff5b1 !important; color: #000 !important; padding: 0 3px !important; border-radius: 2px !important; font-weight: 700 !important; box-shadow: 0 0 5px rgba(255, 245, 177, 0.8); }
-          .dark-mode .arc-mark { background: #ffd33d !important; }
-          .arc-search-msg { padding: 50px; text-align: center; color: #888888 !important; }
-        `}} />
+        
 
       {/* ========================================================================= */}
       
