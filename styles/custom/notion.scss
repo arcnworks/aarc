@@ -1,129 +1,108 @@
-/* =========================================================================
-   [AaRC] 브랜드 사이트 통합 마스터 스타일 시트 (notion.scss)
-   ========================================================================= */
+
 
 /* =========================================================================
-   [AaRC] 브랜드 사이트 통합 마스터 스타일 시트 (notion.scss)
+   1. 전역 초기화 및 정밀 레이아웃 시스템
    ========================================================================= */
+
+/* [1.1] 공통 초기화 */
+::-webkit-scrollbar { display: none; }
+html { scrollbar-gutter: stable; }
+main {
+  font-family: var(--font-pretendard), var(--font-noto-sans-kr), sans-serif;
+  transition: background-color 250ms, color 250ms;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 📏 [AaRC 축 정렬 변수] 모든 페이지의 로고와 기본 메뉴가 시작되는 기준점입니다. */
+:root {
+  --aarc-side-padding: 4vw; 
+}
+
+/* 🚫 [브레드크럼 정밀 박멸] 메뉴는 살리고 유령 경로(📐 Work 등)만 지웁니다. */
+.notion-nav-header > .breadcrumbs:not(.notion-nav-header-rhs) { 
+  display: none !important; 
+}
 
 /* -------------------------------------------------------------------------
-   1. 전역 초기화 및 반응형 기본 설정
+   🏠 A. 루트 페이지(is-root-page) 전용: "광활한 배경, 정돈된 헤더"
    ------------------------------------------------------------------------- */
-   ::-webkit-scrollbar {
-    display: none;
-  }
-  
-  html {
-    scrollbar-gutter: stable;
-  }
-  
-  main {
-    font-family: var(--font-pretendard), var(--font-noto-sans-kr), sans-serif;
-    font-size: 16px;
-    transition-duration: 250ms;
-    transition-property: background-color, color;
-    -webkit-font-smoothing: antialiased;
-  }
-  
-  /* 기본 반응형 여백 설정 */
-  @media only screen and (max-width: 1440px) {
-    :root {
-      --notion-page-left-right-padding: 2vw;
-      --notion-page-fullwith-left-right-padding: 2vw;
-    }
-  }
-  
-  @media only screen and (max-width: 700px) {
-    :root {
-      --base-font-size: 0.9rem;
-    }
-  }
-  
-  /* 루트 페이지가 아닐 때 브레드크럼 처리 */
-  body:not(.is-root-page) .notion-nav-header > .breadcrumbs:nth-child(2) {
-    display: none;
-  }
-  
-  /* 🏛️ [AaRC 시공] 루트 페이지(대문) 전용 풀-와이드(Full-Wide) 레이아웃 */
-  body.is-root-page {
-    /* 1. 제목 및 불필요 요소 숨기기 */
-    .notion-title { display: none; }
-    .notion-nav-header > .breadcrumbs:nth-child(2) { display: none; }
+body.is-root-page {
+  /* 1. 불필요 요소 제거 */
+  .notion-title { display: none; }
 
-    /* 🚨 [무결성 핵심] 루트 페이지에서만 좌우 여백 변수를 0으로 강제 초기화 */
-    --notion-page-left-right-padding: 0px !important;
-    --notion-page-fullwith-left-right-padding: 0px !important;
+  /* 2. 상단 여백: 헤더 밀착 시공 */
+  .notion-page-no-cover { 
+    margin-top: 48px !important; 
+    padding-top: 24px !important; 
+    -webkit-margin-before: 48px !important; 
+  }
+  .notion-page-has-cover { padding-top: 0px !important; }
 
-    /* 2. 페이지 컨테이너 자체의 여백 및 너비 제한 해제 */
-    .notion-page {
-      padding-left: 0 !important;
-      padding-right: 0 !important;
-      max-width: 100% !important;
-    }
+  /* 3. 🚨 [무결성 레이아웃] 헤더는 정렬을 지키고, 본문만 꽉 채웁니다. */
+  .notion-header .notion-nav-header {
+    padding-left: var(--aarc-side-padding) !important;  /* 로고는 다시 안으로 4vw 복구 */
+    padding-right: var(--aarc-side-padding) !important;
+  }
 
-    /* 3. 모바일 웹킷 및 내부 콘텐츠 박스의 미세 여백까지 완벽 제거 */
-    .notion-page-content-inner,
-    .notion-page-content {
-      padding-left: 0 !important;
-      padding-right: 0 !important;
-      max-width: 100% !important;
-    }
+  /* 본문 컨테이너(슬라이더 등)의 모든 제약을 풀어 화면 끝까지 밀어냅니다. */
+  .notion-page, 
+  .notion-page-content, 
+  .notion-page-content-inner {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
   }
   
-  body:not(.dark-mode) .hasCollectionView {
-    --bg-color: #ffffff;
+  --notion-page-left-right-padding: 0px !important;
+  --notion-page-fullwith-left-right-padding: 0px !important;
+}
+
+/* -------------------------------------------------------------------------
+   📖 B. 일반 페이지(not .is-root-page) 가독성 보호 시공
+   ------------------------------------------------------------------------- */
+body:not(.is-root-page) {
+  .notion-page-no-cover { 
+    margin-top: 48px !important; 
+    padding-top: 48px !important; 
+    -webkit-margin-before: 48px !important; 
   }
-  
-  /* 시스템 불필요 요소 제거 및 이미지 줌 방지 */
-  .notion-collection-view-type-icon,
-  .notion-page-icon-image,
-  .notion-page-icon-hero {
-    display: none !important;
+  .notion-page-has-cover { padding-top: 48px !important; }
+
+  /* 일반 페이지에서는 헤더와 본문 모두 4vw 정렬을 따릅니다. */
+  .notion-page, 
+  .notion-header .notion-nav-header {
+    padding-left: var(--aarc-side-padding) !important;
+    padding-right: var(--aarc-side-padding) !important;
   }
-  
-  .notion-collection-view-tabs .notion-collection-view-tab-title {
-    margin-left: 0 !important;
-  }
-  
-  .notion-image-zoom-trigger {
-    cursor: auto !important;
-  }
-  
-  /* -------------------------------------------------------------------------
-     2. 헤더 및 네비게이션 (상단 고정 영역)
-     ------------------------------------------------------------------------- */
-  .notion-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    transform: translateZ(0);
-    transition-duration: 250ms;
-    transition-property: background-color, color;
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    z-index: 1000;
-  
-    .notion-nav-header {
-      max-width: 100% !important;
-      display: flex !important;
-      justify-content: space-between !important;
-      padding-left: 4vw !important;
-      padding-right: 4vw !important;
-      margin: 0 !important;
-    }
-  
-    .breadcrumb.notion-nav-header-mobile svg {
-      fill: var(--fg-color);
-    }
-  }
-  
-  .notion-nav-header-rhs.breadcrumbs {
+
+  .notion-title { padding-left: 0px !important; margin-left: 0px !important; }
+}
+
+/* [1.3] 시스템 공통 제거 공정 */
+.notion-collection-view-type-icon, .notion-page-icon-image, 
+.notion-page-icon-hero, .notion-page-icon-inline { display: none !important; }
+.notion-image-zoom-trigger { cursor: auto !important; }
+body:not(.dark-mode) .hasCollectionView { --bg-color: #ffffff; }
+
+/* -------------------------------------------------------------------------
+   2. 헤더 고정 및 마감 시스템
+   ------------------------------------------------------------------------- */
+.notion-header {
+  position: fixed;
+  top: 0; left: 0; width: 100%; z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  .notion-nav-header {
+    max-width: 100% !important;
     display: flex !important;
-    align-items: center !important;
-    gap: 0.2rem !important;
+    justify-content: space-between !important;
+    margin: 0 !important;
+    /* 패딩은 상위 바디 클래스(is-root-page 여부)에 따라 자동 결정됩니다. */
   }
+}
   
   /* -------------------------------------------------------------------------
      3. 노션 페이지 본문 (레이아웃, 타이포그래피, 블록)
@@ -143,8 +122,8 @@
       width: 100%;
       max-width: 100%;
       line-height: 1.5;
-      padding-left: var(--notion-page-left-right-padding) !important;
-      padding-right: var(--notion-page-left-right-padding) !important;
+      padding-left: 4vw !important; 
+      padding-right: 4vw !important;
     }
   
     .notion-full-width {
@@ -198,7 +177,7 @@
     .notion-title {
       text-align: left;
       font-size: 2.0em;
-      padding-left: 8px !important; /* 축 정렬 */
+      padding-left: 0px !important; 
       padding-right: 0px;
     }
   
@@ -307,23 +286,51 @@
     }
   
     /* -------------------------------------------------------------------------
-       4. 커버 및 갤러리 카드 (ARC 핵심 공정)
-       ------------------------------------------------------------------------- */
-    /* 페이지 커버 */
-    .notion-page-cover-wrapper,
-    .notion-page-cover-wrapper span,
-    .notion-page-cover-wrapper img,
-    .notion-page-cover {
-      max-width: 100% !important; width: 100% !important;
-      border-radius: 0 !important;
-      height: 30vh !important;
-      min-height: 30vh !important;
-      max-height: 30vh !important;
-      object-fit: cover;
-    }
+   1. 페이지 커버(Cover Image) 하드웨어 마감
+   - 노션의 가변적인 커버 높이를 30vh로 고정하고 무선 마감(Radius 0)을 적용합니다.
+   ------------------------------------------------------------------------- */
+.notion-page-cover-wrapper,
+.notion-page-cover-wrapper span,
+.notion-page-cover-wrapper img,
+.notion-page-cover {
+  /* 💡 [광폭 시공] 커버가 화면 좌우를 빈틈없이 꽉 채우도록 강제합니다. */
+  max-width: 100% !important; 
+  width: 100% !important;
+
+  /* 💡 [무선 마감] AaRC의 정갈한 직선 미학을 위해 모서리 곡률을 제거합니다. */
+  border-radius: 0 !important;
+
+  /* 💡 [황금 비율] 기기 높이의 30%를 차지하도록 고정하여 시각적 안정감을 부여합니다. */
+  height: 30vh !important;
+  min-height: 30vh !important;
+  max-height: 30vh !important;
+
+  /* 💡 [이미지 보정] 비율이 변해도 이미지가 찌그러지지 않고 프레임에 맞춰 잘리도록 설정합니다. */
+  object-fit: cover;
+}
+
+/* -------------------------------------------------------------------------
+   2. 상단 여백 시스템 (Header Isolation)
+   - 고정형 헤더(Fixed Header) 뒤로 본문이 숨지 않도록 숨구멍을 뚫어주는 작업입니다.
+   ------------------------------------------------------------------------- */
+
+/* A. 커버 이미지가 없는 일반 페이지 전용 */
+.notion-page-no-cover { 
+  /* 💡 [헤더 충돌 방지] 고정 헤더 높이(48px)만큼 본문을 아래로 밀어내어 제목을 노출시킵니다. */
+  margin-top: 48px !important; 
   
-    .notion-page-no-cover { margin-top: 48px !important; padding-top: 48px !important; -webkit-margin-before: 48px !important; }
-    .notion-page-has-cover { padding-top: 48px !important; }
+  /* 💡 [공간 확보] 내부 콘텐츠가 헤더에 바짝 붙지 않도록 추가 안쪽 여백을 부여합니다. */
+  padding-top: 48px !important; 
+  
+  /* 💡 [웹킷 방어] 사파리, 크롬 등 특정 엔진에서 상단 마진이 무시되는 현상을 원천 차단합니다. */
+  -webkit-margin-before: 48px !important; 
+}
+
+/* B. 커버 이미지가 있는 페이지 전용 */
+.notion-page-has-cover { 
+  /* 💡 [위계 정돈] 커버 이미지와 아래 제목(Title) 사이에 48px의 정갈한 간격을 둡니다. */
+  padding-top: 48px !important; 
+}
   
     /* 반응형 갤러리 그리드 화면 분할 (2, 3, 4열) */
     .postList,
