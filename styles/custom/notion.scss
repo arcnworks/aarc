@@ -2,6 +2,10 @@
    [AaRC] 브랜드 사이트 통합 마스터 스타일 시트 (notion.scss)
    ========================================================================= */
 
+/* =========================================================================
+   [AaRC] 브랜드 사이트 통합 마스터 스타일 시트 (notion.scss)
+   ========================================================================= */
+
 /* -------------------------------------------------------------------------
    1. 전역 초기화 및 반응형 기본 설정
    ------------------------------------------------------------------------- */
@@ -21,6 +25,7 @@
     -webkit-font-smoothing: antialiased;
   }
   
+  /* 기본 반응형 여백 설정 */
   @media only screen and (max-width: 1440px) {
     :root {
       --notion-page-left-right-padding: 2vw;
@@ -34,14 +39,35 @@
     }
   }
   
-  /* 루트 페이지 및 다크모드 전역 조건 처리 */
+  /* 루트 페이지가 아닐 때 브레드크럼 처리 */
   body:not(.is-root-page) .notion-nav-header > .breadcrumbs:nth-child(2) {
     display: none;
   }
   
+  /* 🏛️ [AaRC 시공] 루트 페이지(대문) 전용 풀-와이드(Full-Wide) 레이아웃 */
   body.is-root-page {
+    /* 1. 제목 및 불필요 요소 숨기기 */
     .notion-title { display: none; }
     .notion-nav-header > .breadcrumbs:nth-child(2) { display: none; }
+
+    /* 🚨 [무결성 핵심] 루트 페이지에서만 좌우 여백 변수를 0으로 강제 초기화 */
+    --notion-page-left-right-padding: 0px !important;
+    --notion-page-fullwith-left-right-padding: 0px !important;
+
+    /* 2. 페이지 컨테이너 자체의 여백 및 너비 제한 해제 */
+    .notion-page {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      max-width: 100% !important;
+    }
+
+    /* 3. 모바일 웹킷 및 내부 콘텐츠 박스의 미세 여백까지 완벽 제거 */
+    .notion-page-content-inner,
+    .notion-page-content {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      max-width: 100% !important;
+    }
   }
   
   body:not(.dark-mode) .hasCollectionView {

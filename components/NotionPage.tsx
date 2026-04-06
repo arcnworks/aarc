@@ -73,14 +73,30 @@ const CustomMermaid = dynamic(() => {
   }, { ssr: false }
 );
 
-/* NotionPage.tsx - LivePreview 컴포넌트 최종 무결성 버전 */
-/* NotionPage.tsx - LivePreview 컴포넌트 */
-const LivePreview = ({ code, language, aspectRatio }: { code: string; language: string; aspectRatio?: string }) => {
+
+
+/* NotionPage.tsx - v83.0 다크모드 동기화 엔진 */
+
+/* NotionPage.tsx - v84.0 에러 UI 및 다크모드 통합 엔진 */
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
+
+const LivePreview = ({ code, language, aspectRatio, isDarkMode }: { code: string; language: string; aspectRatio?: string; isDarkMode: boolean }) => {
   const [height, setHeight] = React.useState('150px');
   const [srcDoc, setSrcDoc] = React.useState('');
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
-  React.useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
+    let parent = iframeRef.current?.parentElement;
+    while (parent && !parent.classList.contains('notion-page')) {
+      parent.style.setProperty('padding-bottom', '0', 'important');
+      parent.style.setProperty('height', 'auto', 'important');
+      parent.style.setProperty('aspect-ratio', 'auto', 'important');
+      parent = parent.parentElement;
+    }
+
+    if (aspectRatio) return; 
+
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'resize-iframe' && event.source === iframeRef.current?.contentWindow) {
         setHeight(`${Math.max(event.data.height, 50)}px`);
@@ -95,13 +111,33 @@ const LivePreview = ({ code, language, aspectRatio }: { code: string; language: 
       let headContent = '<meta charset="utf-8">';
       let bodyContent = '';
       const lang = language?.toLowerCase();
+      
       if (lang === 'html') bodyContent = code;
       else if (lang === 'css') {
         headContent += `<style>${code}</style>`;
         bodyContent = `<div style="width:100%; height:300px;"></div>`;
       } else if (lang === 'javascript' || lang === 'js') {
-        bodyContent = `<div id="js-output"></div><script>try{${code}}catch(e){document.body.innerHTML=e.message;}</script>`;
+        // 💡 [에러 핸들링] 스크립트 실행 전역에서 발생하는 모든 에러를 포착하도록 구성
+        bodyContent = `
+          <div id="js-output"></div>
+          <script>
+            window.onerror = function(msg, url, line, col, error) {
+              if (window.renderError) window.renderError(error || msg);
+              return false;
+            };
+            try { 
+              ${code} 
+            } catch(e) { 
+              if (window.renderError) window.renderError(e); 
+            }
+          </script>
+        `;
       }
+
+      const bgColor = isDarkMode ? '#1f1f1f' : 'transparent';
+      const textColor = isDarkMode ? '#ebeced' : '#37352f';
+      const errorBg = isDarkMode ? 'rgba(255, 68, 68, 0.1)' : 'rgba(255, 0, 0, 0.05)';
+      const errorBorder = isDarkMode ? '#ff4444' : '#ff0000';
 
       setSrcDoc(`
         <!DOCTYPE html>
@@ -109,28 +145,61 @@ const LivePreview = ({ code, language, aspectRatio }: { code: string; language: 
           <head>
             ${headContent}
             <style>
-              body, html { margin: 0; padding: 0; overflow: hidden; background: transparent; width: 100%; height: auto !important; }
-              #content-wrapper { display: flex; flex-direction: column; width: 100%; height: auto !important; min-height: 1px; }
+              body, html { 
+                margin: 0; padding: 0; overflow: hidden; 
+                background: ${bgColor}; color: ${textColor}; 
+                width: 100%; height: auto !important; 
+                transition: background 0.3s ease, color 0.3s ease;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+              }
+              #content-wrapper { display: block; width: 100%; height: auto !important; min-height: 1px; }
+              
+              /* 🚨 프로페셔널 에러 UI 스타일 */
+              #error-boundary {
+                margin: 12px; padding: 16px; border-radius: 8px;
+                border-left: 4px solid ${errorBorder};
+                background: ${errorBg};
+                font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+                font-size: 13px; line-height: 1.5;
+              }
+              .error-title { color: ${errorBorder}; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; }
+              .error-title::before { content: '⚠️'; margin-right: 8px; }
+              .error-msg { white-space: pre-wrap; word-break: break-all; opacity: 0.9; }
             </style>
           </head>
           <body>
             <div id="content-wrapper">${bodyContent.trim()}</div>
             <script>
-              function sh() {
-                const w = document.getElementById('content-wrapper');
-                const t = w.querySelector('.swiper') || w.firstElementChild || w;
-                const h = Math.ceil(t.getBoundingClientRect().height);
+              const wrapper = document.getElementById('content-wrapper');
+              
+              // 💡 에러 UI 렌더링 엔진
+              window.renderError = function(e) {
+                const errorMsg = e.stack || e.message || e;
+                wrapper.innerHTML = \`
+                  <div id="error-boundary">
+                    <div class="error-title">Runtime Error</div>
+                    <div class="error-msg">\${errorMsg}</div>
+                  </div>
+                \`;
+                sendHeight();
+              };
+
+              function sendHeight() {
+                const slider = wrapper.querySelector('.swiper') || wrapper;
+                const h = Math.ceil(slider.offsetHeight || wrapper.scrollHeight);
                 window.parent.postMessage({ type: 'resize-iframe', height: h }, '*');
               }
-              window.onload = sh;
-              new ResizeObserver(sh).observe(document.body);
+              window.onload = () => { sendHeight(); setTimeout(sendHeight, 500); };
+              new ResizeObserver(sendHeight).observe(document.body);
             </script>
           </body>
         </html>
       `);
     }, 300);
     return () => clearTimeout(timeout);
-  }, [code, language]);
+  }, [code, language, isDarkMode]);
+
+  const cleanRatio = aspectRatio ? aspectRatio.replace(/:/g, '/') : 'auto';
 
   return (
     <div style={{ width: '100%', margin: '0', overflow: 'hidden' }}>
@@ -141,10 +210,13 @@ const LivePreview = ({ code, language, aspectRatio }: { code: string; language: 
         sandbox="allow-scripts"
         frameBorder="0"
         style={{ 
-          display: 'block', width: '100%', 
-          aspectRatio: aspectRatio || 'auto',
+          display: 'block', 
+          width: '100%', 
+          aspectRatio: aspectRatio ? cleanRatio : 'auto',
           height: aspectRatio ? 'auto' : height, 
-          border: 'none', background: 'transparent', transition: 'height 0.2s ease'
+          border: 'none', 
+          background: 'transparent', 
+          transition: 'height 0.2s ease'
         }}
       />
     </div>
@@ -182,6 +254,9 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
   const router = useRouter(); 
   const lite = useSearchParam('lite'); 
   const { isDarkMode } = useDarkMode();
+
+  // 💡 [AaRC 추가] 현재 페이지 ID가 사이트 설정상의 루트 ID와 같은지 검사합니다.
+  const isRootPage = pageId === site.rootNotionPageId;
 
   // =========================================================================
   // 📍 [필터 상태 추가] 탭 전환 시에도 필터 정보를 유지하기 위해 여기에 넣습니다.
@@ -688,21 +763,25 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
       return <Link href={targetUrl} {...rest} />;
     },
 
-    // 🚨 Mermaid 및 LivePreview 코드 렌더러 복구
+    /* NotionPage.tsx - Code 컴포넌트 맵핑 수정 */
     Code: (props: any) => {
       const language = props.block?.properties?.language?.[0]?.[0]?.toLowerCase() || props.language?.toLowerCase();
-      const codeText = props.block?.properties?.title?.[0]?.[0] || '';
-      const caption = props.block?.properties?.caption?.[0]?.[0] || '';
+      const captionArray = props.block?.properties?.caption || [];
+      const caption = captionArray.map((segment: any) => segment[0]).join('') || '';
+      const codeTextArray = props.block?.properties?.title || [];
+      const codeText = codeTextArray.map((segment: any) => segment[0]).join('') || '';
       
       if (language === 'mermaid') return <CustomMermaid code={codeText} />;
       
       if (['html', 'css', 'javascript', 'js'].includes(language) && caption.toLowerCase().includes('preview')) {
-        const match = caption.match(/preview\s*[:\s]\s*([\d\s/]+)/i);
+        const match = caption.match(/preview\s*[:\s]\s*([\d\s/:\.]+)/i);
         let dynamicRatio = undefined;
-        if (match) { dynamicRatio = match[1].trim(); }
+        if (match) { 
+          dynamicRatio = match[1].replace(/\s/g, ''); 
+        }
     
-        // 💡 [핵심] key를 codeText로 설정하여, 코드가 바뀔 때마다 컴포넌트를 강제 리마운트합니다.
-        return <LivePreview key={codeText} code={codeText} language={language} aspectRatio={dynamicRatio} />;
+        // 💡 [수정] isDarkMode를 LivePreview로 전달합니다.
+        return <LivePreview key={codeText} code={codeText} language={language} aspectRatio={dynamicRatio} isDarkMode={isDarkMode} />;
       }
       return <Code {...props} />;
     },
@@ -760,6 +839,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
     <>
       
       {isLiteMode && <BodyClassName className="notion-lite" />}
+      {isRootPage && <BodyClassName className="is-root-page" />}
       {/* ========================================================================= */}
         {/* 2. 키워드 중심 커스텀 모달 UI 및 스타일 (Collection 특화) */}
         {/* ========================================================================= */}
