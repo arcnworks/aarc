@@ -380,7 +380,7 @@ body:not(.dark-mode) .hasCollectionView { --bg-color: #ffffff; }
             white-space: normal !important;
             text-overflow: ellipsis;
             margin-bottom: 0.8rem;
-            padding-left: 8px !important; /* 축 정렬 */
+            padding-left: 2px !important; /* 축 정렬 */
             border-bottom: none;
           }
   
@@ -399,7 +399,7 @@ body:not(.dark-mode) .hasCollectionView { --bg-color: #ffffff; }
               width: 100%;
               color: #2d2d2d;
               word-break: break-all !important;
-              padding-left: 6px !important; /* 축 정렬 */
+              padding-left: 4px !important; /* 축 정렬 */
               display: block !important; /* 행바꿈 정렬 */
             }
   
@@ -703,33 +703,6 @@ body {
   .aside-recent-text { font-size: 0.9rem; line-height: 1.5; color: var(--fg-color); word-break: keep-all; }
 }
   
-/* -------------------------------------------------------------------------
-   7. 다크모드 전용 최적화 (명도 확보 및 색상 무결성)
-   ------------------------------------------------------------------------- */
-.dark-mode {
-  background-color: var(--bg-color);
-  .notion-header .breadcrumb { text-shadow: 0 0 3px black; }
-  
-  .notion-search {
-    color: var(--fg-color); background-color: var(--bg-color-1);
-    input { background-color: transparent; }
-  }
-
-  // ✅ 다크모드 갤러리 속성 보정
-  .notion-collection-card-body {
-    .notion-property-text,
-    .notion-property-select-item,
-    .notion-property-multi_select-item,
-    .notion-property-date,
-    .notion-property-number {
-      color: var(--fg-color) !important; // 제목 색상과 통일
-      opacity: 1 !important; // 연도 흐림 방지
-    }
-    .notion-property-select-item span,
-    .notion-property-multi_select-item span { color: inherit !important; }
-    .notion-property-select-item { opacity: 0.9; }
-  }
-}
   
   
   /* -------------------------------------------------------------------------
@@ -927,4 +900,101 @@ body {
   .swiper-pagination-bullet-active {
     background: #0047AB;
   }
+
+/* =========================================================================
+   7. AaRC 노션 컬렉션 드롭다운 메뉴 스타일 (다크모드 시인성 극대화 버전)
+   ========================================================================= */
+
+/* 7.1 드롭다운 트리거(버튼) 영역: 회색 박스 완벽 제거 */
+html body .notion-collection-view-dropdown,
+html body .notion-collection-view-type {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* 7.2 기존 노션 타입 아이콘 숨기기 */
+html body .notion-collection-view-type-icon {
+  display: none !important;
+}
+
+/* 7.3 글자 볼드체 및 AaRC Blue(#0047AB) 포인트 동그라미 주입 */
+html body .notion-collection-view-type-title {
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  color: var(--fg-color) !important;
+  font-size: 15px !important;
+
+  &::before {
+    content: '';
+    display: inline-block !important;
+    width: 6px !important;
+    height: 6px !important;
+    background-color: #0047AB !important;
+    border-radius: 50% !important;
+    margin-right: 10px !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* 7.4 [핵심] 드롭다운 메뉴 내부 리스트 (Portal 대응 및 색상 강제) */
+/* 💡 배경색과 텍스트 색상을 테마 변수로부터 강제로 가져옵니다. */
+html body .notion-collection-view-dropdown-content {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(150, 150, 150, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  background-color: var(--bg-color) !important; /* 라이트/다크 배경 자동 전환 */
+  color: var(--fg-color) !important;           /* 라이트/다크 글자 자동 전환 */
+  z-index: 10001 !important;
+}
+
+/* 메뉴 내부 개별 항목 스타일 */
+html body .notion-collection-view-dropdown-content-item {
+  padding: 10px 14px !important;
+  background: transparent !important;
+
+  .notion-collection-view-type-title {
+    color: inherit !important; /* 상위 컨텐츠의 글자색을 따름 */
+  }
+
+  /* 호버 및 선택 상태 (은은한 브랜드 컬러 적용) */
+  &:focus,
+  &:hover,
+  &[data-highlighted],
+  &.notion-collection-view-dropdown-content-item-active {
+    background: rgba(0, 71, 171, 0.1) !important;
+    outline: none !important;
+  }
+
+  /* 불필요한 체크 아이콘 숨기기 */
+  .notion-collection-view-dropdown-content-item-active-icon {
+    display: none !important;
+  }
+}
+
+/* 🌙 다크모드 시각적 고립 방지 (포털 내부 강제 적용) */
+/* 💡 body에 .dark-mode 클래스가 있을 때, 떠 있는 메뉴의 배경을 어둡게 고정합니다. */
+body.dark-mode {
+  .notion-collection-view-dropdown-content {
+    background-color: #1c1c1c !important; /* 노션 표준 다크 배경색 */
+    border-color: #373737 !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+
+    .notion-collection-view-type-title {
+      color: #ffffff !important; /* 글자색을 완전한 흰색으로 강제 */
+    }
+  }
+
+  .notion-collection-view-dropdown-content-item:hover,
+  .notion-collection-view-dropdown-content-item[data-highlighted] {
+    background: rgba(255, 255, 255, 0.08) !important; /* 다크모드 전용 호버 배경 */
+  }
+}
+
 }

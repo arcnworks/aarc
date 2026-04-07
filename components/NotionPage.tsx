@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router'; 
 import * as React from 'react'; 
 import BodyClassName from 'react-body-classname'; 
-import { NotionRenderer } from 'react-notion-x'; 
+import { NotionRenderer } from '../packages/react-notion-x'; 
 import TweetEmbed from 'react-tweet-embed'; 
 import { useSearchParam } from 'react-use'; 
 import cs from 'classnames'; 
@@ -32,16 +32,7 @@ import styles from './styles.module.css';
 
 
 
-const Modal = dynamic(
-  () =>
-    import('react-notion-x/third-party/modal').then(m => {
-      m.Modal.setAppElement('.notion-viewport');
-      return m.Modal;
-    }),
-  {
-    ssr: false,
-  },
-);
+
 
 // --- 커스텀 다이어그램(Mermaid) 렌더러 ---
 const CustomMermaid = dynamic(() => {
@@ -225,7 +216,7 @@ const LivePreview = ({ code, language, aspectRatio, isDarkMode }: { code: string
 
 // --- 서드파티 컴포넌트 로딩 ---
 const Code = dynamic(() =>
-  import('react-notion-x/third-party/code').then(async m => {
+  import('../packages/react-notion-x/third-party/code').then(async m => {
     await loadPrismComponentsWithRetry([
       () => import('prismjs/components/prism-markup-templating.js'), 
       () => import('prismjs/components/prism-markup.js'), 
@@ -243,36 +234,86 @@ const Code = dynamic(() =>
 );
 
 const Collection = dynamic(
-  () => import('react-notion-x/third-party/collection').then(m => m.Collection),
-  { ssr: false } // 이 줄을 추가합니다!
-);
-const Equation = dynamic(() => import('react-notion-x/third-party/equation').then(m => m.Equation)); 
-const Pdf = dynamic(() => import('react-notion-x/third-party/pdf').then(m => m.Pdf), { ssr: false });
-const Tweet = ({ id }: { id: string }) => <TweetEmbed tweetId={id} />;
+  () =>
+    import('../packages/react-notion-x/third-party/collection').then(
+      (m) => m.Collection
+    ),
+  { ssr: false } // 데이터베이스 렌더링 시 브라우저 환경에서만 동작하도록 설정
+)
+
+const Equation = dynamic(() =>
+  import('../packages/react-notion-x/third-party/equation').then(
+    (m) => m.Equation
+  )
+)
+
+const Pdf = dynamic(
+  () =>
+    import('../packages/react-notion-x/third-party/pdf').then((m) => m.Pdf),
+  { ssr: false }
+)
+
+const Modal = dynamic(
+  () =>
+    import('../packages/react-notion-x/third-party/modal').then((m) => {
+      // Modal 컴포넌트가 존재하고 setAppElement 메서드가 있을 때만 실행
+      if (m.Modal?.setAppElement) {
+        m.Modal.setAppElement('.notion-viewport')
+      }
+      return m.Modal
+    }),
+  { ssr: false }
+)
+
+const Tweet = ({ id }: { id: string }) => <TweetEmbed tweetId={id} />
 
 export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = ({ site, recordMap, error, pageId, draftView, recentPosts }) => {
+  
+  // 💡 [AaRC 제어판] 여기서 모드를 변경하세요!
+  // 'tabs'     -> 카테고리가 한 줄로 나열되는 모드
+  // 'dropdown' -> 기존 노션 방식의 드롭다운 모드
+  const collectionViewMode: 'tabs' | 'dropdown' = 'tabs'; 
+
+  // 🚨 [AaRC] 데이터베이스(Collection) 리스트 복구 엔진
+  if (recordMap) {
+    const categories = ['block', 'collection', 'collection_view', 'collection_query'];
+    categories.forEach((category) => {
+      if (recordMap[category]) {
+        Object.keys(recordMap[category]).forEach((key) => {
+          const item = recordMap[category][key];
+          
+          // 1. 일반 블록 및 설정 데이터 해제
+          if (item && item.value && item.value.value) {
+            item.value = item.value.value;
+          }
+          
+          // 2. Blog/Work 게시글 목록 데이터 해제
+          if (category === 'collection_query' && item) {
+             Object.keys(item).forEach(viewKey => {
+                const viewData = item[viewKey];
+                if (viewData && viewData.value && viewData.value.value) {
+                   item[viewKey] = viewData.value.value;
+                }
+             });
+          }
+
+          // 3. 💡 [AaRC 추가] 갤러리 커버 호환성 패치 (탭 전환 시 이미지 증발 방지)
+          if (category === 'collection_view' && item) {
+             if (item.value?.format?.gallery_cover?.type === 'page_content_first') {
+                item.value.format.gallery_cover.type = 'page_content';
+             }
+          }
+        });
+      }
+    });
+  }
+
   const router = useRouter(); 
   const lite = useSearchParam('lite'); 
   const { isDarkMode } = useDarkMode();
 
   // 💡 [AaRC 추가] 현재 페이지 ID가 사이트 설정상의 루트 ID와 같은지 검사합니다.
   const isRootPage = pageId === site.rootNotionPageId;
-
-  // =========================================================================
-  // 📍 [필터 상태 추가] 탭 전환 시에도 필터 정보를 유지하기 위해 여기에 넣습니다.
-  // =========================================================================
-  // [AaRC 시공 1] URL에서 탭 정보를 읽어오되, 없으면 '모두보기'를 기본값으로 설정합니다.
-  const tabFromUrl = router.query.tab as string;
-  const [activeFilter, setActiveFilter] = React.useState(tabFromUrl || '모두보기');
-
-  // [AaRC 시공 2] 페이지 경로가 바뀌거나 탭 파라미터가 사라지면(다른 페이지에서 돌아올 때) 리셋합니다.
-  React.useEffect(() => {
-    if (!tabFromUrl) {
-      setActiveFilter('모두보기');
-    } else if (tabFromUrl !== activeFilter) {
-      setActiveFilter(tabFromUrl);
-    }
-  }, [tabFromUrl, router.asPath]); // 경로(asPath) 변화를 감지하여 리셋 집행
 
   // =========================================================================
   // 1. 검색
@@ -415,91 +456,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
 
 
 
-  // =========================================================================
-  // [collection view tab] 예외 처리가 강화된 무결성 엔진
-  // =========================================================================
-  React.useEffect(() => {
-    let observer: MutationObserver | null = null;
-
-    const runSurgicalWork = () => {
-      const grid = document.querySelector('.notion-gallery-grid');
-      const cards = Array.from(document.querySelectorAll('.notion-collection-card'));
-      const tabs = Array.from(document.querySelectorAll('.notion-collection-view-tab, .notion-collection-view-tabs-content-item'));
-      
-      // [1] 돔이 준비되지 않았거나 갤러리가 없는 페이지(Home, Blog 등)라면 즉시 종료합니다.
-      if (!grid || cards.length === 0) return;
-
-      if (observer) observer.disconnect();
-
-      // [2] 라이브러리 뷰 강제 동기화 (오류 방지 로직 보완)
-      if (activeFilter === '모두보기' && tabs.length > 0) {
-        const allTab: any = tabs.find(t => t.textContent?.includes('모두보기'));
-        
-        // ✅ [안전장치 추가] allTab이 실제로 존재할 때만 스타일을 측정합니다.
-        if (allTab) {
-          const style = window.getComputedStyle(allTab);
-          const isNotAllTabActive = !allTab.classList.contains('notion-collection-view-tab-active') && 
-                                    style.borderBottomWidth === '0px';
-          
-          if (isNotAllTabActive) {
-             allTab.click(); 
-             return; 
-          }
-        }
-      }
-
-      const isShowAll = ['모두보기', 'All', '전체'].some(k => activeFilter.includes(k));
-
-      // [3] 고속 필터링 집행
-      cards.forEach((card: any) => {
-        const text = card.innerText || '';
-        const shouldShow = isShowAll || text.includes(activeFilter);
-        if (card.style.display !== (shouldShow ? '' : 'none')) {
-          card.style.display = shouldShow ? '' : 'none';
-        }
-      });
-
-      // [4] 최신순 정렬 집행
-      const sorted = [...cards].sort((a: any, b: any) => {
-        const dateA = a.innerText.match(/\d{4}([./]\d{2}[./]\d{2})?/)?.[0] || '0000';
-        const dateB = b.innerText.match(/\d{4}([./]\d{2}[./]\d{2})?/)?.[0] || '0000';
-        return dateB.localeCompare(dateA); 
-      });
-
-      // [5] DOM 재배치 최적화
-      sorted.forEach((card, idx) => {
-        if (grid.children[idx] !== card) grid.appendChild(card);
-      });
-
-      if (observer) observer.observe(document.body, { childList: true, subtree: true });
-    };
-
-    // [6] 탭 클릭 핸들러 (안전장치 보강)
-    const handleTabClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const tab = target.closest('.notion-collection-view-tab, .notion-collection-view-tabs-content-item');
-      if (tab) {
-        const name = tab.textContent?.trim() || '';
-        if (name && name !== activeFilter) {
-          router.push({ query: { ...router.query, tab: name } }, undefined, { shallow: true });
-          setActiveFilter(name);
-        }
-      }
-    };
-
-    document.addEventListener('click', handleTabClick, true);
-    observer = new MutationObserver((m) => {
-      if (m.some(mut => mut.addedNodes.length > 0)) runSurgicalWork();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    runSurgicalWork();
-
-    return () => {
-      document.removeEventListener('click', handleTabClick, true);
-      if (observer) observer.disconnect();
-    };
-  }, [recordMap, activeFilter, router.asPath]);
+  
 
 
   // =========================================================================
@@ -835,80 +792,119 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
   const isBlogPost = block?.type === 'page' && block?.parent_table === 'collection';
   const pageAside = <PageAside block={block} recordMap={recordMap} isBlogPost={isBlogPost} recentPosts={recentPosts} />;
 
+  // ... (이전 코드들: const pageAside = ... 등)
+
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* [AaRC 통합 탭 디자인] */
+        .arc-use-tabs .notion-collection-header {
+          height: auto !important;
+          overflow: visible !important; /* 💡 가려진 글자 해방 */
+          padding-bottom: 8px !important;
+        }
+
+        .arc-use-tabs .arc-collection-tabs-row {
+          display: flex !important;
+          flex-direction: row !important; /* 💡 가로 나열 강제 */
+          flex-wrap: wrap !important;
+          gap: 32px !important;
+          border-bottom: 1px solid rgba(150, 150, 150, 0.15) !important;
+        }
+
+        .arc-use-tabs .arc-tab-item {
+          cursor: pointer !important;
+          padding: 0px 0 4px 0 !important;
+          border-bottom: 2px solid transparent !important;
+          margin-bottom: -1px !important;
+        }
+
+        .arc-use-tabs .arc-tab-title {
+          font-size: 14px !important;
+          color: var(--fg-color) !important;
+          opacity: 0.5;
+          font-weight: 500 !important;
+        }
+
+        .arc-use-tabs .arc-tab-item-active {
+          border-bottom: 2px solid var(--fg-color) !important;
+        }
+
+        .arc-use-tabs .arc-tab-item-active .arc-tab-title {
+          opacity: 1 !important;
+          font-weight: 600 !important;
+        }
+
+        /* 아이콘 제거 */
+        .notion-collection-view-type-icon { display: none !important; }
+
+      `}} />
+
       
+
       {isLiteMode && <BodyClassName className="notion-lite" />}
       {isRootPage && <BodyClassName className="is-root-page" />}
-      {/* ========================================================================= */}
-        {/* 2. 키워드 중심 커스텀 모달 UI 및 스타일 (Collection 특화) */}
-        {/* ========================================================================= */}
-        {isSearchOpen && (
-          <div className="arc-search-backdrop" onClick={() => setIsSearchOpen(false)}>
-            <div className="arc-search-modal" onClick={e => e.stopPropagation()}>
-              
-              <div className="arc-search-header">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input autoFocus placeholder="검색..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                <button className="arc-close-btn" onClick={() => setIsSearchOpen(false)}>✕</button>
-              </div>
-              
-              <div className="arc-search-body">
-                {/* 로딩 표시 */}
-                {isSearching && searchResults.length === 0 && (
-                  <div className="arc-search-msg">분석 중...</div>
-                )}
-                {/* 결과 없음 표시 */}
-                {!isSearching && searchQuery && searchResults.length === 0 && (
-                  <div className="arc-search-msg">관련 키워드를 찾지 못했습니다.</div>
-                )}
-                
-                {/* 검색 결과 깜빡임 방지 처리 */}
-                <div style={{ opacity: isSearching ? 0.4 : 1, transition: 'opacity 0.2s', pointerEvents: isSearching ? 'none' : 'auto' }}>
-                  {searchResults.map((r, i) => (
-                    <div key={i} className="arc-search-item" onClick={() => { 
-                      setIsSearchOpen(false); 
-                      router.push(`/${(r.pageId || r.id).replace(/-/g, '')}`); 
-                    }}>
-                      <div className="arc-search-snippet" 
-                           style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: '0.95rem', color: 'var(--fg-color)', lineHeight: '1.6' }} 
-                           dangerouslySetInnerHTML={{ __html: formatHighlight(r.snippet) }} />
-                      <div style={{ fontSize: '0.75rem', color: 'var(--fg-color-3)', marginTop: '12px', textAlign: 'right' }}>
-                        문서 본문 보기 →
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
+      {/* 검색 모달 UI */}
+      {isSearchOpen && (
+        <div className="arc-search-backdrop" onClick={() => setIsSearchOpen(false)}>
+          <div className="arc-search-modal" onClick={e => e.stopPropagation()}>
+            <div className="arc-search-header">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input autoFocus placeholder="검색..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+              <button className="arc-close-btn" onClick={() => setIsSearchOpen(false)}>✕</button>
+            </div>
+            
+            <div className="arc-search-body">
+              {isSearching && searchResults.length === 0 && (
+                <div className="arc-search-msg">분석 중...</div>
+              )}
+              {!isSearching && searchQuery && searchResults.length === 0 && (
+                <div className="arc-search-msg">관련 키워드를 찾지 못했습니다.</div>
+              )}
+              
+              <div style={{ opacity: isSearching ? 0.4 : 1, transition: 'opacity 0.2s', pointerEvents: isSearching ? 'none' : 'auto' }}>
+                {searchResults.map((r, i) => (
+                  <div key={i} className="arc-search-item" onClick={() => { 
+                    setIsSearchOpen(false); 
+                    router.push(`/${(r.pageId || r.id).replace(/-/g, '')}`); 
+                  }}>
+                    <div className="arc-search-snippet" 
+                         style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: '0.95rem', color: 'var(--fg-color)', lineHeight: '1.6' }} 
+                         dangerouslySetInnerHTML={{ __html: formatHighlight(r.snippet) }} />
+                    <div style={{ fontSize: '0.75rem', color: 'var(--fg-color-3)', marginTop: '12px', textAlign: 'right' }}>
+                      문서 본문 보기 →
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        
-
-      {/* ========================================================================= */}
-      
-      <NotionRenderer
-      darkMode={isDarkMode}
-      components={components}
-      recordMap={recordMap}
-      rootPageId={site.rootNotionPageId}
-      rootDomain={site.domain}
-      fullPage={!isLiteMode}
-      previewImages={!!recordMap.preview_images}
-      // --- 데이터베이스 뷰 관련 핵심 설정 ---
-      showCollectionViewDropdown={true} // 탭/드롭다운 메뉴 활성화
-      showTableOfContents={true} // ✅ 무조건 목차를 생성하도록 강제합니다.
-      minTableOfContentsItems={1}
-      isImageZoomable={false}
-      mapPageUrl={mapPageUrl(site, recordMap, new URLSearchParams(lite ? { lite } : {}), draftView)}
-      mapImageUrl={mapImageUrl}
-      searchNotion={config.isSearchEnabled ? searchNotion : undefined}
-      pageAside={pageAside}
-      pageFooter={config.enableComment && isBlogPost && <Comments pageId={block.id} recordMap={recordMap} />}
-      footer={<Footer />}
-      />
+      {/* 메인 노션 렌더러 */}
+      <div className={collectionViewMode === 'tabs' ? 'arc-use-tabs' : 'arc-use-dropdown'}>
+  <NotionRenderer
+    darkMode={isDarkMode}
+    components={components}
+    recordMap={recordMap}
+    rootPageId={site.rootNotionPageId}
+    rootDomain={site.domain}
+    fullPage={!isLiteMode}
+    previewImages={!!recordMap.preview_images}
+    showCollectionViewDropdown={true}
+    showTableOfContents={true}
+    minTableOfContentsItems={1}
+    isImageZoomable={false}
+    mapPageUrl={mapPageUrl(site, recordMap, new URLSearchParams(lite ? { lite } : {}), draftView)}
+    mapImageUrl={mapImageUrl}
+    searchNotion={config.isSearchEnabled ? searchNotion : undefined}
+    pageAside={pageAside}
+    pageFooter={config.enableComment && isBlogPost && <Comments pageId={block.id} recordMap={recordMap} />}
+    footer={<Footer />}
+  />
+</div>
     </>
   );
 };

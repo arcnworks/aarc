@@ -18,7 +18,7 @@ import { bootstrap } from '~/lib/bootstrap-client';
 import { posthogConfig, posthogId } from '~/lib/config';
 
 // [스타일] 외부 라이브러리 및 커스텀 SCSS
-import 'react-notion-x/src/styles.css'; 
+import '../packages/react-notion-x/styles.css';
 import 'rc-dropdown/assets/index.css';
 import '~/styles/custom/index.scss';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -27,12 +27,7 @@ import { Analytics } from '@vercel/analytics/react';
 /* ---------------------------------------------------------
    1. 폰트 및 글로벌 규격 설정
    --------------------------------------------------------- */
-const notoSansKr = Noto_Sans_KR({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  display: 'swap',
-  variable: '--font-noto-sans-kr'
-});
+
 
 const pretendard = localFont({
   src: [
@@ -138,12 +133,13 @@ const swrConfig: SWRConfiguration = {
 export default function App({ Component, pageProps, router }: AppProps) {
   return (
     <RecoilRoot>
-      <main className={`${pretendard.variable} ${notoSansKr.variable}`}>
+      {/* ✅ 노토산스 변수를 삭제하고 프리텐다드만 남겼습니다. */}
+      <main className={pretendard.variable}>
         <SWRConfig value={swrConfig}>
           <Bootstrap />
           <GoogleAnalytics trackPageViews />
           
-          {/* 전역 로딩 커튼 배치 (이제 인터셉터 덕분에 항상 신호를 받습니다) */}
+          {/* 전역 로딩 커튼 배치 */}
           <Loading />
 
           {/* 대기 모드 없이 즉각적인 뒷단 빌드 허용 */}

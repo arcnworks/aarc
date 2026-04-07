@@ -9,6 +9,9 @@ module.exports = withBundleAnalyzer({
   // 노션 페이지 생성 시 타임아웃 방지 (기본 300초)
   staticPageGenerationTimeout: 300,
 
+  // 💡 [추가] 폰트 다운로드 실패로 인한 빌드 에러를 방지합니다.
+  optimizeFonts: false,
+
   // 1. 빌드 시 ESLint 경고(이미지 태그, 익명 함수 등)를 무시하고 배포를 강행합니다.
   eslint: {
     ignoreDuringBuilds: true,

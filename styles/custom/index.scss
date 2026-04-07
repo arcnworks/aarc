@@ -1,6 +1,8 @@
+// styles/custom/index.scss
+
 // 해당 import문의 순서를 변경하면 스타일이 제대로 적용되지 않습니다.
 // [수정] react-notion-x 최신 버전의 올바른 CSS 경로로 변경했습니다.
-@import 'react-notion-x/src/styles.css';
+@import "../../packages/react-notion-x/styles.css"; 
 
 @import 'katex/dist/katex.min.css';
 @import 'prismjs/themes/prism-coy.css';
@@ -9,7 +11,7 @@
 @import '~/styles/prism-theme.css';
 
 @import './vars.scss';
-@import './notion.scss';
+@import './notion.scss'; // 💡 notion.scss의 커스텀 스타일이 가장 마지막에 적용되도록 합니다.
 
 @import '~/components/Comments/index.scss';
 @import '~/components/PageLoading/index.scss';

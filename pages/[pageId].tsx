@@ -46,14 +46,22 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
     }
 
     const recordMap = notionProps.recordMap;
+
+    // 💡 [AaRC 안전 경량화 엔진] 데이터 유실 없이 최소한의 정리만 수행합니다.
+    if (recordMap) {
+      // 1. 유저 정보 삭제 (페이지 로드에 영향 없음)
+      if (recordMap.notion_user) delete recordMap.notion_user;
+      // 2. 워크스페이스 정보 삭제 (페이지 로드에 영향 없음)
+      if (recordMap.space) delete recordMap.space;
+      
+      // ※ 이미지 미리보기(preview_images)는 사용자의 요청에 따라 유지합니다.
+    }
     
-    // [🚨 핵심 수정] 메인 페이지 블록을 찾는 로직을 강화합니다.
-    // 1. 우선적으로 type이 'page'인 블록을 찾습니다.
+    // 메인 페이지 블록 찾기
     let pageBlockId = Object.keys(recordMap.block).find(
       (id) => recordMap.block[id]?.value?.type === 'page'
     );
     
-    // 2. 만약 찾지 못했다면(데이터베이스 전체 페이지 등), recordMap의 첫 번째 블록을 메인으로 사용합니다.
     if (!pageBlockId && recordMap.block) {
       pageBlockId = Object.keys(recordMap.block)[0];
     }
@@ -64,11 +72,12 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
       props: JSON.parse(JSON.stringify({ 
         ...notionProps, 
         pageId: rawPageId,
-        page: pageBlock || null // 절대 undefined가 되지 않도록 처리
+        page: pageBlock || null 
       })), 
       revalidate: 60 
     };
   } catch (err) {
+    // 💡 구문 오류를 일으켰던 부분을 정상적인 에러 로그로 대체했습니다.
     console.error(`[ARC ISR Error] ${rawPageId}:`, err);
     return { notFound: true };
   }
@@ -79,7 +88,6 @@ export async function getStaticPaths() {
 }
 
 function generateMeta(page: any, pageId: string) {
-  // page가 null이더라도 옵셔널 체이닝(?.) 덕분에 기본값이 안전하게 적용됩니다.
   const title = page?.properties?.title?.[0]?.[0] || 'ARC - Architecture and Research in Cultures';
   const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'ARC(아크)는 과학적 통찰과 인문적 감수성으로 감정의 공간을 이야기 합니다.';
   const image = page?.cover?.external?.url || page?.cover?.file?.url || 'https://aarc.kr/og-image.png';
@@ -94,8 +102,6 @@ function generateMeta(page: any, pageId: string) {
 export default function NotionDomainDynamicPage(props: PageProps) {
   const { page, pageId, recordMap } = props;
   
-  // [🚨 수정] page가 없더라도 recordMap이 있다면 NotionPage를 그려야 합니다.
-  // 화이트 스크린의 주범인 'if (!page) return null;'을 더 유연하게 바꿨습니다.
   if (!recordMap) return null;
 
   const meta = generateMeta(page, pageId);
