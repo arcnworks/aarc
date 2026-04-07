@@ -564,9 +564,22 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
   }, [recordMap, pageId, router]);
 
   // =========================================================================
-  // ✅ [AaRC v14.3] 슬라이더 엔진
+  // ✅ [AaRC v14.3] 슬라이더 엔진 + 보안 우회 내비게이션 수신기
   // =========================================================================
   React.useEffect(() => {
+    // 🚀 [AaRC 보안 우회 수신기] Notion 코드 블록 슬라이더의 이동 신호를 처리합니다.
+    const handleSliderMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'arc-slider-navigate') {
+        // 1. 로딩 애니메이션 실행
+        window.dispatchEvent(new Event('trigger-arc-loading')); 
+        // 2. 부모 창(현재 브라우저) 이동
+        router.push(event.data.url);
+      }
+    };
+
+    // 메시지 리스너 등록
+    window.addEventListener('message', handleSliderMessage);
+
     // 🛡️ [핵심 1. 비파괴 은폐] 리액트가 관리하는 원본 DOM을 파괴하지 않고, CSS로 살짝 가려주기만 합니다.
     if (!document.getElementById('arc-slider-safe-css')) {
       const style = document.createElement('style');
@@ -618,10 +631,8 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
         let validCount = 0;
 
         rawChildren.forEach(child => {
-          // 노드 복제 (리액트 트리 붕괴 방지)
           const clonedChild = child.cloneNode(true) as HTMLElement;
 
-          // 복제본의 텍스트에서만 명령어를 감쪽같이 지웁니다. 원본은 전혀 건드리지 않습니다.
           const eraseCommand = (node: Node) => {
             if (node.nodeType === 3) { 
               if (node.nodeValue) {
@@ -633,7 +644,6 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
           };
           eraseCommand(clonedChild);
 
-          // 명령어가 지워지고 껍데기만 남은 텍스트 블록은 슬라이드에 넣지 않습니다.
           if (clonedChild.textContent?.trim() === '' && !clonedChild.querySelector('img, iframe, video')) {
             return; 
           }
@@ -669,8 +679,6 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
 
         if (validCount === 0) return;
 
-        console.log(`🛠️ AaRC 격리형 슬라이더 가동: ${validCount}개 요소`);
-
         const pagination = document.createElement('div');
         pagination.className = 'swiper-pagination';
         const prevBtn = document.createElement('div');
@@ -683,7 +691,6 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
         swiperContainer.appendChild(prevBtn);
         swiperContainer.appendChild(nextBtn);
         
-        // 원본 자식들을 건드리지 않고 스와이퍼 덩어리를 덧붙입니다.
         contentWrapper.appendChild(swiperContainer);
 
         const isLoop = validCount >= 2; 
@@ -698,13 +705,16 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
           spaceBetween: 20
         });
 
-        // 꼬리표 부착 (위에서 시공한 전역 CSS가 원본 요소들을 안전하게 숨겨줍니다)
         callout.classList.add('arc-slider-applied');
       });
     }, 1000);
 
-    return () => clearTimeout(timer);
-  }, [recordMap, router.asPath]);
+    return () => {
+      // 💡 클린업: 이벤트 리스너와 타이머를 모두 해제합니다.
+      window.removeEventListener('message', handleSliderMessage);
+      clearTimeout(timer);
+    };
+  }, [recordMap, router.asPath, router]);
 
 
   // =========================================================================
