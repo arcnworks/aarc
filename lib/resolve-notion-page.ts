@@ -84,6 +84,15 @@ export async function resolveNotionPage(
     recordMap = await getPage(pageId, options);
   }
 
+  // 💡 [AaRC 안전 복구 모드] 
+  // 사이트의 모든 기능(코드 프리뷰, 슬라이더 등)을 정상화하는 가장 안전한 코드입니다.
+  if (recordMap) {
+    // 본문 데이터(block)는 절대 건드리지 않고, 
+    // 실제 사이트 표시와 상관없는 메타데이터만 제거하여 최소한의 용량만 줄입니다.
+    if (recordMap.notion_user) delete recordMap.notion_user;
+    if (recordMap.space) delete recordMap.space;
+  }
+
   const props = { site, recordMap, pageId };
   return { ...props, ...(await acl.pageAcl(props)) };
 }

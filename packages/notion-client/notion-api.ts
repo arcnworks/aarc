@@ -130,6 +130,8 @@ export class NotionAPI {
         collectionViewId: string;
       }> = contentBlockIds.flatMap(blockId => {
         const block = recordMap.block[blockId].value;
+        if (!block) return []; // 블록 데이터가 없으면 빈 배열을 반환하여 에러 방지
+
         const collectionId =
           block &&
           (block.type === 'collection_view' || block.type === 'collection_view_page') &&
@@ -139,7 +141,7 @@ export class NotionAPI {
           return block.view_ids?.map(collectionViewId => ({
             collectionId,
             collectionViewId,
-          }));
+          })) || []; // view_ids가 없을 경우를 대비해 빈 배열 추가
         } else {
           return [];
         }
