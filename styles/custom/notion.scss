@@ -520,3 +520,43 @@ body.dark-mode {
   .notion-collection-view-dropdown-content { background-color: #1c1c1c !important; border-color: #373737 !important; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important; .notion-collection-view-type-title { color: #ffffff !important; } }
   .notion-collection-view-dropdown-content-item:hover, .notion-collection-view-dropdown-content-item[data-highlighted] { background: rgba(255, 255, 255, 0.08) !important; }
 }
+
+/* =========================================================================
+   인쇄용(PDF) 레이아웃 최적화 (Print CSS)
+   ========================================================================= */
+   @media print {
+    /* 1. 상단 헤더, 로고, 우측 목차(사이드바), 푸터 등 불필요한 요소 완벽 숨김 */
+    header,
+    footer,
+    nav,
+    .notion-header,
+    .notion-nav-header,
+    .notion-aside,          /* 👈 우측 목차/최신글 사이드바 숨김 */
+    .notion-search,
+    [class*="footer"],      /* 👈 styles.module.css의 푸터 클래스(해시) 대응 */
+    [class*="logo"] {       /* 👈 styles.module.css의 로고 클래스(해시) 대응 */
+      display: none !important;
+    }
+  
+    /* 2. 본문 영역을 전체 너비로 확장하고 불필요한 좌우 여백 초기화 */
+    main,
+    .notion-page,
+    .notion-page-content-has-aside,
+    .notion-page-content-inner {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  
+    /* 3. 배경색/배경 이미지 강제 출력 (콜아웃 배경색, 커버 이미지 유지) */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  
+    /* 4. 브라우저 인쇄 기본 여백 (PDF 여백 깔끔하게 설정) */
+    @page {
+      margin: 1cm;
+    }
+  }
