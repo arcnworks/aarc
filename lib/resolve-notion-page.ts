@@ -93,6 +93,8 @@ export async function resolveNotionPage(
     if (recordMap.space) delete recordMap.space;
   }
 
+  
+
   const props = { site, recordMap, pageId };
   return { ...props, ...(await acl.pageAcl(props)) };
 }

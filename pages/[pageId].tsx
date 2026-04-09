@@ -1,11 +1,8 @@
 import * as React from 'react';
 import { GetStaticProps } from 'next';
 import Script from 'next/script'; 
-import { 
-  isDev, 
-  domain, 
-  pageUrlOverrides 
-} from 'lib/config';
+import { useRouter } from 'next/router';
+import { isDev, domain, pageUrlOverrides } from 'lib/config';
 import { resolveNotionPage } from 'lib/resolve-notion-page';
 import { PageProps as BasePageProps, Params } from 'lib/types';
 import { NotionPage } from 'components';
@@ -101,15 +98,56 @@ function generateMeta(page: any, pageId: string) {
 
 export default function NotionDomainDynamicPage(props: PageProps) {
   const { page, pageId, recordMap } = props;
-  
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // 1. 히스토리 생성 원천 가드: 동일 주소나 분석 스크립트의 중복 기록 생성을 차단합니다.
+    const originalPushState = window.history.pushState;
+    window.history.pushState = function (state, title, url) {
+      const currentPath = window.location.pathname;
+      const targetUrl = url ? url.toString() : '';
+
+      const isAnalytics = targetUrl.includes('gtm.js') || targetUrl.includes('google-analytics');
+      const isDuplicate = targetUrl === currentPath || (pageId && targetUrl.includes(pageId));
+
+      if (isAnalytics || isDuplicate) {
+        // 새 기록을 쌓지 않고 기존 기록을 덮어씁니다 (뒤로가기 덫 방지)
+        return window.history.replaceState(state, title, url);
+      }
+      return originalPushState.apply(this, [state, title, url]);
+    };
+
+    // 2. 라우터 스택 가드: 뒤로가기 시 주소가 변하지 않는 '유령 스택'을 감지하면 즉시 추가 점프합니다.
+    router.beforePopState(({ as }) => {
+      if (as === router.asPath) {
+        // 주소가 같은 제자리 이동일 경우, 브라우저에게 한 번 더 뒤로 가라고 명령합니다.
+        window.history.back();
+        return false;
+      }
+      return true;
+    });
+
+    return () => {
+      window.history.pushState = originalPushState;
+      router.beforePopState(() => true);
+    };
+  }, [pageId, router]);
+
   if (!recordMap) return null;
 
-  const meta = generateMeta(page, pageId);
-  
+  // 기존 generateMeta 함수 결과값 사용
+  const meta = (props as any).meta || { title: '', description: '', image: '', url: '' };
+
   return (
     <>
       <Meta title={meta.title} description={meta.description} image={meta.image} url={meta.url} />
-      <Script src="https://tally.so/widgets/embed.js" strategy="lazyOnload" />
+      {/* 분석 스크립트가 실행되어도 위의 가드가 히스토리 오염을 막아줍니다. */}
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=G-D4L1068X6F`}
+        strategy="afterInteractive"
+      />
       <NotionPage {...props} />
     </>
   );
