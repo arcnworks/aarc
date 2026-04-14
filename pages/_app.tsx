@@ -41,87 +41,124 @@ const pretendard = localFont({
 /* ---------------------------------------------------------
    2. Bootstrap: 시스템 설정 및 글로벌 클릭 인터셉터
    --------------------------------------------------------- */
-const Bootstrap = () => {
-  const [preferences] = useRecoilState(preferencesStore);
-  const router = useRouter();
+   const Bootstrap = () => {
+    const [preferences] = useRecoilState(preferencesStore);
+    const router = useRouter();
+  
+    // [공정 1] 스크롤 복원 및 페이지 뷰 트래킹 (AaRC 고도화 스크롤 엔진)
+  // 💡 URL별 스크롤 위치를 기억할 전역 캐시 (컴포넌트 외부에 선언하거나 useRef 사용 권장)
+  const scrollCache = React.useRef<Record<string, number>>({});
 
-  // [공정 1] 스크롤 복원 및 페이지 뷰 트래킹
   useEffect(() => {
+    // 1. 브라우저의 자동 복원 기능을 수동(manual)으로 설정하여 우리가 직접 통제합니다.
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
 
-    function onRouteChangeComplete() {
+    // 2. 페이지를 떠나기 직전의 스크롤 위치를 기록합니다.
+    const handleRouteChangeStart = () => {
+      scrollCache.current[router.asPath] = window.scrollY;
+    };
+
+    // 3. 페이지 로드가 완료되었을 때 복원 처리를 수행합니다.
+    const handleRouteChangeComplete = (url: string) => {
       if (posthogId) posthog.capture('$pageview');
-      window.scrollTo(0, 0); 
-    }
 
-    if (posthogId) posthog.init(posthogId, posthogConfig);
-    router.events.on('routeChangeComplete', onRouteChangeComplete);
+      const savedPosition = scrollCache.current[url];
+      
+      if (savedPosition !== undefined) {
+        // [뒤로가기 상황] 
+        // 노션 콘텐츠가 렌더링되고 motion.div 애니메이션이 진행되는 시간을 고려하여 
+        // 150ms 정도의 지연 후 저장된 위치로 스크롤을 복원합니다.
+        setTimeout(() => {
+          window.scrollTo({ top: savedPosition, behavior: 'instant' });
+        }, 150); 
+      } else {
+        // [새 페이지 이동 상황] 최상단으로 이동
+        window.scrollTo(0, 0);
+      }
+    };
 
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+
+    // 루트 페이지 전용 클래스 관리
     if (router.pathname === '/') document.body.classList.add('is-root-page');
     else document.body.classList.remove('is-root-page');
 
     return () => {
-      router.events.off('routeChangeComplete', onRouteChangeComplete);
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
     };
-  }, [router.events, router.pathname]);
-
-  // [공정 2] 🚨 글로벌 하이퍼링크 인터셉터 (Loading.tsx 트리거용)
-  useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest('a'); // 클릭된 요소 주변의 <a> 태그를 찾습니다.
-
-      if (
-        anchor && 
-        anchor.href && 
-        anchor.target !== '_blank' && 
-        !e.defaultPrevented && 
-        !e.metaKey && !e.ctrlKey && !e.shiftKey
-      ) {
-        try {
-          const url = new URL(anchor.href, window.location.origin);
-          // 내부 링크 이동일 때만 작동
-          if (url.origin === window.location.origin && url.pathname !== router.asPath) {
-            e.preventDefault();
-            
-            // 1. 일반 링크를 누를 때도 무적 로딩 신호를 발사합니다.
-            window.dispatchEvent(new Event('trigger-arc-loading'));
-            
-            // 2. 전체 주소(http://...)가 아닌 상대 경로(/blog 등)로 안전하게 이동
-            router.push(url.pathname + url.search + url.hash);
+  }, [router.events, router.pathname, router.asPath]);
+  
+    // [공정 2] 🚨 글로벌 하이퍼링크 인터셉터 (Loading.tsx 트리거용)
+    useEffect(() => {
+      const handleGlobalClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const anchor = target.closest('a'); 
+  
+        if (
+          anchor && 
+          anchor.href && 
+          anchor.target !== '_blank' && 
+          !e.defaultPrevented && 
+          !e.metaKey && !e.ctrlKey && !e.shiftKey
+        ) {
+          try {
+            const url = new URL(anchor.href, window.location.origin);
+            if (url.origin === window.location.origin && url.pathname !== router.asPath) {
+              e.preventDefault();
+              window.dispatchEvent(new Event('trigger-arc-loading'));
+              router.push(url.pathname + url.search + url.hash);
+            }
+          } catch (err) {
+            // URL 파싱 에러 무시
           }
-        } catch (err) {
-          // URL 파싱 에러 무시
         }
+      };
+  
+      window.addEventListener('click', handleGlobalClick);
+      return () => window.removeEventListener('click', handleGlobalClick);
+    }, [router]);
+  
+    // [공정 3] 다크모드 무결성 유지
+    useEffect(() => {
+      if (preferences.isDarkMode) {
+        if (!document.body.classList.contains('dark-mode')) document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
       }
-    };
-
-    window.addEventListener('click', handleGlobalClick);
-    return () => window.removeEventListener('click', handleGlobalClick);
-  }, [router]);
-
-  // [공정 3] 다크모드 무결성 유지
-  useEffect(() => {
-    if (preferences.isDarkMode) {
-      if (!document.body.classList.contains('dark-mode')) document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-  }, [preferences.isDarkMode]);
-
-  // [공정 4] 초기 부트스트랩 및 스크롤바 제어
-  useEffect(() => {
-    bootstrap();
-    const style = document.createElement('style');
-    style.innerHTML = `html { scrollbar-gutter: stable; overflow-y: scroll; }`;
-    document.head.appendChild(style);
-    return () => { if (document.head.contains(style)) document.head.removeChild(style); };
-  }, []);
-
-  return null;
-};
+    }, [preferences.isDarkMode]);
+  
+    // [공정 4] 초기 부트스트랩 및 스크롤바 제어
+    useEffect(() => {
+      bootstrap();
+      const style = document.createElement('style');
+      style.innerHTML = `html { scrollbar-gutter: stable; overflow-y: scroll; }`;
+      document.head.appendChild(style);
+      return () => { if (document.head.contains(style)) document.head.removeChild(style); };
+    }, []);
+  
+    // [공정 5] 🚨 사이트 전체 우클릭 방지 (AaRC 보안 엔진)
+    useEffect(() => {
+      const handleGlobalContextMenu = (e: MouseEvent) => {
+        // 텍스트 입력창이나 텍스트 영역에서는 우클릭을 허용하고 싶을 경우 아래 주석을 해제하세요.
+        /*
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+        */
+        e.preventDefault();
+      };
+  
+      window.addEventListener('contextmenu', handleGlobalContextMenu);
+      return () => {
+        window.removeEventListener('contextmenu', handleGlobalContextMenu);
+      };
+    }, []);
+  
+    return null;
+  };
 
 /* ---------------------------------------------------------
    3. 메인 App 컴포넌트

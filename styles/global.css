@@ -8,6 +8,19 @@
    * {
     box-sizing: border-box;
   }
+
+  /* 🚨 [AaRC 추가] 전역 텍스트 드래그(선택) 스타일 */
+/* 사용자가 마우스로 텍스트를 긁었을 때 검정 배경에 흰색 글자로 표시합니다. */
+::selection {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Firefox 브라우저 대응 */
+::-moz-selection {
+  background-color: #000000;
+  color: #ffffff;
+}
   
   /* 2. 하이퍼링크(a 태그) 기본 스타일 제거 */
   a {
