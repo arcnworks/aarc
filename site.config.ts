@@ -18,7 +18,7 @@ export default siteConfig({
     '과학적 통찰과 인문적 감수성의 공간 이야기. 감정의 건축이 궁금하시다면 감정적인 건축가 아크를 찾아주세요. 느낌의 건축에 대한 이야기를 들려드릴게요. ',
 
   // social usernames (optional)
-  instagram: 'aarc.kr',
+  instagram: 'aarc_kr',
   // twitter: '#',
   //github: '#',
   // linkedin: '#',
