@@ -168,6 +168,7 @@ body:not(.dark-mode) .hasCollectionView { --bg-color: #ffffff; }
   /* --- 내부 요소 디테일 스타일 --- */
   .notion-h2 { font-size: 1.7rem; }
   .notion-h3 { font-size: 1.4rem; }
+  .notion-h4 { font-size: 1.2rem; }
 
   .notion-title {
     text-align: left;
@@ -177,8 +178,8 @@ body:not(.dark-mode) .hasCollectionView { --bg-color: #ffffff; }
     padding-bottom: 12px !important;
   }
 
-  .notion-text { padding: 0.2rem 0; }
-  .notion-hr { margin: 6px 0; }
+  .notion-text { padding: 0.6rem 0.2rem; }
+  .notion-hr { margin: 8px 0; }
 
   .notion-list li {
     padding: 3.5px 0;

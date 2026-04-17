@@ -142,7 +142,8 @@
 
 .notion-h1,
 .notion-h2,
-.notion-h3 {
+.notion-h3,
+.notion-h4 {
   margin-bottom: 0em; /* 제목 아래쪽 여백 설정 */
 }
 

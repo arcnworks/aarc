@@ -106,7 +106,15 @@ export const Block: React.FC<BlockProps> = props => {
 
   const blockId = hideBlockId ? 'notion-block' : `notion-block-${uuidToId(block.id)}`;
 
-  switch (block.type) {
+  // 🚨 [AaRC 디버깅 함정 설치] '아크H4테스트'라는 글씨가 포함된 블록을 찾으면 콘솔에 전체 데이터를 출력합니다.
+  if (block.properties && block.properties.title) {
+    const textContent = getTextContent(block.properties.title);
+    if (textContent.includes("아크H4테스트")) {
+      console.log("🔥 찾았다! H4 블록 데이터 원본:", JSON.parse(JSON.stringify(block)));
+    }
+  }
+
+  switch (block.type as string) {
     case 'collection_view_page':
     // fallthrough
     case 'page':
@@ -271,16 +279,19 @@ export const Block: React.FC<BlockProps> = props => {
         );
       }
 
-    case 'header':
-    // fallthrough
-    case 'sub_header':
-    // fallthrough
-    case 'sub_sub_header': {
-      if (!block.properties) return null;
-
-      const blockColor = block.format?.block_color;
-      const id = uuidToId(block.id);
-      const title = getTextContent(block.properties.title) || `Notion Header ${id}`;
+      case 'header':
+        // fallthrough
+        case 'sub_header':
+        // fallthrough
+        case 'sub_sub_header':
+        // fallthrough
+        // ✅ [AaRC 최종 수정] 진짜 이름인 'header_4'를 등록합니다.
+        case 'header_4': {
+          if (!block.properties) return null;
+    
+          const blockColor = block.format?.block_color;
+          const id = uuidToId(block.id);
+          const title = getTextContent(block.properties.title) || `Notion Header ${id}`;
 
       let indentLevel = tocIndentLevelCache[block.id];
       let indentLevelClass: string;
@@ -306,11 +317,14 @@ export const Block: React.FC<BlockProps> = props => {
       const isH1 = block.type === 'header';
       const isH2 = block.type === 'sub_header';
       const isH3 = block.type === 'sub_sub_header';
+      // ✅ [AaRC 최종 수정] H4 판별 조건도 'header_4'로 변경
+      const isH4 = block.type === 'header_4';
 
       const classNameStr = cs(
         isH1 && 'notion-h notion-h1',
         isH2 && 'notion-h notion-h2',
         isH3 && 'notion-h notion-h3',
+        isH4 && 'notion-h notion-h4',
         blockColor && `notion-${blockColor}`,
         indentLevelClass,
         blockId,
@@ -344,11 +358,18 @@ export const Block: React.FC<BlockProps> = props => {
             {innerHeader}
           </h3>
         );
-      } else {
+      } else if (isH3) {
         headerBlock = (
           <h4 className={classNameStr} data-id={id}>
             {innerHeader}
           </h4>
+        );
+      } else if (isH4) {
+        // ✅ [AaRC 추가] H4는 HTML <h5> 태그로 렌더링
+        headerBlock = (
+          <h5 className={classNameStr} data-id={id}>
+            {innerHeader}
+          </h5>
         );
       }
 
@@ -516,7 +537,7 @@ export const Block: React.FC<BlockProps> = props => {
       if (components.Callout) {
         return <components.Callout block={block} className={blockId} />;
       } else {
-        const status = {
+        const status: Record<string, string> = {
           '⚠️': 'warning',
           '🚧': 'warning',
           '🔴': 'error',
@@ -530,7 +551,7 @@ export const Block: React.FC<BlockProps> = props => {
               'notion-callout',
               block.format?.block_color && `notion-${block.format?.block_color}_co`,
               blockId,
-              status[block.format.page_icon],
+              status[block.format?.page_icon || ''],
             )}
           >
             <PageIcon block={block} />

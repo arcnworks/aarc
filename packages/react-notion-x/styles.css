@@ -434,9 +434,11 @@
   left: 0;
 }
 
+/* ✅ [AaRC 추가] H4 마진 초기화 포함 */
 .notion-title + .notion-h1,
 .notion-title + .notion-h2,
-.notion-title + .notion-h3 {
+.notion-title + .notion-h3,
+.notion-title + .notion-h4 {
   margin-top: 0;
 }
 /* TODO: notion-page-content */
@@ -453,6 +455,10 @@
 .notion-h3 {
   font-size: 1.4em;
  
+}
+/* ✅ [AaRC 추가] H4의 기본 폰트 사이즈 정의 */
+.notion-h4 {
+  font-size: 1.2em;
 }
 
 .notion-h:hover .notion-hash-link {
