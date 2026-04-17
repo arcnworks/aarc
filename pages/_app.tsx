@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import type { AppProps } from 'next/app';
-import localFont from 'next/font/local'; // ✅ Noto_Sans_KR 삭제 (경량화)
+import localFont from 'next/font/local';
 import { useRouter } from 'next/router';
-import Script from 'next/script'; // ✅ 누락된 Script 임포트 추가
+import Head from 'next/head'; // ✅ 구글 애드센스 확인용 Head 임포트
+import Script from 'next/script'; 
 import { GoogleAnalytics } from 'nextjs-google-analytics';
 import axios from 'axios';
 import { motion } from 'framer-motion'; 
@@ -144,13 +145,14 @@ export default function App({ Component, pageProps, router }: AppProps) {
         <SWRConfig value={swrConfig}>
           <Bootstrap />
 
-          {/* 🚨 구글 애드센스 코드 스니펫 주입 (ca-pub-4024008858265935) */}
-          <Script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4024008858265935"
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
+          {/* ✅ 애드센스 소유권 확인을 위해 Head 태그 내부에 표준 script 주입 */}
+          <Head>
+            <script
+              async
+              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4024008858265935"
+              crossOrigin="anonymous"
+            />
+          </Head>
 
           <GoogleAnalytics trackPageViews />
           <Loading />
