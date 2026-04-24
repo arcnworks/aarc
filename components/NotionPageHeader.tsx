@@ -112,28 +112,29 @@ export const NotionPageHeader: React.FC<{ block: types.CollectionViewPageBlock |
               );
             }).filter(Boolean)}
 
-            {/* 2. ✅ 다국어 지구본 버튼 */}
+            {/* 2. ✅ 다국어 지구본 버튼 (블랙 채우기 간섭 완벽 차단 및 스트로크 조절) */}
             <div 
               className={cs('breadcrumb', 'button', 'arc-translate-wrapper')} 
               onClick={handleGlobeClick}
             >
               <div className="arc-translate-btn" title="Language / 번역">
                 <svg 
-                  stroke="currentColor" 
-                  fill="currentColor" 
-                  strokeWidth="0" 
                   viewBox="0 0 512 512" 
+                  height="1em"
+                  width="1em"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path 
                     fill="none" 
+                    stroke="currentColor"
                     strokeLinecap="round" 
                     strokeMiterlimit="10" 
-                    strokeWidth="20" 
+                    strokeWidth="24" 
                     d="M256 48C141.13 48 48 141.13 48 256s93.13 208 208 208 208-93.13 208-208S370.87 48 256 48z"
                   />
                   <path 
                     fill="none" 
+                    stroke="currentColor"
                     strokeLinecap="round" 
                     strokeMiterlimit="10" 
                     strokeWidth="16" 
@@ -141,6 +142,7 @@ export const NotionPageHeader: React.FC<{ block: types.CollectionViewPageBlock |
                   />
                   <path 
                     fill="none" 
+                    stroke="currentColor"
                     strokeLinecap="round" 
                     strokeMiterlimit="10" 
                     strokeWidth="16" 
