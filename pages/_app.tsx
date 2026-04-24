@@ -3,8 +3,7 @@ import { useEffect } from 'react';
 import type { AppProps } from 'next/app';
 import localFont from 'next/font/local';
 import { useRouter } from 'next/router';
-import Head from 'next/head'; // ✅ 구글 애드센스 확인용 Head 임포트
-import Script from 'next/script'; 
+import Head from 'next/head'; 
 import { GoogleAnalytics } from 'nextjs-google-analytics';
 import axios from 'axios';
 import { motion } from 'framer-motion'; 
@@ -25,9 +24,6 @@ import '~/styles/custom/index.scss';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 
-/* ---------------------------------------------------------
-   1. 폰트 및 글로벌 규격 설정
-   --------------------------------------------------------- */
 const pretendard = localFont({
   src: [
     { path: '../public/fonts/pretendard/Pretendard-Regular.subset.woff2', weight: '400' },
@@ -37,41 +33,24 @@ const pretendard = localFont({
   display: 'swap'
 });
 
-/* ---------------------------------------------------------
-   2. Bootstrap: 시스템 설정 및 글로벌 클릭 인터셉터
-   --------------------------------------------------------- */
 const Bootstrap = () => {
   const [preferences] = useRecoilState(preferencesStore);
   const router = useRouter();
-
-  // [공정 1] 스크롤 복원 및 페이지 뷰 트래킹 (AaRC 고도화 스크롤 엔진)
   const scrollCache = React.useRef<Record<string, number>>({});
 
   useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
 
-    const handleRouteChangeStart = () => {
-      scrollCache.current[router.asPath] = window.scrollY;
-    };
-
+    const handleRouteChangeStart = () => { scrollCache.current[router.asPath] = window.scrollY; };
     const handleRouteChangeComplete = (url: string) => {
       if (posthogId) posthog.capture('$pageview');
       const savedPosition = scrollCache.current[url];
-      
-      if (savedPosition !== undefined) {
-        setTimeout(() => {
-          window.scrollTo({ top: savedPosition, behavior: 'instant' });
-        }, 150); 
-      } else {
-        window.scrollTo(0, 0);
-      }
+      if (savedPosition !== undefined) setTimeout(() => { window.scrollTo({ top: savedPosition, behavior: 'instant' }); }, 150); 
+      else window.scrollTo(0, 0);
     };
 
     router.events.on('routeChangeStart', handleRouteChangeStart);
     router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
     if (router.pathname === '/') document.body.classList.add('is-root-page');
     else document.body.classList.remove('is-root-page');
 
@@ -81,7 +60,6 @@ const Bootstrap = () => {
     };
   }, [router.events, router.pathname, router.asPath]);
 
-  // [공정 2] 글로벌 하이퍼링크 인터셉터
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -101,16 +79,11 @@ const Bootstrap = () => {
     return () => window.removeEventListener('click', handleGlobalClick);
   }, [router]);
 
-  // [공정 3] 다크모드 무결성 유지
   useEffect(() => {
-    if (preferences.isDarkMode) {
-      if (!document.body.classList.contains('dark-mode')) document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
+    if (preferences.isDarkMode) { if (!document.body.classList.contains('dark-mode')) document.body.classList.add('dark-mode'); } 
+    else { document.body.classList.remove('dark-mode'); }
   }, [preferences.isDarkMode]);
 
-  // [공정 4] 초기 부트스트랩 및 스크롤바 제어
   useEffect(() => {
     bootstrap();
     const style = document.createElement('style');
@@ -119,11 +92,8 @@ const Bootstrap = () => {
     return () => { if (document.head.contains(style)) document.head.removeChild(style); };
   }, []);
 
-  // [공정 5] 🚨 사이트 전체 우클릭 방지 (AaRC 보안 엔진)
   useEffect(() => {
-    const handleGlobalContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-    };
+    const handleGlobalContextMenu = (e: MouseEvent) => { e.preventDefault(); };
     window.addEventListener('contextmenu', handleGlobalContextMenu);
     return () => window.removeEventListener('contextmenu', handleGlobalContextMenu);
   }, []);
@@ -131,39 +101,66 @@ const Bootstrap = () => {
   return null;
 };
 
-/* ---------------------------------------------------------
-   3. 메인 App 컴포넌트
-   --------------------------------------------------------- */
-const swrConfig: SWRConfiguration = {
-  fetcher: (url: string) => axios.get(url).then(res => res.data),
-};
+const swrConfig: SWRConfiguration = { fetcher: (url: string) => axios.get(url).then(res => res.data) };
 
 export default function App({ Component, pageProps, router }: AppProps) {
+  
+  // ✅ [AaRC 엔진 모니터링 및 주입] 
+  useEffect(() => {
+    console.log("🟦 [STEP 1] _app.tsx 마운트 완료. 구글 번역 엔진 세팅 시작.");
+
+    // 1. 번역 엔진 초기화 함수
+    (window as any).googleTranslateElementInit = () => {
+      console.log("🟩 [STEP 3] 구글 엔진 스크립트 응답 완료! (googleTranslateElementInit 실행)");
+      try {
+        if ((window as any).google?.translate?.TranslateElement) {
+          new (window as any).google.translate.TranslateElement({
+            pageLanguage: 'ko',
+            includedLanguages: 'en,ja,ru,es,zh-CN',
+            autoDisplay: false
+          }, 'google_translate_element');
+          console.log("🟩 [STEP 4] 구글 번역기 객체 시공 완료! (div#google_translate_element에 삽입됨)");
+        } else {
+          console.error("🟥 [STEP 4 에러] google.translate.TranslateElement 함수를 찾을 수 없습니다.");
+        }
+      } catch(err) {
+        console.error("🟥 [STEP 4 에러] 번역기 생성 중 치명적 오류 발생:", err);
+      }
+    };
+
+    // 2. 엔진 스크립트 강제 삽입
+    const scriptId = 'google-translate-script';
+    if (!document.getElementById(scriptId)) {
+      console.log("🟦 [STEP 2] 스크립트 다운로드 요청 (element.js)");
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      script.onload = () => console.log("🟩 [STEP 2-1] 스크립트 파일 다운로드 성공!");
+      script.onerror = () => console.error("🟥 [STEP 2-2 에러] 스크립트 다운로드 실패! (광고차단기, VPN, 네트워크 상태를 확인하세요)");
+      document.body.appendChild(script);
+    } else {
+      console.log("🟨 [STEP 2 건너뜀] 스크립트가 이미 존재합니다.");
+    }
+  }, []);
+
   return (
     <RecoilRoot>
       <main className={pretendard.variable}>
         <SWRConfig value={swrConfig}>
           <Bootstrap />
 
-          {/* ✅ 애드센스 소유권 확인을 위해 Head 태그 내부에 표준 script 주입 */}
           <Head>
-            <script
-              async
-              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4024008858265935"
-              crossOrigin="anonymous"
-            />
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4024008858265935" crossOrigin="anonymous" />
           </Head>
 
           <GoogleAnalytics trackPageViews />
           <Loading />
 
-          <motion.div
-            key={router.asPath}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }} 
-            style={{ width: '100%' }}
-          >
+          {/* 🚨 엔진이 자리 잡을 절대 파괴되지 않는 공간 */}
+          <div id="google_translate_element" style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden', zIndex: -100, opacity: 0 }}></div>
+
+          <motion.div key={router.asPath} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} style={{ width: '100%' }}>
             <Component {...pageProps} />
             <SpeedInsights />
             <Analytics />

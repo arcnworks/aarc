@@ -297,8 +297,8 @@ body:not(.dark-mode) .hasCollectionView { --bg-color: #ffffff; }
         display: block; padding: 0.4rem;
 
         .notion-page-title-text {
-          font-size: 1.1rem !important; font-weight: 600 !important; line-height: 1.5 !important; height: 3rem !important; 
-          display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important;
+          font-size: 1.1rem !important; font-weight: 600 !important; line-height: 1.5 !important; height: 5rem !important; 
+          display: -webkit-box !important; -webkit-line-clamp: 3 !important; -webkit-box-orient: vertical !important;
           overflow: hidden !important; white-space: normal !important; text-overflow: ellipsis; margin-bottom: 0.8rem;
           padding-left: 2px !important; border-bottom: none;
         }
@@ -585,6 +585,108 @@ body.dark-mode {
       border-bottom: none;
     }
   }
+
+  /* =========================================================================
+   10. 구글 자동 번역 커스텀 (AaRC Translate) - 자체 UI 통합 및 배너 완벽 차단
+   ========================================================================= */
+/* 🚨 구글 상단 배너 강제 숨김 (가장 강력한 차단) */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+iframe.goog-te-banner-frame { 
+  display: none !important; 
+  visibility: hidden !important; 
+}
+
+/* 신형 구글 번역 팝업 UI 숨김 (최신 버전 대응) */
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
+.skiptranslate > iframe {
+  display: none !important;
+}
+
+/* 🚨 구글 번역 엔진이 페이지 전체를 아래로 밀어내는 현상 완벽 방어 */
+html, body { 
+  top: 0px !important; 
+  margin-top: 0px !important; 
+  position: static !important; 
+}
+
+/* 🚨 구글 번역 시 나타나는 지저분한 원본 말풍선(Tooltip) 및 노란색 하이라이트 완벽 제거 */
+#goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+.goog-tooltip { display: none !important; pointer-events: none !important; }
+.goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+
+/* 🚨 [AaRC 무결성 수정] 아이콘 찌그러짐 완벽 방지 및 표준 규격화 */
+.arc-translate-wrapper {
+  position: relative;
+  z-index: 2000 !important;
+  
+  /* 1. 박스 자체를 테마 버튼과 동일한 고정 강체로 선언 */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  width: 32px !important;  /* 버튼 전체 폭 */
+  height: 32px !important; /* 버튼 전체 높이 */
+  min-width: 32px !important;
+  min-height: 32px !important;
+  flex: 0 0 32px !important; /* 👈 절대 줄어들거나 늘어나지 않음 */
+  
+  margin: 0 2px !important;
+  padding: 0 !important;
+  cursor: pointer;
+}
+
+.arc-translate-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  
+  /* 2. 아이콘 크기를 다른 아이콘(1em)과 동일하게 동기화 */
+  font-size: 18px !important; 
+
+  svg {
+    width: 1em !important;
+    height: 1em !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+    fill: currentColor;
+  }
+}
+
+/* 🚨 [핵심] AaRC 자체 제작 다국어 드롭다운 디자인 */
+.arc-lang-dropdown {
+  position: fixed !important; 
+  top: 60px !important;
+  right: max(20px, var(--aarc-side-padding)) !important;
+  background: var(--bg-color);
+  border: 1px solid rgba(150, 150, 150, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  padding: 8px 0;
+  min-width: 140px;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+}
+
+.arc-lang-item {
+  padding: 12px 20px;
+  font-size: 14px;
+  color: var(--fg-color);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.arc-lang-item:hover {
+  background: rgba(0, 71, 171, 0.08);
+  color: #0047AB;
+  font-weight: 500;
+}
 
 /* =========================================================================
    인쇄용(PDF) 레이아웃 최적화 (Print CSS)
