@@ -63,12 +63,39 @@ export const NotionPageHeader: React.FC<{ block: types.CollectionViewPageBlock |
 
   // ✅ 선택된 언어로 구글 엔진 강제 조작
   const changeLanguage = (langCode: string) => {
-    // 🚨 [원천 해결] 원본 언어(한국어)로 돌아갈 때는 쿠키를 삭제하고 화면을 완전히 리셋합니다.
+    // 🚨 [원천 해결] 원본 언어(한국어)로 돌아갈 때의 로직 보강
     if (langCode === 'ko') {
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${window.location.hostname}; path=/;`;
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${window.location.hostname}; path=/;`;
-      window.location.reload();
+      const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      
+      // 1. 구글 번역기 내부의 '원본 보기' 트리거 (콤보박스 초기화)
+      if (combo) {
+        combo.value = ''; // 구글 번역기의 기본(원본) 상태 값은 빈 문자열입니다.
+        combo.dispatchEvent(new Event('change'));
+      }
+
+      // 2. 완벽한 쿠키 삭제 (서브도메인 문제 해결)
+      const hostname = window.location.hostname;
+      const hostParts = hostname.split('.');
+      
+      // 도메인의 모든 뎁스(depth)에 대해 쿠키 만료 처리 (ex: www.aarc.space -> .www.aarc.space, .aarc.space)
+      for (let i = 0; i < hostParts.length; i++) {
+        const domain = hostParts.slice(i).join('.');
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${domain}; path=/;`;
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${domain}; path=/;`;
+      }
+
+      // 혹시 모를 로컬/세션 스토리지 캐시 방어
+      window.localStorage.removeItem('googtrans');
+      window.sessionStorage.removeItem('googtrans');
+
+      setIsLangMenuOpen(false);
+
+      // 3. 브라우저가 쿠키 삭제를 완전히 반영할 수 있도록 약간의 딜레이 후 새로고침
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+      
       return;
     }
 
