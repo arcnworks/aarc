@@ -74,7 +74,6 @@ const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayou
 
 const LivePreview = ({ code, language, aspectRatio, isDarkMode }: { code: string; language: string; aspectRatio?: string; isDarkMode: boolean }) => {
   const [height, setHeight] = React.useState('150px');
-  const [srcDoc, setSrcDoc] = React.useState('');
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
   useIsomorphicLayoutEffect(() => {
@@ -97,97 +96,94 @@ const LivePreview = ({ code, language, aspectRatio, isDarkMode }: { code: string
     return () => window.removeEventListener('message', handleMessage);
   }, [aspectRatio]);
 
-  React.useEffect(() => {
-    const timeout = setTimeout(() => {
-      let headContent = '<meta charset="utf-8">';
-      let bodyContent = '';
-      const lang = language?.toLowerCase();
-      
-      if (lang === 'html') bodyContent = code;
-      else if (lang === 'css') {
-        headContent += `<style>${code}</style>`;
-        bodyContent = `<div style="width:100%; height:300px;"></div>`;
-      } else if (lang === 'javascript' || lang === 'js') {
-        // 💡 [에러 핸들링] 스크립트 실행 전역에서 발생하는 모든 에러를 포착하도록 구성
-        bodyContent = `
-          <div id="js-output"></div>
-          <script>
-            window.onerror = function(msg, url, line, col, error) {
-              if (window.renderError) window.renderError(error || msg);
-              return false;
-            };
-            try { 
-              ${code} 
-            } catch(e) { 
-              if (window.renderError) window.renderError(e); 
+  // ✅ [핵심 해결책] useEffect의 setTimeout을 제거하고, useMemo로 렌더링 즉시 완성된 HTML을 제공합니다.
+  // 이로 인해 iframe이 로드 후 주소가 변경되는 현상을 막아 '뒤로가기 스택 누적'을 원천 차단합니다.
+  const srcDoc = React.useMemo(() => {
+    let headContent = '<meta charset="utf-8">';
+    let bodyContent = '';
+    const lang = language?.toLowerCase();
+    
+    if (lang === 'html') bodyContent = code;
+    else if (lang === 'css') {
+      headContent += `<style>${code}</style>`;
+      bodyContent = `<div style="width:100%; height:300px;"></div>`;
+    } else if (lang === 'javascript' || lang === 'js') {
+      bodyContent = `
+        <div id="js-output"></div>
+        <script>
+          window.onerror = function(msg, url, line, col, error) {
+            if (window.renderError) window.renderError(error || msg);
+            return false;
+          };
+          try { 
+            ${code} 
+          } catch(e) { 
+            if (window.renderError) window.renderError(e); 
+          }
+        </script>
+      `;
+    }
+
+    const bgColor = isDarkMode ? '#1f1f1f' : 'transparent';
+    const textColor = isDarkMode ? '#ebeced' : '#37352f';
+    const errorBg = isDarkMode ? 'rgba(255, 68, 68, 0.1)' : 'rgba(255, 0, 0, 0.05)';
+    const errorBorder = isDarkMode ? '#ff4444' : '#ff0000';
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          ${headContent}
+          <style>
+            body, html { 
+              margin: 0; padding: 0; overflow: hidden; 
+              background: ${bgColor}; color: ${textColor}; 
+              width: 100%; height: auto !important; 
+              transition: background 0.3s ease, color 0.3s ease;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             }
+            #content-wrapper { display: block; width: 100%; height: auto !important; min-height: 1px; }
+            
+            /* 🚨 프로페셔널 에러 UI 스타일 */
+            #error-boundary {
+              margin: 12px; padding: 16px; border-radius: 8px;
+              border-left: 4px solid ${errorBorder};
+              background: ${errorBg};
+              font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+              font-size: 13px; line-height: 1.5;
+            }
+            .error-title { color: ${errorBorder}; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; }
+            .error-title::before { content: '⚠️'; margin-right: 8px; }
+            .error-msg { white-space: pre-wrap; word-break: break-all; opacity: 0.9; }
+          </style>
+        </head>
+        <body>
+          <div id="content-wrapper">${bodyContent.trim()}</div>
+          <script>
+            const wrapper = document.getElementById('content-wrapper');
+            
+            window.renderError = function(e) {
+              const errorMsg = e.stack || e.message || e;
+              wrapper.innerHTML = \`
+                <div id="error-boundary">
+                  <div class="error-title">Runtime Error</div>
+                  <div class="error-msg">\${errorMsg}</div>
+                </div>
+              \`;
+              sendHeight();
+            };
+
+            function sendHeight() {
+              const slider = wrapper.querySelector('.swiper') || wrapper;
+              const h = Math.ceil(slider.offsetHeight || wrapper.scrollHeight);
+              window.parent.postMessage({ type: 'resize-iframe', height: h }, '*');
+            }
+            window.onload = () => { sendHeight(); setTimeout(sendHeight, 500); };
+            new ResizeObserver(sendHeight).observe(document.body);
           </script>
-        `;
-      }
-
-      const bgColor = isDarkMode ? '#1f1f1f' : 'transparent';
-      const textColor = isDarkMode ? '#ebeced' : '#37352f';
-      const errorBg = isDarkMode ? 'rgba(255, 68, 68, 0.1)' : 'rgba(255, 0, 0, 0.05)';
-      const errorBorder = isDarkMode ? '#ff4444' : '#ff0000';
-
-      setSrcDoc(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            ${headContent}
-            <style>
-              body, html { 
-                margin: 0; padding: 0; overflow: hidden; 
-                background: ${bgColor}; color: ${textColor}; 
-                width: 100%; height: auto !important; 
-                transition: background 0.3s ease, color 0.3s ease;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-              }
-              #content-wrapper { display: block; width: 100%; height: auto !important; min-height: 1px; }
-              
-              /* 🚨 프로페셔널 에러 UI 스타일 */
-              #error-boundary {
-                margin: 12px; padding: 16px; border-radius: 8px;
-                border-left: 4px solid ${errorBorder};
-                background: ${errorBg};
-                font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-                font-size: 13px; line-height: 1.5;
-              }
-              .error-title { color: ${errorBorder}; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; }
-              .error-title::before { content: '⚠️'; margin-right: 8px; }
-              .error-msg { white-space: pre-wrap; word-break: break-all; opacity: 0.9; }
-            </style>
-          </head>
-          <body>
-            <div id="content-wrapper">${bodyContent.trim()}</div>
-            <script>
-              const wrapper = document.getElementById('content-wrapper');
-              
-              // 💡 에러 UI 렌더링 엔진
-              window.renderError = function(e) {
-                const errorMsg = e.stack || e.message || e;
-                wrapper.innerHTML = \`
-                  <div id="error-boundary">
-                    <div class="error-title">Runtime Error</div>
-                    <div class="error-msg">\${errorMsg}</div>
-                  </div>
-                \`;
-                sendHeight();
-              };
-
-              function sendHeight() {
-                const slider = wrapper.querySelector('.swiper') || wrapper;
-                const h = Math.ceil(slider.offsetHeight || wrapper.scrollHeight);
-                window.parent.postMessage({ type: 'resize-iframe', height: h }, '*');
-              }
-              window.onload = () => { sendHeight(); setTimeout(sendHeight, 500); };
-              new ResizeObserver(sendHeight).observe(document.body);
-            </script>
-          </body>
-        </html>
-      `);
-    }, 300);
-    return () => clearTimeout(timeout);
+        </body>
+      </html>
+    `;
   }, [code, language, isDarkMode]);
 
   const cleanRatio = aspectRatio ? aspectRatio.replace(/:/g, '/') : 'auto';
