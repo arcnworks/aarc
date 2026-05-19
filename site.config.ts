@@ -45,7 +45,7 @@ export default siteConfig({
     '/work': '165693fb9417800c8baadf2ba5ea5139',
     '/blog': '165693fb941780fab52fee6442e580bd',
     '/contact': '154693fb9417807b9ae5db9b64489c9a',
-    //'/qna': '20b693fb941780a2bc6df90ce460a026',//
+    '/portfolio': '365693fb9417808798b0d7bd0f8a8731',
     '/category': '155693fb94178076b2c5e73f7d3cd377',
   },
 
