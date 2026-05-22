@@ -183,19 +183,16 @@ export const NotionPageHeader: React.FC<{ block: types.CollectionViewPageBlock |
             <ToggleThemeButton />
             {isSearchEnabled && <Search block={block} title={null} />}
 
-            {/* 4. 모바일 햄버거 메뉴 버튼 */}
-            {navigationLinks?.map((link, index) => {
-              if (link.menuPage === true) {
-                return (
-                  <div key={index} onClick={() => setIsMobileMenuOpen(true)} className={cs(styles.navLink, 'breadcrumb', 'button', 'notion-nav-header-mobile')}>
-                    <svg strokeWidth="0" width="40px" height="20px" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0 0h24v24H0z" fill="none" /><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-                    </svg>
-                  </div>
-                );
-              }
-              return null;
-            }).filter(Boolean)}
+            {/* 4. 모바일 햄버거 메뉴 버튼 (노션 의존성 없는 완전 독립형 컴포넌트 시공) */}
+<div 
+  onClick={() => setIsMobileMenuOpen(true)} 
+  className={cs(styles.navLink, 'breadcrumb', 'button', 'notion-nav-header-mobile')}
+>
+  <svg strokeWidth="0" width="40px" height="20px" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+  </svg>
+</div>
           </div>
         </div>
       </header>

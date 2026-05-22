@@ -70,11 +70,7 @@ export default siteConfig({
       title: '문의하기',
       pageId: '154693fb9417807b9ae5db9b64489c9a',
     },
-    {
-      title: 'Category',
-      pageId: '155693fb94178076b2c5e73f7d3cd377',
-      menuPage: true,
-    },
+    
   ],
   // -------- custom configs  -------------
 
