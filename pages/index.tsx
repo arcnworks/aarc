@@ -22,7 +22,7 @@ export const getStaticProps = async a => {
 
 export default function NotionDomainPage(props) {
   // console.log(props);
-  const title = `감정적인 건축가, 아크(AaRC)`;
+  const title = `공간에 바이브를 담다, 아크(AaRC)`;
 
   return (
     <>

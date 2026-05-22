@@ -5,7 +5,7 @@
  */
 
 .notion-page {
-  padding-bottom: calc(max(5vh, 32px)) !important; /* 페이지 하단에 여백 추가 */
+  padding-bottom: calc(max(0vh, 0px)) !important; /* 페이지 하단에 여백 추가 */
   line-height: 1.65; /* 텍스트 줄 간격 설정 */
 }
 

@@ -560,158 +560,167 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
   }, [recordMap, pageId, router]);
 
   // =========================================================================
-  // ✅ [AaRC v14.3] 슬라이더 엔진 + 보안 우회 내비게이션 수신기
-  // =========================================================================
-  React.useEffect(() => {
-    // 🚀 [AaRC 보안 우회 수신기] Notion 코드 블록 슬라이더의 이동 신호를 처리합니다.
-    const handleSliderMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === 'arc-slider-navigate') {
+// ✅ [AaRC v14.4] 슬라이더 엔진 + 외부 링크 새 창 분기형 보안 우회 수신기
+// =========================================================================
+React.useEffect(() => {
+  // 🚀 [AaRC 보안 우회 수신기] Notion 코드 블록 슬라이더의 이동 신호를 처리합니다.
+  const handleSliderMessage = (event: MessageEvent) => {
+    if (event.data && event.data.type === 'arc-slider-navigate') {
+      const targetUrl = event.data.url;
+
+      // 🔍 [핵심 수정] URL이 http:// 또는 https://로 시작하는 외부 도메인인지 검사
+      if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
+        // 외부 링크는 사용자의 원래 서핑 흐름을 깨지 않도록 새 탭/새 창으로 팝업 오픈
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        // 기존 /work 같은 내부 경로는 기존 기획대로 현재 창 이동 및 로딩 애니메이션 작동
         // 1. 로딩 애니메이션 실행
         window.dispatchEvent(new Event('trigger-arc-loading')); 
         // 2. 부모 창(현재 브라우저) 이동
-        router.push(event.data.url);
+        router.push(targetUrl);
       }
-    };
-
-    // 메시지 리스너 등록
-    window.addEventListener('message', handleSliderMessage);
-
-    // 🛡️ [핵심 1. 비파괴 은폐] 리액트가 관리하는 원본 DOM을 파괴하지 않고, CSS로 살짝 가려주기만 합니다.
-    if (!document.getElementById('arc-slider-safe-css')) {
-      const style = document.createElement('style');
-      style.id = 'arc-slider-safe-css';
-      style.innerHTML = `
-        .arc-slider-applied .notion-callout-text > *:not(.swiper) {
-          display: none !important;
-        }
-      `;
-      document.head.appendChild(style);
     }
+  };
 
-    const timer = setTimeout(() => {
-      const callouts = document.querySelectorAll('.notion-callout');
+  // 메시지 리스너 등록
+  window.addEventListener('message', handleSliderMessage);
 
-      callouts.forEach((callout, index) => {
-        if (callout.classList.contains('arc-slider-applied')) return;
+  // 🛡️ [핵심 1. 비파괴 은폐] 리액트가 관리하는 원본 DOM을 파괴하지 않고, CSS로 살짝 가려주기만 합니다.
+  if (!document.getElementById('arc-slider-safe-css')) {
+    const style = document.createElement('style');
+    style.id = 'arc-slider-safe-css';
+    style.innerHTML = `
+      .arc-slider-applied .notion-callout-text > *:not(.swiper) {
+        display: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
-        const contentWrapper = callout.querySelector('.notion-callout-text');
-        if (!contentWrapper) return;
+  const timer = setTimeout(() => {
+    const callouts = document.querySelectorAll('.notion-callout');
 
-        // 1️⃣ [명령어 스캔]
-        const allText = contentWrapper.textContent || '';
-        const regex = /\[slide(?:\s*[:\|]\s*(\d+))?(?:\s*[:\|]\s*([a-zA-Z0-9\./:]+))?\s*\]/i;
-        const match = allText.match(regex);
+    callouts.forEach((callout, index) => {
+      if (callout.classList.contains('arc-slider-applied')) return;
 
-        if (!match) return;
+      const contentWrapper = callout.querySelector('.notion-callout-text');
+      if (!contentWrapper) return;
 
-        const delay = match[1] ? parseInt(match[1], 10) : 4000;
-        let aspectRatio = match[2] ? match[2].replace(':', '/') : 'auto';
+      // 1️⃣ [명령어 스캔]
+      const allText = contentWrapper.textContent || '';
+      const regex = /\[slide(?:\s*[:\|]\s*(\d+))?(?:\s*[:\|]\s*([a-zA-Z0-9\./:]+))?\s*\]/i;
+      const match = allText.match(regex);
 
-        // 2️⃣ [스와이퍼 뼈대 시공]
-        const swiperContainer = document.createElement('div');
-        swiperContainer.className = `swiper arc-dom-swiper-${index}`;
-        swiperContainer.style.width = '100%';
-        swiperContainer.style.overflow = 'hidden';
-        swiperContainer.style.paddingBottom = '30px';
+      if (!match) return;
 
-        const swiperWrapper = document.createElement('div');
-        swiperWrapper.className = 'swiper-wrapper';
+      const delay = match[1] ? parseInt(match[1], 10) : 4000;
+      let aspectRatio = match[2] ? match[2].replace(':', '/') : 'auto';
+
+      // 2️⃣ [스와이퍼 뼈대 시공]
+      const swiperContainer = document.createElement('div');
+      swiperContainer.className = `swiper arc-dom-swiper-${index}`;
+      swiperContainer.style.width = '100%';
+      swiperContainer.style.overflow = 'hidden';
+      swiperContainer.style.paddingBottom = '30px';
+
+      const swiperWrapper = document.createElement('div');
+      swiperWrapper.className = 'swiper-wrapper';
+
+      if (aspectRatio !== 'auto') {
+        swiperContainer.style.aspectRatio = aspectRatio;
+        swiperWrapper.style.height = '100%'; 
+      }
+
+      // 3️⃣ [핵심 2. DOM 복제] 원본을 뜯어내지 않고, 똑같은 복제본(Clone)을 뜹니다!
+      const rawChildren = Array.from(contentWrapper.children);
+      let validCount = 0;
+
+      rawChildren.forEach(child => {
+        const clonedChild = child.cloneNode(true) as HTMLElement;
+
+        const eraseCommand = (node: Node) => {
+          if (node.nodeType === 3) { 
+            if (node.nodeValue) {
+              node.nodeValue = node.nodeValue.replace(/\[slide[^\]]*\]/gi, '');
+            }
+          } else {
+            node.childNodes.forEach(c => eraseCommand(c));
+          }
+        };
+        eraseCommand(clonedChild);
+
+        if (clonedChild.textContent?.trim() === '' && !clonedChild.querySelector('img, iframe, video')) {
+          return; 
+        }
+
+        validCount++;
+
+        const slide = document.createElement('div');
+        slide.className = 'swiper-slide';
+        slide.style.display = 'flex';
+        slide.style.justifyContent = 'center';
+        slide.style.alignItems = 'center';
+        slide.style.width = '100%';
+        if (aspectRatio !== 'auto') slide.style.height = '100%';
 
         if (aspectRatio !== 'auto') {
-          swiperContainer.style.aspectRatio = aspectRatio;
-          swiperWrapper.style.height = '100%'; 
+          const imgs = clonedChild.querySelectorAll('img');
+          imgs.forEach(img => {
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            let parent = img.parentElement;
+            while (parent && parent !== slide) {
+              parent.style.width = '100%';
+              parent.style.height = '100%';
+              parent.style.pointerEvents = 'none'; // 이미지 자체 클릭 방해 금지
+              parent = parent.parentElement;
+            }
+          });
         }
 
-        // 3️⃣ [핵심 2. DOM 복제] 원본을 뜯어내지 않고, 똑같은 복제본(Clone)을 뜹니다!
-        const rawChildren = Array.from(contentWrapper.children);
-        let validCount = 0;
-
-        rawChildren.forEach(child => {
-          const clonedChild = child.cloneNode(true) as HTMLElement;
-
-          const eraseCommand = (node: Node) => {
-            if (node.nodeType === 3) { 
-              if (node.nodeValue) {
-                node.nodeValue = node.nodeValue.replace(/\[slide[^\]]*\]/gi, '');
-              }
-            } else {
-              node.childNodes.forEach(c => eraseCommand(c));
-            }
-          };
-          eraseCommand(clonedChild);
-
-          if (clonedChild.textContent?.trim() === '' && !clonedChild.querySelector('img, iframe, video')) {
-            return; 
-          }
-
-          validCount++;
-
-          const slide = document.createElement('div');
-          slide.className = 'swiper-slide';
-          slide.style.display = 'flex';
-          slide.style.justifyContent = 'center';
-          slide.style.alignItems = 'center';
-          slide.style.width = '100%';
-          if (aspectRatio !== 'auto') slide.style.height = '100%';
-
-          if (aspectRatio !== 'auto') {
-            const imgs = clonedChild.querySelectorAll('img');
-            imgs.forEach(img => {
-              img.style.width = '100%';
-              img.style.height = '100%';
-              img.style.objectFit = 'cover';
-              let parent = img.parentElement;
-              while (parent && parent !== slide) {
-                parent.style.width = '100%';
-                parent.style.height = '100%';
-                parent = parent.parentElement;
-              }
-            });
-          }
-
-          slide.appendChild(clonedChild);
-          swiperWrapper.appendChild(slide);
-        });
-
-        if (validCount === 0) return;
-
-        const pagination = document.createElement('div');
-        pagination.className = 'swiper-pagination';
-        const prevBtn = document.createElement('div');
-        prevBtn.className = 'swiper-button-prev';
-        const nextBtn = document.createElement('div');
-        nextBtn.className = 'swiper-button-next';
-
-        swiperContainer.appendChild(swiperWrapper);
-        swiperContainer.appendChild(pagination);
-        swiperContainer.appendChild(prevBtn);
-        swiperContainer.appendChild(nextBtn);
-        
-        contentWrapper.appendChild(swiperContainer);
-
-        const isLoop = validCount >= 2; 
-        const autoplayConfig = delay > 0 ? { delay: delay, disableOnInteraction: false } : false;
-
-        new Swiper(`.arc-dom-swiper-${index}`, {
-          modules: [Navigation, Pagination, Autoplay],
-          navigation: { nextEl: nextBtn, prevEl: prevBtn },
-          pagination: { el: pagination, clickable: true },
-          autoplay: autoplayConfig,
-          loop: isLoop,
-          spaceBetween: 20
-        });
-
-        callout.classList.add('arc-slider-applied');
+        slide.appendChild(clonedChild);
+        swiperWrapper.appendChild(slide);
       });
-    }, 1000);
 
-    return () => {
-      // 💡 클린업: 이벤트 리스너와 타이머를 모두 해제합니다.
-      window.removeEventListener('message', handleSliderMessage);
-      clearTimeout(timer);
-    };
-  }, [recordMap, router.asPath, router]);
+      if (validCount === 0) return;
 
+      const pagination = document.createElement('div');
+      pagination.className = 'swiper-pagination';
+      const prevBtn = document.createElement('div');
+      prevBtn.className = 'swiper-button-prev';
+      const nextBtn = document.createElement('div');
+      nextBtn.className = 'swiper-button-next';
+
+      swiperContainer.appendChild(swiperWrapper);
+      swiperContainer.appendChild(pagination);
+      swiperContainer.appendChild(prevBtn);
+      swiperContainer.appendChild(nextBtn);
+      
+      contentWrapper.appendChild(swiperContainer);
+
+      const isLoop = validCount >= 2; 
+      const autoplayConfig = delay > 0 ? { delay: delay, disableOnInteraction: false } : false;
+
+      new Swiper(`.arc-dom-swiper-${index}`, {
+        modules: [Navigation, Pagination, Autoplay],
+        navigation: { nextEl: nextBtn, prevEl: prevBtn },
+        pagination: { el: pagination, clickable: true },
+        autoplay: autoplayConfig,
+        loop: isLoop,
+        spaceBetween: 20
+      });
+
+      callout.classList.add('arc-slider-applied');
+    });
+  }, 1000);
+
+  return () => {
+    // 💡 클린업: 이벤트 리스너와 타이머를 모두 해제합니다.
+    window.removeEventListener('message', handleSliderMessage);
+    clearTimeout(timer);
+  };
+}, [recordMap, router.asPath, router]);
 
   // =========================================================================
   // [기능 5] NotionRenderer용 컴포넌트 매핑 (순정 상태 유지 + 커스텀 기능 복구)
