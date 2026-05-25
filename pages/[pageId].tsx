@@ -85,7 +85,7 @@ export async function getStaticPaths() {
 
 // SEO 데이터(제목, 설명, 썸네일) 생성 함수
 function generateMeta(page: any, pageId: string) {
-  const title = page?.properties?.title?.[0]?.[0] || 'ARC - Architecture and Research in Cultures';
+  const title = page?.properties?.title?.[0]?.[0] || 'AaRC - Architecture and Research in Cultures';
   const description = page?.properties?.['ZbRi']?.[0]?.[0] || 'ARC(아크)는 과학적 통찰과 인문적 감수성으로 감정의 공간을 이야기 합니다.';
   const image = page?.cover?.external?.url || page?.cover?.file?.url || 'https://aarc.kr/og-image.png';
   
