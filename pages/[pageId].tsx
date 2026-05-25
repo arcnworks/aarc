@@ -70,7 +70,7 @@ export const getStaticProps: GetStaticProps<PageProps, Params> = async (context)
         page: pageBlock || null,
         meta 
       })), 
-      revalidate: 86400 // 24시간(86400초) 주기: Vercel ISR Writes 절감
+      revalidate: 600 // 24시간(86400초) 주기: Vercel ISR Writes 절감
     };
   } catch (err) {
     console.error(`[ARC ISR Error] ${rawPageId}:`, err);
