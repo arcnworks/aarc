@@ -41,8 +41,8 @@ export async function getPage(
     ...options,
     // --- [수정 및 추가] ---
     fetchCollections: true,     // 모든 데이터베이스 뷰 데이터를 가져옵니다.
-    chunkLimit: 50,            // 한 번에 가져올 데이터 양을 늘립니다 (탭 전환 시 유리).
-    fetchMissingBlocks: false,   // 누락된 블록을 보충합니다.
+    chunkLimit: 100,           // 한 번에 가져올 블록 수 (기본값 100 복원)
+    fetchMissingBlocks: true,  // ✅ [수정] 누락된 블록 보충 활성화 - 토글 내용 표시에 필수
     signFileUrls: false 
     // -----------------------
   });

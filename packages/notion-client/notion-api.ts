@@ -602,7 +602,6 @@ public async getUsers(userIds: string[], gotOptions?: OptionsOfJSONResponseBody)
       excludedBlockIds: [],
     };
 
-    console.log("Fetch Request Body:", body);
     return this.fetch<notion.SearchResults>({
       endpoint: 'search',
       body,

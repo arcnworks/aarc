@@ -279,7 +279,10 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
           const item = recordMap[category][key];
           
           // 1. 일반 블록 및 설정 데이터 해제
-          if (item && item.value && item.value.value) {
+          // ✅ [수정] block 카테고리는 언래핑 대상에서 제외합니다.
+          // react-notion-x가 block 데이터를 직접 참조하므로,
+          // 이중 언래핑 시 toggle·checkbox·quote·수식 등의 블록 구조가 파괴됩니다.
+          if (category !== 'block' && item && item.value && item.value.value) {
             item.value = item.value.value;
           }
           
@@ -723,15 +726,70 @@ React.useEffect(() => {
 }, [recordMap, router.asPath, router]);
 
   // =========================================================================
+  // 💡 [AaRC 최종 완성형 패치] 모든 URL 형태(전체 도메인, 상대경로 등)를 완벽 대응하는 블록 변환기
+  // =========================================================================
+  const transformNotionLink = React.useCallback((url: string) => {
+    if (!url || typeof url !== 'string') return url;
+
+    // 1. 쿼리 매개변수와 해시를 제외한 순수 경로 부분 추출
+    const pathname = url.split(/[?#]/)[0];
+    
+    // 2. 🎯 [정밀 정규식] 전체 URL 포맷이나 서브 디렉토리 포맷에 구애받지 않고 
+    // 주소 내부에 숨겨진 32자리 순수 노션 블록 ID 패턴을 완벽하게 추출해 냅니다.
+    const match = pathname.match(/[a-f0-9]{32}/i);
+    if (!match) return url;
+
+    const cleanId = match[0].toLowerCase();
+
+    // 3. 하이픈(-) 유무 분기 문제를 차단하기 위해 recordMap.block의 모든 키를 압축 포맷으로 전수 조사합니다.
+    const targetKey = Object.keys(recordMap?.block || {}).find(
+      (key) => key.replace(/-/g, '').toLowerCase() === cleanId
+    );
+    
+    // ✅ value가 이중 래핑된 경우까지 대응
+    const rawEntry = targetKey ? recordMap.block[targetKey] : null;
+    const blockValue = rawEntry?.value?.value ?? rawEntry?.value ?? null;
+
+    if (blockValue) {
+      // 독립적인 진짜 하위 페이지인 경우: 정상 라우팅
+      if (blockValue.type === 'page' || blockValue.type === 'collection_view_page') {
+        return url;
+      }
+      // 인페이지 블록(toggle, header 등): '#id'로 치환해 Next.js 프리페치/라우팅 차단
+      return `#${cleanId}`;
+    }
+
+    // recordMap에 없는 블록 ID → 진짜 sub-page일 수 있으므로 원본 URL 유지
+    return url;
+  }, [recordMap]);
+
+  // =========================================================================
   // [기능 5] NotionRenderer용 컴포넌트 매핑 (순정 상태 유지 + 커스텀 기능 복구)
   // =========================================================================
   const components = React.useMemo(() => ({
-    // 🚨 이미지 이동은 전역 로직에서 처리하므로 가장 순수한 기본 컴포넌트만 연결합니다.
     nextImage: Image,
 
-    // 🚨 nextLink 로직 복구
+    // 🚨 [핵심 수정] react-notion-x 렌더러가 내부 링크 생성을 위해 조회하는 
+    // 세 가지 후보군 키(Link, nextLink, PageLink) 전체를 완벽하게 차단막으로 감싸 맵핑합니다.
+    Link: ({ href, as, ...rest }: any) => {
+      const rawUrl = as !== undefined ? as : href;
+      const targetUrl = transformNotionLink(rawUrl || '#');
+
+      // 🎯 변환된 결과가 해시(#) 링크일 경우, Next.js의 <Link> 컴포넌트가 아닌 
+      // 순수 HTML <a> 태그로 리턴하여 Next.js가 백그라운드 프리페치(.json 404)를 시도하는 행위를 원천 봉쇄합니다.
+      if (targetUrl.startsWith('#')) {
+        return <a href={targetUrl} {...rest} />;
+      }
+      return <Link href={targetUrl} {...rest} />;
+    },
+
     nextLink: ({ href, as, ...rest }: any) => {
-      const targetUrl = as !== undefined ? (as || '#') : (href || '#');
+      const rawUrl = as !== undefined ? as : href;
+      const targetUrl = transformNotionLink(rawUrl || '#');
+
+      if (targetUrl.startsWith('#')) {
+        return <a href={targetUrl} {...rest} />;
+      }
       return <Link href={targetUrl} {...rest} />;
     },
 
@@ -752,13 +810,11 @@ React.useEffect(() => {
           dynamicRatio = match[1].replace(/\s/g, ''); 
         }
     
-        // 💡 [수정] isDarkMode를 LivePreview로 전달합니다.
         return <LivePreview key={codeText} code={codeText} language={language} aspectRatio={dynamicRatio} isDarkMode={isDarkMode} />;
       }
       return <Code {...props} />;
     },
 
-  
     Collection, 
     collection: Collection, 
     Equation,
@@ -776,24 +832,29 @@ React.useEffect(() => {
       } catch (e) { return ''; }
     },
     
-    propertyLastEditedTimeValue: ({ block, pageHeader }, defaultFn: any) => 
+    propertyLastEditedTimeValue: ({ block, pageHeader }: any, defaultFn: any) => 
       (pageHeader && block?.last_edited_time) ? `Last updated ${formatDate(block?.last_edited_time, { month: 'long' })}` : defaultFn(),
       
-    propertyDateValue: ({ data, schema }, defaultFn: any) => {
+    propertyDateValue: ({ data, schema }: any, defaultFn: any) => {
       if (schema?.name?.includes('연도') && data?.[0]?.[1]?.[0]?.[1]?.start_date) {
           return data?.[0]?.[1]?.[0]?.[1]?.start_date.split('-')[0];
       }
       return defaultFn();
     },
     
-    propertyTextValue: ({ schema, pageHeader }, defaultFn: any) => 
+    propertyTextValue: ({ schema, pageHeader }: any, defaultFn: any) => 
       (pageHeader && schema?.name?.toLowerCase() === 'author') ? <b>{defaultFn()}</b> : defaultFn(),
       
     PageLink: ({ children, href, as, ...rest }: any) => {
-      const targetUrl = as !== undefined ? (as || '#') : (href || '#');
+      const rawUrl = as !== undefined ? as : href;
+      const targetUrl = transformNotionLink(rawUrl || '#');
+
+      if (targetUrl.startsWith('#')) {
+        return <a href={targetUrl} {...rest}>{children}</a>;
+      }
       return <Link href={targetUrl} {...rest}>{children}</Link>;
     },
-  }), [site, draftView, recordMap]);
+  }), [site, draftView, recordMap, transformNotionLink, isDarkMode]);
   
   
 
@@ -852,6 +913,17 @@ React.useEffect(() => {
 
         /* 아이콘 제거 */
         .notion-collection-view-type-icon { display: none !important; }
+
+
+        /* 🚨 [여기 추가] 토글 버튼 클릭 시 백그라운드 404 라우팅 에러 방어 */
+        .notion-toggle > summary {
+          position: relative;
+          z-index: 10; 
+        }
+
+        .notion-toggle a.notion-hash-link {
+          pointer-events: none !important; 
+        }
 
       `}} />
 

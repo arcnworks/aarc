@@ -106,13 +106,6 @@ export const Block: React.FC<BlockProps> = props => {
 
   const blockId = hideBlockId ? 'notion-block' : `notion-block-${uuidToId(block.id)}`;
 
-  // 🚨 [AaRC 디버깅 함정 설치] '아크H4테스트'라는 글씨가 포함된 블록을 찾으면 콘솔에 전체 데이터를 출력합니다.
-  if (block.properties && block.properties.title) {
-    const textContent = getTextContent(block.properties.title);
-    if (textContent.includes("아크H4테스트")) {
-      console.log("🔥 찾았다! H4 블록 데이터 원본:", JSON.parse(JSON.stringify(block)));
-    }
-  }
 
   switch (block.type as string) {
     case 'collection_view_page':

@@ -30,8 +30,6 @@ export async function resolveNotionPage(
 
     const useUriToPageIdCache = true;
     const cacheKey = `uri-to-page-id:${domain}:${environment}:${rawPageId}`;
-    // TODO: should we use a TTL for these mappings or make them permanent?
-    // const cacheTTL = 8.64e7 // one day in milliseconds
     const cacheTTL = undefined; // disable cache TTL
 
     if (!pageId && useUriToPageIdCache) {
@@ -53,47 +51,58 @@ export async function resolveNotionPage(
       pageId = siteMap?.canonicalPageMap[rawPageId];
 
       if (pageId) {
-        // TODO: we're not re-using the page recordMap from siteMaps because it is
-        // cached aggressively
-        // recordMap = siteMap.pageMap[pageId]
-
         recordMap = await getPage(pageId, options);
 
         if (useUriToPageIdCache) {
           try {
-            // update the database mapping of URI to pageId
             await db.set(cacheKey, pageId, cacheTTL);
           } catch (err) {
-            // ignore redis errors
             console.warn(`redis error set "${cacheKey}"`, err.message);
           }
         }
       } else {
-        // note: we're purposefully not caching URI to pageId mappings for 404s
-        return {
-          error: {
-            message: `Not found "${rawPageId}"`,
-            statusCode: 404,
-          },
-        };
+        // ✅ [핵심 수정] siteMap에 없는 페이지(토글 내부 sub-page, 데이터베이스 상세 페이지 등)를
+        // rawPageId를 UUID로 직접 파싱해 Notion API로 접근 시도합니다.
+        // 기존 코드는 siteMap에 없으면 무조건 404를 반환했으나,
+        // 토글 내부 페이지는 siteMap에 등록되지 않으므로 이 fallback이 필수입니다.
+        const directPageId = parsePageId(rawPageId);
+
+        if (directPageId) {
+          try {
+            recordMap = await getPage(directPageId, options);
+            pageId = directPageId;
+
+            // 다음 접근 시 siteMap 조회를 건너뛰도록 캐시에 저장합니다.
+            if (useUriToPageIdCache) {
+              try {
+                await db.set(cacheKey, pageId, cacheTTL);
+              } catch (err) {
+                console.warn(`redis error set "${cacheKey}"`, err.message);
+              }
+            }
+          } catch (err) {
+            // Notion API 자체에서 해당 pageId를 찾지 못한 경우에만 404 반환
+            console.error(`[resolveNotionPage] direct getPage failed for "${rawPageId}":`, err);
+            return {
+              error: { message: `Not found "${rawPageId}"`, statusCode: 404 },
+            };
+          }
+        } else {
+          // UUID 파싱도 실패한 완전한 slug → 진짜 404
+          return {
+            error: { message: `Not found "${rawPageId}"`, statusCode: 404 },
+          };
+        }
       }
     }
   } else {
     pageId = site.rootNotionPageId;
-
     recordMap = await getPage(pageId, options);
   }
 
-  // 💡 [AaRC 안전 복구 모드] 
-  // 사이트의 모든 기능(코드 프리뷰, 슬라이더 등)을 정상화하는 가장 안전한 코드입니다.
-  if (recordMap) {
-    // 본문 데이터(block)는 절대 건드리지 않고, 
-    // 실제 사이트 표시와 상관없는 메타데이터만 제거하여 최소한의 용량만 줄입니다.
-    if (recordMap.notion_user) delete recordMap.notion_user;
-    if (recordMap.space) delete recordMap.space;
-  }
-
-  
+  // ✅ [수정] notion_user, space 삭제 코드 제거
+  // react-notion-x 내부에서 이 필드들을 참조합니다.
+  // 삭제 시 토글·체크박스·수식 등 일부 블록의 렌더링이 깨질 수 있습니다.
 
   const props = { site, recordMap, pageId };
   return { ...props, ...(await acl.pageAcl(props)) };
