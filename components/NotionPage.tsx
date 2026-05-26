@@ -513,6 +513,9 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
           const img = wrapper.querySelector('img');
           if (!img || !img.parentElement) return;
 
+          // ✅ 이미 <a> 태그 안에 있는 이미지는 건너뜀 (로고 등 기존 링크 보호)
+          if (img.closest('a')) return;
+
           // ✅ 어제 성공했던 방식: <a> 태그를 생성해 이미지를 안에 넣습니다.
           const a = document.createElement('a');
           a.href = link;
@@ -551,7 +554,7 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
 
           wrapper.dataset.arcLinkApplied = 'true';
         });
-      });;
+      });
     };
 
     const observer = new MutationObserver(processImages);
@@ -561,7 +564,6 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
 
     return () => { observer.disconnect(); clearInterval(interval); };
   }, [recordMap, pageId, router]);
-
   // =========================================================================
 // ✅ [AaRC v14.4] 슬라이더 엔진 + 외부 링크 새 창 분기형 보안 우회 수신기
 // =========================================================================
