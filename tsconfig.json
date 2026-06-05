@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2016",
+    "ignoreDeprecations": "6.0", /* 🌟 구버전 옵션 경고 숨기기 수신기 작동 */
     "lib": [
       "dom",
       "dom.iterable",
@@ -25,7 +26,7 @@
     "paths": {
       "~/*": [
         "./*"
-      ],
+      ]
     },
     "incremental": true
   },

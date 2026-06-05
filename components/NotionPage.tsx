@@ -44,15 +44,18 @@ const CustomMermaid = dynamic(() => {
         const textNode = document.createTextNode(code);
         ref.current.appendChild(textNode);
         import('mermaid').then((m) => {
-          const mermaidAPI = m.default || m;
-          mermaidAPI.initialize({ 
-            startOnLoad: false, 
-            theme: 'default', 
-            securityLevel: 'loose', 
-            flowchart: { useMaxWidth: true, htmlLabels: true } 
-          });
-          mermaidAPI.run({ nodes: [ref.current!] }).catch((e) => console.error('Mermaid error', e));
+        // m.default 또는 m을 any로 캐스팅하여 구조적 타입 충돌 우회
+        const mermaidAPI = (m.default || m) as any;
+        
+        mermaidAPI.initialize({ 
+          startOnLoad: false, 
+          theme: 'default', 
+          securityLevel: 'loose', 
+          flowchart: { useMaxWidth: true, htmlLabels: true } 
         });
+        
+        mermaidAPI.run({ nodes: [ref.current!] }).catch((e) => console.error('Mermaid error', e));
+      });
       }, [code]);
       return (
         <div className="mermaid-wrapper" style={{ width: '100%', margin: '2.5rem 0' }}>
@@ -188,26 +191,34 @@ const LivePreview = ({ code, language, aspectRatio, isDarkMode }: { code: string
 
   const cleanRatio = aspectRatio ? aspectRatio.replace(/:/g, '/') : 'auto';
 
-  return (
-    <div style={{ width: '100%', margin: '0', overflow: 'hidden' }}>
-      <iframe
-        ref={iframeRef}
-        srcDoc={srcDoc}
-        title="preview-output"
-        sandbox="allow-scripts"
-        frameBorder="0"
-        style={{ 
-          display: 'block', 
-          width: '100%', 
-          aspectRatio: aspectRatio ? cleanRatio : 'auto',
-          height: aspectRatio ? 'auto' : height, 
-          border: 'none', 
-          background: 'transparent', 
-          transition: 'height 0.2s ease'
-        }}
-      />
-    </div>
-  );
+  // NotionPage.tsx 내부의 LivePreview 컴포넌트 return 부분 수정
+
+return (
+  <div style={{ width: '100%', margin: '0', overflow: 'hidden' }}>
+    <iframe
+      ref={iframeRef}
+      srcDoc={srcDoc}
+      title="preview-output"
+      /* ✅ allow-same-origin: iframe 내부의 네트워크 요청이 정상 출처(Origin)를 가질 수 있도록 허용
+        ✅ allow-forms, allow-popups: 지도 내부 검색창(Form) 작동 및 링크 클릭 시 새 창 분기 허용
+      */
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+      /* ✅ allow="geolocation...": 지도 서비스의 생명인 GPS(위치 정보) 및 클립보드 권한을 내부 iframe으로 대물림 
+      */
+      allow="geolocation; clipboard-write"
+      frameBorder="0"
+      style={{ 
+        display: 'block', 
+        width: '100%', 
+        aspectRatio: aspectRatio ? cleanRatio : 'auto',
+        height: aspectRatio ? 'auto' : height, 
+        border: 'none', 
+        background: 'transparent', 
+        transition: 'height 0.2s ease'
+      }}
+    />
+  </div>
+);
 };
 
 // --- 서드파티 컴포넌트 로딩 ---
@@ -468,8 +479,13 @@ export const NotionPage: React.FC<types.PageProps & { recentPosts?: any[] }> = (
     const targetBlocks: { shortId: string, link: string }[] = [];
     
     blockKeys.forEach((id) => {
-      const block = recordMap.block[id]?.value;
-      if (!block) return;
+  // 1. 임시로 any 타입으로 캐스팅하여 컴파일러의 엄격한 검사를 우회합니다.
+  const rawEntry = recordMap.block[id] as any;
+  
+  // 2. value가 존재하는 구조면 .value를 쓰고, 없으면 데이터 자체를 block으로 사용합니다.
+  const block = rawEntry?.value ?? rawEntry;
+  
+  if (!block) return;
 
       const rawString = JSON.stringify(block);
       let link = null;
@@ -864,7 +880,12 @@ React.useEffect(() => {
   if (router.isFallback) return <Loading />;
   if (error || !site || !recordMap) return <Page404 site={site} pageId={pageId} error={error} />;
 
-  const block = recordMap.block[Object.keys(recordMap.block)[0]]?.value;
+  // 1. 최상위 블록 엔트리를 임시로 any 처리합니다.
+  const rootBlockEntry = recordMap.block[Object.keys(recordMap.block)[0]] as any;
+
+  // 2. 구조에 따라 .value를 참조하거나 데이터 자체를 block으로 가져옵니다.
+  const block = rootBlockEntry?.value ?? rootBlockEntry;
+
   if (!block) return <Page404 site={site} pageId={pageId} />;
   
   const isBlogPost = block?.type === 'page' && block?.parent_table === 'collection';
@@ -985,7 +1006,7 @@ React.useEffect(() => {
     showCollectionViewDropdown={true}
     showTableOfContents={true}
     minTableOfContentsItems={1}
-    isImageZoomable={false}
+    
     mapPageUrl={mapPageUrl(site, recordMap, new URLSearchParams(lite ? { lite } : {}), draftView)}
     mapImageUrl={mapImageUrl}
     searchNotion={config.isSearchEnabled ? searchNotion : undefined}
