@@ -1,7 +1,10 @@
 import Swiper from 'swiper'; 
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+// @ts-ignore - swiper v12 CSS imports are not recognized by TypeScript 4.x
 import 'swiper/css';
+// @ts-ignore
 import 'swiper/css/navigation';
+// @ts-ignore
 import 'swiper/css/pagination';
 import dynamic from 'next/dynamic'; 
 import Image from 'next/image'; 
@@ -765,7 +768,7 @@ React.useEffect(() => {
     );
     
     // ✅ value가 이중 래핑된 경우까지 대응
-    const rawEntry = targetKey ? recordMap.block[targetKey] : null;
+    const rawEntry = (targetKey ? recordMap.block[targetKey] : null) as any;
     const blockValue = rawEntry?.value?.value ?? rawEntry?.value ?? null;
 
     if (blockValue) {
