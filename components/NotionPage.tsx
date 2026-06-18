@@ -141,10 +141,10 @@ const LivePreview = ({ code, language, aspectRatio, isDarkMode }: { code: string
         <head>
           ${headContent}
           <style>
-            body, html { 
-              margin: 0; padding: 0; overflow: hidden; 
-              background: ${bgColor}; color: ${textColor}; 
-              width: 100%; height: auto !important; 
+           body, html { 
+          margin: 0; padding: 0; overflow: clip;     ← clip으로 변경
+          background: ${bgColor}; color: ${textColor}; 
+          width: 100%; height: auto !important; 
               transition: background 0.3s ease, color 0.3s ease;
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             }
@@ -182,9 +182,15 @@ const LivePreview = ({ code, language, aspectRatio, isDarkMode }: { code: string
             function sendHeight() {
               const slider = wrapper.querySelector('.swiper') || wrapper;
               const h = Math.ceil(slider.offsetHeight || wrapper.scrollHeight);
-              window.parent.postMessage({ type: 'resize-iframe', height: h }, '*');
+              if (h > 0) {
+                window.parent.postMessage({ type: 'resize-iframe', height: h }, '*');
+              }
             }
-            window.onload = () => { sendHeight(); setTimeout(sendHeight, 500); };
+            window.addEventListener('load', function() {
+              sendHeight();
+              setTimeout(sendHeight, 300);
+              setTimeout(sendHeight, 1000);
+            });
             new ResizeObserver(sendHeight).observe(document.body);
           </script>
         </body>
