@@ -2,17 +2,16 @@ import * as React from 'react';
 import cs from 'classnames';
 import { IoSunnyOutline } from '@react-icons/all-files/io5/IoSunnyOutline';
 import { IoMoonSharp } from '@react-icons/all-files/io5/IoMoonSharp';
-import { Header, Breadcrumbs, Search, useNotionContext } from 'react-notion-x';
+import { Header, Search, useNotionContext } from 'react-notion-x';
 import * as types from 'notion-types';
+import Head from 'next/head';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useDarkMode } from 'lib/use-dark-mode';
 import { navigationStyle, navigationLinks, isSearchEnabled } from 'lib/config';
 
 import styles from './styles.module.css';
-
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/router';
 
 /* ---------------------------------------------------------
    1. 테마 토글 버튼 컴포넌트
@@ -20,17 +19,20 @@ import { useRouter } from 'next/router';
 export const ToggleThemeButton = () => {
   const [hasMounted, setHasMounted] = React.useState(false);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
-  
-  React.useEffect(() => { 
-    setHasMounted(true); 
+
+  React.useEffect(() => {
+    setHasMounted(true);
   }, []);
-  
-  const onToggleTheme = React.useCallback(() => { 
-    toggleDarkMode(); 
+
+  const onToggleTheme = React.useCallback(() => {
+    toggleDarkMode();
   }, [toggleDarkMode]);
 
   return (
-    <div className={cs('breadcrumb', 'button', !hasMounted && styles.hidden)} onClick={onToggleTheme}>
+    <div
+      className={cs('breadcrumb', 'button', !hasMounted && styles.hidden)}
+      onClick={onToggleTheme}
+    >
       {hasMounted && isDarkMode ? <IoMoonSharp /> : <IoSunnyOutline />}
     </div>
   );
@@ -39,11 +41,12 @@ export const ToggleThemeButton = () => {
 /* ---------------------------------------------------------
    2. 메인 네비게이션 헤더 컴포넌트
    --------------------------------------------------------- */
-export const NotionPageHeader: React.FC<{ block: types.CollectionViewPageBlock | types.PageBlock; }> = ({ block }) => {
+export const NotionPageHeader: React.FC<{
+  block: types.CollectionViewPageBlock | types.PageBlock;
+}> = ({ block }) => {
   const { components, mapPageUrl } = useNotionContext();
   const { isDarkMode } = useDarkMode();
-  
-  // 모바일 메뉴 및 언어 선택 메뉴 상태 관리
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = React.useState(false);
 
@@ -56,28 +59,20 @@ export const NotionPageHeader: React.FC<{ block: types.CollectionViewPageBlock |
     { code: 'ru', label: 'Русский' }
   ];
 
-  // ✅ 지구본 버튼 클릭 시 자체 메뉴 토글
   const handleGlobeClick = () => {
-    setIsLangMenuOpen(!isLangMenuOpen);
+    setIsLangMenuOpen((prev) => !prev);
   };
 
-  // ✅ 선택된 언어로 구글 엔진 강제 조작
   const changeLanguage = (langCode: string) => {
-    // 🚨 [원천 해결] 원본 언어(한국어)로 돌아갈 때의 로직 보강
     if (langCode === 'ko') {
       const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-      
-      // 1. 구글 번역기 내부의 '원본 보기' 트리거 (콤보박스 초기화)
       if (combo) {
-        combo.value = ''; // 구글 번역기의 기본(원본) 상태 값은 빈 문자열입니다.
+        combo.value = '';
         combo.dispatchEvent(new Event('change'));
       }
 
-      // 2. 완벽한 쿠키 삭제 (서브도메인 문제 해결)
       const hostname = window.location.hostname;
       const hostParts = hostname.split('.');
-      
-      // 도메인의 모든 뎁스(depth)에 대해 쿠키 만료 처리 (ex: www.aarc.space -> .www.aarc.space, .aarc.space)
       for (let i = 0; i < hostParts.length; i++) {
         const domain = hostParts.slice(i).join('.');
         document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
@@ -85,28 +80,20 @@ export const NotionPageHeader: React.FC<{ block: types.CollectionViewPageBlock |
         document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${domain}; path=/;`;
       }
 
-      // 혹시 모를 로컬/세션 스토리지 캐시 방어
       window.localStorage.removeItem('googtrans');
       window.sessionStorage.removeItem('googtrans');
-
       setIsLangMenuOpen(false);
-
-      // 3. 브라우저가 쿠키 삭제를 완전히 반영할 수 있도록 약간의 딜레이 후 새로고침
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-      
+      setTimeout(() => window.location.reload(), 100);
       return;
     }
 
-    // 외국어 선택 시 구글 엔진 조작
     const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
     if (combo) {
       combo.value = langCode;
       combo.dispatchEvent(new Event('change'));
       setIsLangMenuOpen(false);
     } else {
-      alert("번역 엔진을 불러오고 있습니다. 잠시 후 다시 시도해주세요.");
+      alert('번역 엔진을 불러오고 있습니다. 잠시 후 다시 시도해주세요.');
     }
   };
 
@@ -116,131 +103,226 @@ export const NotionPageHeader: React.FC<{ block: types.CollectionViewPageBlock |
 
   return (
     <>
-      <header className="notion-header">
-        <div className="notion-nav-header">
-          {/* 로고 영역 */}
+      {/*
+        [방어 코드 1: CSS 격리 — <head> 주입]
+        - 셀렉터를 'header.notion-header' → '.notion-header' 로 확장:
+          react-notion-x 기본 헤더는 <div class="notion-header"> 로 렌더링되므로
+          태그 한정자를 제거해야 실제로 숨길 수 있습니다.
+        - <Head>를 통해 <head> 안에 주입: SSR → 하이드레이션 사이의
+          짧은 공백에서 중복 헤더가 번쩍이는 FOUC를 원천 차단합니다.
+      */}
+      <Head>
+        <style>{`
+          .notion-header:not(.arc-custom-header) {
+            display: none !important;
+          }
+        `}</style>
+      </Head>
+
+      {/*
+        [방어 코드 2: 하이드레이션 충돌 방어]
+        suppressHydrationWarning: 구글 번역 엔진 등 외부 스크립트가
+        DOM을 변조할 때 React 렌더링이 중단되지 않도록 합니다.
+      */}
+      <header
+        className={cs('notion-header', 'arc-custom-header')}
+        suppressHydrationWarning
+      >
+        <div className='notion-nav-header'>
+          {/* 로고 */}
           <div className={styles['logo-container']}>
-            <Link href="/" legacyBehavior>
-              <a><img src={isDarkMode ? '/logo-w.png' : '/logo-b.png'} alt="AaRC 로고" style={{ width: '96px', height: 'auto' }} className={styles.logo} /></a>
+            <Link href='/' legacyBehavior>
+              <a>
+                <img
+                  src={isDarkMode ? '/logo-w.png' : '/logo-b.png'}
+                  alt='AaRC 로고'
+                  style={{ width: '96px', height: 'auto' }}
+                  className={styles.logo}
+                />
+              </a>
             </Link>
           </div>
 
-          <Breadcrumbs block={block} />
+          {/*
+            [방어 코드 3: Breadcrumbs 제거]
+            react-notion-x의 <Breadcrumbs>는 <Header> 내부에 종속 설계된 컴포넌트로,
+            커스텀 헤더 안에서 단독 사용 시 내부 컨텍스트를 통해 부모 헤더를
+            재트리거할 위험이 있습니다. 불필요하다면 제거가 안전합니다.
+          */}
 
-          <div className="notion-nav-header-rhs breadcrumbs">
-            {/* 1. 기본 네비게이션 링크 */}
-            {navigationLinks?.map((link, index) => {
-              if ((!link.pageId && !link.url) || link.menuPage) return null;
-              const targetUrl = link.pageId ? mapPageUrl(link.pageId) : link.url;
-              return (
-                <components.PageLink href={targetUrl} key={index} className={cs(styles.navLink, 'breadcrumb', 'button', 'notion-nav-header-wide')}>
-                  {link.title}
-                </components.PageLink>
-              );
-            }).filter(Boolean)}
+          <div className='notion-nav-header-rhs breadcrumbs'>
+            {/* 1. 데스크탑 네비게이션 링크 */}
+            {navigationLinks
+              ?.map((link, index) => {
+                if ((!link.pageId && !link.url) || link.menuPage) return null;
+                const targetUrl = link.pageId ? mapPageUrl(link.pageId) : link.url;
+                return (
+                  <components.PageLink
+                    href={targetUrl}
+                    key={index}
+                    className={cs(
+                      styles.navLink,
+                      'breadcrumb',
+                      'button',
+                      'notion-nav-header-wide'
+                    )}
+                  >
+                    {/*
+                      [방어 코드 4: 텍스트 노드 보호]
+                      구글 번역 엔진이 텍스트 노드를 직접 교체할 때
+                      React virtual DOM과 충돌하는 것을 <span>으로 격리합니다.
+                    */}
+                    <span suppressHydrationWarning>{link.title}</span>
+                  </components.PageLink>
+                );
+              })
+              .filter(Boolean)}
 
-            {/* 2. ✅ 다국어 지구본 버튼 (블랙 채우기 간섭 완벽 차단 및 스트로크 조절) */}
-            <div 
-              className={cs('breadcrumb', 'button', 'arc-translate-wrapper')} 
+            {/* 2. 다국어 지구본 버튼 */}
+            <div
+              className={cs('breadcrumb', 'button', 'arc-translate-wrapper')}
               onClick={handleGlobeClick}
             >
-              <div className="arc-translate-btn" title="Language / 번역">
-                <svg 
-                  viewBox="0 0 512 512" 
-                  height="1em"
-                  width="1em"
-                  xmlns="http://www.w3.org/2000/svg"
+              <div className='arc-translate-btn' title='Language / 번역'>
+                <svg
+                  viewBox='0 0 512 512'
+                  height='1em'
+                  width='1em'
+                  xmlns='http://www.w3.org/2000/svg'
                 >
-                  <path 
-                    fill="none" 
-                    stroke="currentColor"
-                    strokeLinecap="round" 
-                    strokeMiterlimit="10" 
-                    strokeWidth="24" 
-                    d="M256 48C141.13 48 48 141.13 48 256s93.13 208 208 208 208-93.13 208-208S370.87 48 256 48z"
+                  <path
+                    fill='none'
+                    stroke='currentColor'
+                    strokeLinecap='round'
+                    strokeMiterlimit='10'
+                    strokeWidth='24'
+                    d='M256 48C141.13 48 48 141.13 48 256s93.13 208 208 208 208-93.13 208-208S370.87 48 256 48z'
                   />
-                  <path 
-                    fill="none" 
-                    stroke="currentColor"
-                    strokeLinecap="round" 
-                    strokeMiterlimit="10" 
-                    strokeWidth="16" 
-                    d="M256 48c-58.07 0-112.67 93.13-112.67 208S197.93 464 256 464s112.67-93.13 112.67-208S314.07 48 256 48z"
+                  <path
+                    fill='none'
+                    stroke='currentColor'
+                    strokeLinecap='round'
+                    strokeMiterlimit='10'
+                    strokeWidth='16'
+                    d='M256 48c-58.07 0-112.67 93.13-112.67 208S197.93 464 256 464s112.67-93.13 112.67-208S314.07 48 256 48z'
                   />
-                  <path 
-                    fill="none" 
-                    stroke="currentColor"
-                    strokeLinecap="round" 
-                    strokeMiterlimit="10" 
-                    strokeWidth="16" 
-                    d="M48 256h416M125 152h262M125 360h262"
+                  <path
+                    fill='none'
+                    stroke='currentColor'
+                    strokeLinecap='round'
+                    strokeMiterlimit='10'
+                    strokeWidth='16'
+                    d='M48 256h416M125 152h262M125 360h262'
                   />
                 </svg>
               </div>
             </div>
 
-            {/* 3. 테마 토글 및 검색 버튼 */}
+            {/* 3. 테마 토글 및 검색 */}
             <ToggleThemeButton />
             {isSearchEnabled && <Search block={block} title={null} />}
 
-            {/* 4. 모바일 햄버거 메뉴 버튼 (노션 의존성 없는 완전 독립형 컴포넌트 시공) */}
-<div 
-  onClick={() => setIsMobileMenuOpen(true)} 
-  className={cs(styles.navLink, 'breadcrumb', 'button', 'notion-nav-header-mobile')}
->
-  <svg strokeWidth="0" width="40px" height="20px" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 0h24v24H0z" fill="none" />
-    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-  </svg>
-</div>
+            {/* 4. 모바일 햄버거 버튼 */}
+            <div
+              onClick={() => setIsMobileMenuOpen(true)}
+              className={cs(
+                styles.navLink,
+                'breadcrumb',
+                'button',
+                'notion-nav-header-mobile'
+              )}
+            >
+              <svg
+                strokeWidth='0'
+                width='40px'
+                height='20px'
+                viewBox='0 0 25 25'
+                xmlns='http://www.w3.org/2000/svg'
+              >
+                <path d='M0 0h24v24H0z' fill='none' />
+                <path d='M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z' />
+              </svg>
+            </div>
           </div>
         </div>
       </header>
-      
-      {/* ✅ 다국어 선택 드롭다운 UI */}
+
+      {/* 다국어 드롭다운 */}
       <AnimatePresence>
         {isLangMenuOpen && (
-          <motion.div 
-            className="arc-lang-dropdown"
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}
+          <motion.div
+            className='arc-lang-dropdown'
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
           >
-            {languages.map(lang => (
-              <div key={lang.code} className="arc-lang-item" onClick={() => changeLanguage(lang.code)}>
-                {lang.label}
+            {languages.map((lang) => (
+              <div
+                key={lang.code}
+                className='arc-lang-item'
+                onClick={() => changeLanguage(lang.code)}
+              >
+                <span suppressHydrationWarning>{lang.label}</span>
               </div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ✅ 모바일 풀스크린 오버레이 메뉴 */}
+      {/* 모바일 풀스크린 오버레이 메뉴 */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div className="arc-mobile-menu-overlay" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3, ease: "easeOut" }}>
-            
-            <div className="arc-mobile-menu-header">
+          <motion.div
+            className='arc-mobile-menu-overlay'
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          >
+            <div className='arc-mobile-menu-header'>
               <div className={styles['logo-container']}>
-                <img src={isDarkMode ? '/logo-w.png' : '/logo-b.png'} alt="AaRC 로고" style={{ width: '96px', height: 'auto' }} />
+                <img
+                  src={isDarkMode ? '/logo-w.png' : '/logo-b.png'}
+                  alt='AaRC 로고'
+                  style={{ width: '96px', height: 'auto' }}
+                />
               </div>
-              <button className="arc-close-btn" onClick={() => setIsMobileMenuOpen(false)}>✕</button>
+              <button
+                className='arc-close-btn'
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                ✕
+              </button>
             </div>
-            
-            <div className="arc-mobile-menu-content">
+
+            <div className='arc-mobile-menu-content'>
               {navigationLinks?.map((link, idx) => {
-                if (link.menuPage) return null; 
-                const targetUrl = link.pageId ? (mapPageUrl(link.pageId) || `/${link.pageId}`) : link.url;
+                if (link.menuPage) return null;
+                const targetUrl = link.pageId
+                  ? mapPageUrl(link.pageId) || `/${link.pageId}`
+                  : link.url;
                 if (!targetUrl) return null;
-                
+
                 return (
-                  <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + idx * 0.05 }}>
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + idx * 0.05 }}
+                  >
                     <Link href={targetUrl} legacyBehavior>
-                      <a className="arc-mobile-menu-link" onClick={() => setIsMobileMenuOpen(false)}>{link.title}</a>
+                      <a
+                        className='arc-mobile-menu-link'
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <span suppressHydrationWarning>{link.title}</span>
+                      </a>
                     </Link>
                   </motion.div>
                 );
               })}
             </div>
-            
           </motion.div>
         )}
       </AnimatePresence>
